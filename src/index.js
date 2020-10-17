@@ -1,4 +1,3 @@
-
 import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
 const keyboardState = KeyboardState('key')(window)
 keyboardState.start()
@@ -16,45 +15,6 @@ keyboardDownFront.start()
 import  * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 
-const app = new PIXI.Application({
-    width: 160,
-    height: 180,
-    resolution: 4 * ( window.devicePixelRatio || 1 ),
-    antialias:true
-});
-//app.stop()
-
-
-
-
-// app.loader
-//     .add('spritesheet', 'assets/hero-walk-anim.json')
-//     .load(onAssetsLoaded);
-
-// function onAssetsLoaded(loader, resources) {
-//     const error = resources.spritesheet.error
-//     if (error){
-//         throw new Error(error)
-//     }
-//     console.log('LOADED','sptch',resources.spritesheet)
-//     const animationTextures = resources.spritesheet.textures
-
-//     const textures = []
-//     textures.push({ texture : animationTextures['frame00'], time : 100 })
-//     textures.push({ texture : animationTextures['frame01'], time : 100 })
-//     const slow = new PIXI.AnimatedSprite(textures);
-//     slow.anchor.set(0.5);
-//     slow.scale.set(1);
-//     slow.animationSpeed = 0.5;
-//     slow.x = (app.screen.width - slow.width) / 2;
-//     slow.y = app.screen.height / 2;
-//     app.stage.addChild(slow);
-//     slow.play()   
-//     console.log('slow',slow)
-//     app.start()
-// }
-document.body.appendChild(app.view);
-
 // const ticker = new Ticker();
 
 // ticker.maxFPS = 60
@@ -71,71 +31,133 @@ document.body.appendChild(app.view);
 const imageResolver = x => `assets/${x}`
 
 
-const stage = app.stage
-//console.log('stage',stage)
-
-
-
-
 
 async function go(){
+    
+    const app = new PIXI.Application({
+        width: 160,
+        height: 180,
+        resolution: 4 * ( window.devicePixelRatio || 1 ),
+        antialias:true
+    });
+    app.stop()
+    app.ticker.add(delta => gameLoop(delta));
+    document.body.appendChild(app.view);
     
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     app.stage.addChild(terrain.container);
     console.log('terrain',terrain)
 
-
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
-    console.log('animmmm',animationModels)
+    console.log('animationModels',animationModels)
+
+    const animation = AnimatedItem( animationModels )
+    animation.container.position.x = terrain.extracted['level-entrance'].x
+    animation.container.position.y = terrain.extracted['level-entrance'].y    
+
+    const retribs = {
+        'iddle-right' : {
+            'left' : { go : 'turn-from-right' },
+            'right' : { go : 'walk-right' },
+            0 :  { go : 'iddle-right' }
+        },
+        'iddle-left' : {
+            'left' : { go : 'walk-left' },
+            'right' : { go : 'turn-from-left' },
+            0 : { go : 'iddle-left' }
+        },
+        'climb-ladder' : {
+            'up' : { go : 'climb-ladder' },
+            'down' : { go : 'climb-ladder' },
+        },
+        'turn-from-right' : {
+            0 : { go : 'iddle-left' },
+            'left' : { go : 'walk-left' }
+        },
+        'turn-from-left' : {
+            0 : { go :  'iddle-right' },
+            'right' : { go : 'walk-right' }
+        },
+        'walk-left' : {
+            'left' : { go : 'walk-left' },
+            0 : { go :  'iddle-left' }
+        },
+        'walk-right' : {
+            'right' : { go : 'walk-right' },
+            0 :  { go :  'iddle-right' }
+        },
+    }
+   
+    animation.on.complete = function(...p){
+        const [name,animatedSprite] = p,
+              frame = animatedSprite.currentFrame
+
+        const commands = {
+            up : keyboardState.state.get('ArrowUp'),
+            left : keyboardState.state.get('ArrowLeft'),
+            down : keyboardState.state.get('ArrowDown'),
+            right : keyboardState.state.get('ArrowRight')
+        }
+        const retrib = retribs[ name ]
+        console.log('retrib',retrib)
+        const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
+        console.log('matchedCommand',matchedCommand)
+        const followedBy = retrib[ matchedCommand || 0 ]
+        console.log('followedBy',followedBy)
+        
+        
+        //const followedBy = retribs[ name ][ 0 ]
+        animation.play( followedBy.go )
+//        console.log('// complete',{name,animatedSprite},frame)
+    }
+    animation.on.frameChange = function (...p) {
+        const [name,animatedSprite] = p,
+              frame = animatedSprite.currentFrame
+        console.log('// frame change',{name,animatedSprite},frame)
+    };
+    animation.on.loop = function (...p) {
+        const [name,animatedSprite] = p,
+              frame = animatedSprite.currentFrame
+        console.log('// loop',{name,animatedSprite},frame)
+    };
     
-    const { container : animationContainer, playAnimation } = AnimatedItem( animationModels )
-
-    //const heroContainer = new PIXI.Container();
-    //app.stage.addChild(heroContainer);
-
-    animationContainer.position.x = terrain.extracted['level-entrance'].x
-    animationContainer.position.y = terrain.extracted['level-entrance'].y
-
-    //animationContainer.anchor.set(0.5)
+    app.stage.addChild(animation.container);
     
-    app.stage.addChild(animationContainer);
-    
+    animation.play('walk-left')
 
+    
+    /*
     setTimeout( () => {
-        playAnimation('turn-from-left')
+        animation.play('turn-from-left')
     },0)
     setTimeout( () => {
-        playAnimation('turn-from-right')
+        animation.play('turn-from-right')
     },2000)
     setTimeout( () => {
-        playAnimation('walk-left')
+        animation.play('walk-left')
     },4000)
     setTimeout( () => {
-        playAnimation('climb-ladder')
+        animation.play('climb-ladder')
     },6000)
     setTimeout( () => {
-        playAnimation('turn-from-left')
+        animation.play('turn-from-left')
     },8000)
-
-    app.ticker.add(delta => gameLoop(delta));
-
+    */
+   
+    app.start()
 }
 go()
 
-
-function updateKeyboard(){
-    keyboardDownFront.reset()
-}
-function updateControls(){
+function getControls(){
     const commands = {
         up : keyboardState.state.get('ArrowUp'),
         left : keyboardState.state.get('ArrowLeft'),
         down : keyboardState.state.get('ArrowDown'),
         right : keyboardState.state.get('ArrowRight')
     }
-    updateKeyboard()
     return commands
 }
+
 const state = playing
 
 function gameLoop(delta){
@@ -143,13 +165,12 @@ function gameLoop(delta){
     state(delta);
 }
 
-const Items = []
 
 
 function playing(dt){
     //console.log('dt',dt)
-    const commands = updateControls()
-    
+
+    keyboardDownFront.reset()
     
     //    console.log(commands)
 }
@@ -197,8 +218,7 @@ import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 
 function AnimatedItem( animationModels ){
     const animationContainer = new PIXI.Container();
-
-    
+    const on = {}
     const animations = {}
     Object.entries( animationModels ).forEach( ([name,model]) => {
         const { steps, loop, speed } = model
@@ -210,24 +230,17 @@ function AnimatedItem( animationModels ){
         //anim.x = /*layerIdx * 8 +*/ 4
         //anim.y = 8 - 4
         animationContainer.addChild(anim);
-        anim.loop = loop
-        anim.onComplete = function () {
-            //console.log('// complete',anim.currentFrame)
-        }
-        anim.onFrameChange = function () {
-            //console.log('// update!',anim.currentFrame)
-        };
-        //console.log('anim',anim)
-        anim.onLoop = function () {
-            //console.log('// looped!',anim.currentFrame)
-        };
+        anim.loop = false//loop
+        anim.onComplete = (...p) => on.complete( name, anim, ...p )
+        anim.onFrameChange = (...p) => on.frameChange( name, anim, ...p )
+        anim.onLoop = on.loop
         anim.visible = false
         animations[ name ] = anim
     })
     
-    
+
     let _previousAnimation = undefined
-    function playAnimation( name ){
+    function play( name ){
         if ( _previousAnimation !== undefined ){
             const anim =  animations[ _previousAnimation  ]
             anim.stop()
@@ -238,7 +251,7 @@ function AnimatedItem( animationModels ){
         anim.gotoAndPlay(0)
         _previousAnimation = name
     }
-    return { container : animationContainer, playAnimation }
+    return { container : animationContainer, on, play }
     
 }
 async function loadAnimations( url ){//, container,  world, addGraphicBody){
