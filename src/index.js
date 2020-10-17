@@ -10,7 +10,7 @@ keyboardDownFront.start()
 
 //import { TickerPlugin } from '@pixi/ticker';
 //import { Application } from '@pixi/app';
- //Application.registerPlugin(TickerPlugin);
+//Application.registerPlugin(TickerPlugin);
 //import { Container } from '@pixi/display';
 //import { Sprite } from '@pixi/sprite';
 import  * as PIXI from 'pixi.js'
@@ -23,35 +23,6 @@ const app = new PIXI.Application({
     antialias:true
 });
 //app.stop()
-app.ticker.add(delta => gameLoop(delta));
-
-
-function updateKeyboard(){
-    keyboardDownFront.reset()
-}
-function updateControls(){
-    const commands = {
-        up : keyboardState.state.get('ArrowUp'),
-        left : keyboardState.state.get('ArrowLeft'),
-        down : keyboardState.state.get('ArrowDown'),
-        right : keyboardState.state.get('ArrowRight')
-    }
-    updateKeyboard()
-    return commands
-}
-const state = playing
-
-function gameLoop(delta){
-    //Update the current game state:
-    state(delta);
-}
-function playing(dt){
-    //console.log('dt',dt)
-    const commands = updateControls()
-    
-    
-//    console.log(commands)
-}
 
 
 
@@ -103,25 +74,90 @@ const imageResolver = x => `assets/${x}`
 const stage = app.stage
 //console.log('stage',stage)
 
-const container1 = new PIXI.Container();
-app.stage.addChild(container1);
 
-const container2 = new PIXI.Container();
-app.stage.addChild(container2);
 
-loadTerrain( 'assets/map1.tmx', container1 ).then( () => {
-  //  console.log('ok')
-})
-loadAnimations( 'assets/animations.tmx', container2 ).then( (animmms) => {
-    console.log('animmmm',animmms)
+
+
+async function go(){
     
-})
+    const terrain  = await loadTerrain( 'assets/map1.tmx' )
+    app.stage.addChild(terrain.container);
+    console.log('terrain',terrain)
 
+
+    const animationModels = await loadAnimations( 'assets/animations.tmx' )
+    console.log('animmmm',animationModels)
+    
+    const { container : animationContainer, playAnimation } = AnimatedItem( animationModels )
+
+    //const heroContainer = new PIXI.Container();
+    //app.stage.addChild(heroContainer);
+
+    animationContainer.position.x = terrain.extracted['level-entrance'].x
+    animationContainer.position.y = terrain.extracted['level-entrance'].y
+
+    //animationContainer.anchor.set(0.5)
+    
+    app.stage.addChild(animationContainer);
+    
+
+    setTimeout( () => {
+        playAnimation('turn-from-left')
+    },0)
+    setTimeout( () => {
+        playAnimation('turn-from-right')
+    },2000)
+    setTimeout( () => {
+        playAnimation('walk-left')
+    },4000)
+    setTimeout( () => {
+        playAnimation('climb-ladder')
+    },6000)
+    setTimeout( () => {
+        playAnimation('turn-from-left')
+    },8000)
+
+    app.ticker.add(delta => gameLoop(delta));
+
+}
+go()
+
+
+function updateKeyboard(){
+    keyboardDownFront.reset()
+}
+function updateControls(){
+    const commands = {
+        up : keyboardState.state.get('ArrowUp'),
+        left : keyboardState.state.get('ArrowLeft'),
+        down : keyboardState.state.get('ArrowDown'),
+        right : keyboardState.state.get('ArrowRight')
+    }
+    updateKeyboard()
+    return commands
+}
+const state = playing
+
+function gameLoop(delta){
+    //Update the current game state:
+    state(delta);
+}
+
+const Items = []
+
+
+function playing(dt){
+    //console.log('dt',dt)
+    const commands = updateControls()
+    
+    
+    //    console.log(commands)
+}
 
 /*
-app.loader
-    .add('spritesheet', 'examples/assets/spritesheet/0123456789.json')
-    .load(onAssetsLoaded);
+  app.loader
+  .add('spritesheet', 'examples/assets/spritesheet/0123456789.json')
+  .load(onAssetsLoaded);
 */
 
 
@@ -159,7 +195,53 @@ app.loader
 // import PixiFps from "pixi-fps";
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 
-async function loadAnimations( url, container,  world, addGraphicBody){
+function AnimatedItem( animationModels ){
+    const animationContainer = new PIXI.Container();
+
+    
+    const animations = {}
+    Object.entries( animationModels ).forEach( ([name,model]) => {
+        const { steps, loop, speed } = model
+        
+        const anim = new PIXI.AnimatedSprite(steps);
+        anim.anchor.set(0.5);
+        anim.scale.set(1);
+        anim.animationSpeed = speed
+        //anim.x = /*layerIdx * 8 +*/ 4
+        //anim.y = 8 - 4
+        animationContainer.addChild(anim);
+        anim.loop = loop
+        anim.onComplete = function () {
+            //console.log('// complete',anim.currentFrame)
+        }
+        anim.onFrameChange = function () {
+            //console.log('// update!',anim.currentFrame)
+        };
+        //console.log('anim',anim)
+        anim.onLoop = function () {
+            //console.log('// looped!',anim.currentFrame)
+        };
+        anim.visible = false
+        animations[ name ] = anim
+    })
+    
+    
+    let _previousAnimation = undefined
+    function playAnimation( name ){
+        if ( _previousAnimation !== undefined ){
+            const anim =  animations[ _previousAnimation  ]
+            anim.stop()
+            anim.visible = false
+        }
+        const anim = animations[ name ]
+        anim.visible = true
+        anim.gotoAndPlay(0)
+        _previousAnimation = name
+    }
+    return { container : animationContainer, playAnimation }
+    
+}
+async function loadAnimations( url ){//, container,  world, addGraphicBody){
     
     const terrain = await loadTerrainTileMap(url ,imageResolver)
 
@@ -175,75 +257,28 @@ async function loadAnimations( url, container,  world, addGraphicBody){
             speed : layer.properties['animation-speed']
         }
     })
-    function AnimatedItem( animationModels ){
-        const animationContainer = new PIXI.Container();
-
-        
-        const animations = {}
-        Object.entries( animationModels ).forEach( ([name,model]) => {
-            const { steps, loop, speed } = model
-            
-            const anim = new PIXI.AnimatedSprite(steps);
-            anim.anchor.set(0.5);
-            anim.scale.set(1);
-            anim.animationSpeed = speed
-            anim.x = /*layerIdx * 8 +*/ 4
-            anim.y = 8 - 4
-            animationContainer.addChild(anim);
-            anim.loop = loop
-            anim.onComplete = function () {
-                //console.log('// complete',anim.currentFrame)
-            }
-            anim.onFrameChange = function () {
-                //console.log('// update!',anim.currentFrame)
-            };
-            //console.log('anim',anim)
-            anim.onLoop = function () {
-                //console.log('// looped!',anim.currentFrame)
-            };
-            anim.visible = false
-            animations[ name ] = anim
-        })
-        
-        
-        let _previousAnimation = undefined
-        function playAnimation( name ){
-            if ( _previousAnimation !== undefined ){
-                const anim =  animations[ _previousAnimation  ]
-                anim.stop()
-                anim.visible = false
-            }
-            const anim = animations[ name ]
-            anim.visible = true
-            anim.gotoAndPlay(0)
-            _previousAnimation = name
-        }
-        return { container : animationContainer, playAnimation }
-        
-    }
-    const { container : animationContainer, playAnimation } = AnimatedItem( animationModels )
-    container.addChild(animationContainer);
-
-    playAnimation('turn-from-left')
-    setTimeout( () => {
-        playAnimation('turn-from-right')
-    },2000)
-    setTimeout( () => {
-        playAnimation('walk-left')
-    },4000)
-    setTimeout( () => {
-        playAnimation('climb-ladder')
-    },6000)
-    setTimeout( () => {
-        playAnimation('turn-from-left')
-    },8000)
-    return animations
-    console.log('animations',animations)
+    return animationModels
+    
+    //return animations
+    //console.log('animations',animations)
 }
-async function loadTerrain( url, container,  world, addGraphicBody){
+async function loadTerrain( url ){
+    
 
     const terrain = await loadTerrainTileMap(url ,imageResolver)
 
+    const extracted = {}
+    
+    terrain.layers.forEach( ( layer, layerIdx ) => {
+        layer.tiles.forEach( tile => {
+            if ( tile.properties['level-entrance'] ){
+                extracted['level-entrance'] = tile.inLayer.position
+            }
+            if ( tile.properties['level-exit'] ){
+                extracted['level-exit'] = tile.inLayer.position
+            }
+        })
+    })
     // console.log('terrain terrain',terrain)
     // const collisionGroupNames = []
     // terrain.layers.forEach( ( layer, layerIdx ) => {
@@ -269,81 +304,83 @@ async function loadTerrain( url, container,  world, addGraphicBody){
     
     // let player = undefined,
     //     ennemies = []
+    const container = new PIXI.Container();
     terrain.layers.forEach( ( layer, layerIdx ) => {
         //if ( layer.name === 'archi' ) {
-//        if ( layer.name !== 'modèle' ){
-            layer.tiles.forEach( tile => {
-                
-                // const mass = tile.properties.mass || 0
-                // const role = tile.properties.role
-                // const collisionGroupName = tile.properties['collision-group'] || 0 
-                // const collisionGroup = groupForGroupName( collisionGroupName )
-                const position = tile.inLayer.position,
-                      imageBitmap = tile.imageBitmap
-                const collisionMaskNames = tile.properties['collision-mask']
-                // let collisionMask = 0xffff
-                // if ( collisionMaskNames ){
-                //     collisionMask = maskForGroupNames( collisionMaskNames.split(',') )
-                // }
-                // const sensor = tile.properties['is-sensor']
-                // groupForGroupName(  tile.properties['collision-group'] )
-                // image
-                const sprite = PIXI.Sprite.from( imageBitmap )
-                sprite.anchor.set(0.5)
-                sprite.position.x = position.x
-                sprite.position.y = position.y
-                container.addChild( sprite )
-                //console.log('collisionGroup',collisionGroup,mass,role)
-                // physics
+        //        if ( layer.name !== 'modèle' ){
+        layer.tiles.forEach( tile => {
+            
+            // const mass = tile.properties.mass || 0
+            // const role = tile.properties.role
+            // const collisionGroupName = tile.properties['collision-group'] || 0 
+            // const collisionGroup = groupForGroupName( collisionGroupName )
+            const position = tile.inLayer.position,
+                  imageBitmap = tile.imageBitmap
+            const collisionMaskNames = tile.properties['collision-mask']
+            // let collisionMask = 0xffff
+            // if ( collisionMaskNames ){
+            //     collisionMask = maskForGroupNames( collisionMaskNames.split(',') )
+            // }
+            // const sensor = tile.properties['is-sensor']
+            // groupForGroupName(  tile.properties['collision-group'] )
+            // image
+            const sprite = PIXI.Sprite.from( imageBitmap )
+            sprite.anchor.set(0.5)
+            sprite.position.x = position.x
+            sprite.position.y = position.y
+            container.addChild( sprite )
+            //console.log('collisionGroup',collisionGroup,mass,role)
+            // physics
 
-                // const boxShape = new p2.Box({ width: 8/8, height: 8/8 });
-                // boxShape.collisionGroup = collisionGroup
-                // //boxShape.collisionMask = 1 | 2 | 4
-                // //boxShape.collisionMask = 0
-                // boxShape.collisionMask = collisionMask
-                
-                // const boxBody = new p2.Body({
-                //     mass : mass,
-                //     position:[ position.x/8, position.y/8 ],
-                //     angle : 0,
-                //     fixedRotation : ( role === 'player' )
-                //     //angularVelocity:Math.PI
-                // });
-                // boxBody.addShape(boxShape);
-                // boxBody.tile = tile
-                
-                // boxShape.sensor = sensor
-                    
-                // world.addBody(boxBody);
-                // addGraphicBody( sprite, boxBody )
-                
-                // if ( role === 'player' ){
-                //     player = {
-                //         body : boxBody,
-                //         sprite,
-                //     }
-                //     boxShape.collisionMask = 0xff
-                //     boxBody.isPlayer = true
-                // } else if ( role === 'ennemy' ){
-                //     ennemies.push({
-                //         body : boxBody,
-                //         sprite,
-                //     })
-                //     boxBody.isEnnemy = true
-                // }
+            // const boxShape = new p2.Box({ width: 8/8, height: 8/8 });
+            // boxShape.collisionGroup = collisionGroup
+            // //boxShape.collisionMask = 1 | 2 | 4
+            // //boxShape.collisionMask = 0
+            // boxShape.collisionMask = collisionMask
+            
+            // const boxBody = new p2.Body({
+            //     mass : mass,
+            //     position:[ position.x/8, position.y/8 ],
+            //     angle : 0,
+            //     fixedRotation : ( role === 'player' )
+            //     //angularVelocity:Math.PI
+            // });
+            // boxBody.addShape(boxShape);
+            // boxBody.tile = tile
+            
+            // boxShape.sensor = sensor
+            
+            // world.addBody(boxBody);
+            // addGraphicBody( sprite, boxBody )
+            
+            // if ( role === 'player' ){
+            //     player = {
+            //         body : boxBody,
+            //         sprite,
+            //     }
+            //     boxShape.collisionMask = 0xff
+            //     boxBody.isPlayer = true
+            // } else if ( role === 'ennemy' ){
+            //     ennemies.push({
+            //         body : boxBody,
+            //         sprite,
+            //     })
+            //     boxBody.isEnnemy = true
+            // }
 
-                // if ( tile.type === 'ladder' ){
-                //     boxBody.isLadder = true
-                // }
-                // if ( tile.type === 'wall' ){
-                //     boxBody.isWall = true
-                // }
+            // if ( tile.type === 'ladder' ){
+            //     boxBody.isLadder = true
+            // }
+            // if ( tile.type === 'wall' ){
+            //     boxBody.isWall = true
+            // }
 
 
-            })
-      //  }
+        })
+        //  }
     })
-//    return { player, ennemies }
+    return { extracted, container }
+    //    return { player, ennemies }
 }
 
 // async function init(){
@@ -351,7 +388,7 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //     const world = new p2.World({
 //         gravity:[0, 9.82]
 //     });
-    
+
 //     const graphicsBodies = []
 //     function addGraphicBody( graphics, body){
 //         graphicsBodies.push( [ graphics, body ] )
@@ -369,15 +406,15 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //         //console.log('body added')
 //         //createAndLinkPixiGraphics( body )
 //     })
-    
+
 //     const terrainContainer = new PIXI.Container()
 //     terrainContainer.scale.x = 2
 //     terrainContainer.scale.y = 2
 //     const terrain = await loadTerrain( terrainContainer, world, addGraphicBody )
 
-    
+
 //     const fpsCounter = new PixiFps();
-    
+
 //     const app = new PIXI.Application();
 //     document.body.appendChild(app.view);
 //     // Pixi.js zoom level
@@ -385,12 +422,12 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 
 //     // Initialize the stage
 //     const renderer =  app.renderer
-    
+
 //     const outlineFilterRed = new GlowFilter(15, 2, 1, 0xff9999, 0.5);
 //     const asciiFilter = new AsciiFilter()
 //     const oldFilmFilter = new OldFilmFilter()
 //     const dotFilter = new DotFilter()
-    
+
 //     console.log('outlineFilterRed',outlineFilterRed)
 //     //stage = new PIXI.Stage(0xFFFFFF);
 //     const stage = app.stage
@@ -421,14 +458,14 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //         //dotFilter
 //     ]
 
-    
+
 
 //     let playerOnStairs = 0
 //     let playerOnSomething = new Set()
 //     world.on('beginContact', args => { 
 //         const { bodyA, bodyB, shapeA, shapeB, target } = args
 //         const ce = args.contactEquations
-        
+
 //         //if ( ( bodyA.tileType === 'ladder' ) || ( bodyB.tileType === 'ladder' ) ){
 //         if ( bodyA.isLadder && bodyB.isPlayer ){
 //             //console.log('Collision registered 1',bodyB);
@@ -448,7 +485,7 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 // //            playerOnSomething++
 //         }
 
-        
+
 //         //}
 //         ///     canJump = true
 //     })
@@ -457,7 +494,7 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 
 //         const { bodyA, bodyB, shapeA, shapeB, target } = args
 //         const ce = args.contactEquations
-        
+
 //         //if ( ( bodyA.tileType === 'ladder' ) || ( bodyB.tileType === 'ladder' ) ){
 //         if ( bodyA.isLadder && bodyB.isPlayer ){
 //             //console.log('Collision registered 1',bodyB);
@@ -474,20 +511,20 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //             //console.log('Collision registered 2',bodyA);
 //             playerOnSomething.delete( bodyB.id )
 //         }
-        
+
 //     });
 //     world.on('postStep', function(event){
 //         const upFront = keyboardDownFront.state.get('ArrowUp')
 //         const downFront = keyboardDownFront.state.get('ArrowDown')
-        
+
 //         const upState = keyboardState.state.get('ArrowUp')
 //         const leftState = keyboardState.state.get('ArrowLeft')
 //         const rightState = keyboardState.state.get('ArrowRight')
 //         const playerBody = terrain.player.body
 
-        
+
 //         if ( playerOnSomething.size ){
-        
+
 //         if ( upState ){
 //             if ( playerBody.velocity[0] > -1 ){
 //                 playerBody.force[1] -= 100
@@ -513,8 +550,8 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //         }
 //         }
 //         //if ( canJump ){
-        
-        
+
+
 //         // if ( playerOnSomething.size ){
 //         //     console.log( playerBody.velocity )
 //         //     if ( playerOnStairs ){
@@ -553,7 +590,7 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //     planeBody.addShape(planeShape);
 //     world.addBody(planeBody);
 
-        
+
 
 //     var fixedTimeStep = 1 / 60; // seconds
 //     var maxSubSteps = 10; // Max sub steps to catch up with the wall clock
@@ -563,7 +600,7 @@ async function loadTerrain( url, container,  world, addGraphicBody){
 //         var deltaTime = lastTime ? (time - lastTime) / 1000 : 0;
 //         const upFront = keyboardDownFront.state.get('ArrowUp')
 //         updateGraphicBodies()
-        
+
 //             //console.log(upFront)
 //         world.step(fixedTimeStep, deltaTime, maxSubSteps);
 //         lastTime = time
