@@ -1,0 +1,44 @@
+{
+  "name": "petitrick",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@pixi/app": "^5.3.3",
+    "@pixi/core": "^5.0.0",
+    "@pixi/filter-ascii": "^3.1.1",
+    "@pixi/filter-crt": "^3.1.1",
+    "@pixi/filter-dot": "^3.1.1",
+    "@pixi/filter-glow": "^3.1.1",
+    "@pixi/filter-old-film": "^3.1.1",
+    "@pixi/sprite": "^5.3.3",
+    "@pixi/ticker": "^5.3.3",
+    "box-intersect": "^1.0.2",
+    "p2": "^0.7.1",
+    "pixi.js": "^5.3.3",
+    "rbush": "^3.0.1",
+    "rbush-knn": "^3.0.1",
+    "saxophone": "^0.6.1",
+    "seedrandom": "^3.0.5",
+    "static-kdtree": "^1.0.2",
+    "stats.js": "^0.17.0",
+    "tinyqueue": "^2.0.3",
+    "viz.js": "^2.1.2"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^6.2.1",
+    "css-loader": "^4.3.0",
+    "esm": "^3.2.25",
+    "html-webpack-plugin": "^4.5.0",
+    "spritesheet-js": "^1.2.6",
+    "terser-webpack-plugin": "^4.2.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0",
+    "worklet-loader": "^1.0.0"
+  },
+  "scripts": {
+    "dev": "webpack --mode development --watch",
+    "start:dev": "webpack-dev-server"
+  }
+}

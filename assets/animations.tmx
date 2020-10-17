@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.2.1" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="8" tileheight="8" infinite="0" nextlayerid="11" nextobjectid="1">
+ <tileset firstgid="1" name="sprites" tilewidth="8" tileheight="8" tilecount="256" columns="16">
+  <image source="sprites.png" width="128" height="128"/>
+ </tileset>
+ <layer id="4" name="walk-right" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="0.5"/>
+  </properties>
+  <data encoding="csv">
+50,49,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="5" name="walk-left" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="0.5"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+2147483698,2147483697,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="6" name="turn-from-right" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="false"/>
+   <property name="animation-speed" type="float" value="1"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+51,52,2147483699,2147483698,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="7" name="turn-from-left" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="false"/>
+   <property name="animation-speed" type="float" value="1"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+2147483699,52,51,50,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="8" name="climb-ladder" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="0.5"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+68,2147483716,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="9" name="iddle-right" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="1"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+50,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="10" name="iddle-left" width="8" height="8">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="1"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+2147483698,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>
