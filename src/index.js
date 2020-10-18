@@ -394,7 +394,7 @@ function AnimatedItem( animationModels ){
         const anim = new PIXI.AnimatedSprite(steps);
         anim.anchor.set(0.5);
         anim.scale.set(1);
-        anim.animationSpeed = speed
+        anim.animationSpeed = speed * 2
         //anim.x = /*layerIdx * 8 +*/ 4
         //anim.y = 8 - 4
         animationContainer.addChild(anim);
