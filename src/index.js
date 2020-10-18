@@ -48,6 +48,42 @@ async function go(){
     app.stage.addChild(terrain.container);
     console.log('terrain',terrain)
 
+    
+/*    function onLadder({x,y}){
+        const ladderPosition = terrain.extracted['ladders'].find( ({x:lx,y:ly}) => {
+            const dx = x - lx,
+                  dy = y - ly,
+                  d2 = ( dx * dx ) + ( dy * dy )
+            return ( d2 < (7*7) )
+        })
+        return ladderPosition
+    }*/
+    function clampOutMatter({x,y}){
+        const r = { x, y }
+        const all = terrain.extracted['matter'].map( ({x:mx,y:my}) => {
+            // reject above 
+            if ( my < y ) return
+            const dx = x - mx,
+                  dy = y - my
+            // keep x
+            if ( Math.abs( dx ) > 4 ) return 
+            //if ( Math.abs( dy ) > 8 ) return 
+            return [mx,my,dx,dy]
+        }).filter( x => x ).sort( (a,b) => {
+            const adx = Math.abs( a[2] ),
+                  ady = Math.abs( a[3] ),
+                  bdx = Math.abs( b[2] ),
+                  bdy = Math.abs( b[3] )
+            if ( adx !== bdx ){
+                return adx - bdx
+            } else {
+                return adx - bdx
+            }
+        })
+        const [[,,,under]] = all
+        console.log(under + 8)
+        return under+8
+    }
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
 
@@ -59,16 +95,26 @@ async function go(){
         'iddle-right' : {
             'left' : { go : 'turn-from-right' },
             'right' : { go : 'walk-right' },
+            'up' : { go : 'climb-ladder' },
             0 :  { go : 'iddle-right' }
         },
         'iddle-left' : {
             'left' : { go : 'walk-left' },
             'right' : { go : 'turn-from-left' },
+            'up' : { go : 'climb-ladder' },
             0 : { go : 'iddle-left' }
+        },
+        'climb-iddle' : {
+            'left' : { go : 'turn-from-right' },
+            'right' : { go : 'turn-from-left' },
+            'up' : { go : 'climb-ladder' },
+            'down' : { go : 'climb-ladder' },
+            0 : { go : 'climb-iddle' },
         },
         'climb-ladder' : {
             'up' : { go : 'climb-ladder' },
             'down' : { go : 'climb-ladder' },
+            0 : { go : 'climb-iddle' },
         },
         'turn-from-right' : {
             0 : { go : 'iddle-left' },
@@ -98,12 +144,16 @@ async function go(){
             down : keyboardState.state.get('ArrowDown'),
             right : keyboardState.state.get('ArrowRight')
         }
+        /*
+        if ( onLadder(animation.container.position ) ){
+            console.log('onladder')
+        }*/
         const retrib = retribs[ name ]
-        console.log('retrib',retrib)
+        //console.log('retrib',retrib)
         const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
-        console.log('matchedCommand',matchedCommand)
+//        console.log('matchedCommand',matchedCommand)
         const followedBy = retrib[ matchedCommand || 0 ]
-        console.log('followedBy',followedBy)
+  //      console.log('followedBy',followedBy)
         
         
         //const followedBy = retribs[ name ][ 0 ]
@@ -113,17 +163,109 @@ async function go(){
     animation.on.frameChange = function (...p) {
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-        console.log('// frame change',{name,animatedSprite},frame)
+
+        
+        if ( name === 'walk-left' ){
+            animation.container.position.x -= 1
+        } else if  ( name === 'walk-right' ){
+            animation.container.position.x += 1
+        } else if  ( name === 'climb-ladder' ){
+            if ( animation.onLadder ){
+                animation.container.position.y -= 1
+            }
+        } else if  ( name === 'climb-ladder' ){
+            //animation.container.position.y -= 1
+        }
+        //console.log('// frame change',{name,animatedSprite},frame)
     };
     animation.on.loop = function (...p) {
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-        console.log('// loop',{name,animatedSprite},frame)
+        //      console.log('// loop',{name,animatedSprite},frame)
+        /*const moveout = clampOutMatter( animation.container.position )
+        if (moveout<0){
+            if ( onLadder(animation.container.position ) ){
+                
+            } else {
+                animation.container.position.y += 1
+            }
+        }*/
     };
     
     app.stage.addChild(animation.container);
-    
-    animation.play('walk-left')
+    app.ticker.add(delta =>  {
+
+
+        
+            const rtree = terrain.extracted['tree']
+            rtree.all().map( finding => {
+                const { tile } = finding,
+                      { container } = tile
+                container.tint = 0x888888
+            })
+            //
+            // on ladder
+            //
+            const pl = animation.container
+            
+            /*const plbb = {
+                minX: pl.position.x - pl.width / 2,
+                maxX: pl.position.x + pl.width / 2,
+                minY: pl.position.y - pl.height / 2,
+                maxY: pl.position.y + pl.height / 2,
+                }*/
+            {
+                const hitBox = {
+                    minX: pl.position.x,// - pl.width / 2,
+                    maxX: pl.position.x,// + pl.width / 2,
+                    minY: pl.position.y + pl.height / 2 ,
+                    maxY: pl.position.y + pl.height / 2 ,
+                }
+                const found = rtree.search( hitBox )
+                found.forEach( (finding,i) => {
+                    const { tile } = finding, { container } = tile         
+                    container.tint = 0xffffff
+                })
+                const underMatter = found.find( ({tile}) => tile.layer.name === 'matter' )
+                if ( underMatter ){
+                    //console.log('undermatter')
+                }
+                animation.underMatter = underMatter
+            }
+            {
+                const onLadderBox = {
+                    minX: pl.position.x,// - pl.width / 2,
+                    maxX: pl.position.x,// + pl.width / 2,
+                    minY: pl.position.y,// - pl.height / 2, 
+                    maxY: pl.position.y + pl.height / 2 
+                }
+                const plbb = onLadderBox
+                const found = rtree.search( plbb )
+
+                // const found = rtree.search( plbb )
+                // found.forEach( (finding,i) => {
+                //     const { tile } = finding,
+                //           { container } = tile         
+                //     container.tint = 0xffffff
+                //     console.log(plbb,'found',i,finding)
+                // })
+                const onLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
+                animation.onLadder = onLadder
+            }
+            // console.log('onLadder',animation.onLadder)
+        
+
+
+        const { onLadder, underMatter } = animation
+        /*console.log(animation.container.position.x,
+                    animation.container.position.y,
+                    'onLadder',onLadder,'underMatter',underMatter)
+                    */
+        if ( !onLadder &&  !underMatter ){
+            animation.container.position.y += 1
+        }
+        
+    })
 
     
     /*
@@ -145,6 +287,7 @@ async function go(){
     */
    
     app.start()
+    animation.play('walk-left')
 }
 go()
 
@@ -264,7 +407,7 @@ async function loadAnimations( url ){//, container,  world, addGraphicBody){
         animationModels[ layer.name ] = {
             steps : layer.tiles.map( tile => ({
                 texture : PIXI.Texture.from( tile.imageBitmap ),
-                time : 100
+                time : 50
             })),
             loop : layer.properties['animation-loop'],
             speed : layer.properties['animation-speed']
@@ -275,12 +418,19 @@ async function loadAnimations( url ){//, container,  world, addGraphicBody){
     //return animations
     //console.log('animations',animations)
 }
+
+import RBush from 'rbush';
 async function loadTerrain( url ){
     
-
+    
+    
     const terrain = await loadTerrainTileMap(url ,imageResolver)
 
     const extracted = {}
+
+    extracted.ladders = []    
+    extracted.matter = []
+    extracted.tree = new RBush();
     
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
@@ -290,8 +440,25 @@ async function loadTerrain( url ){
             if ( tile.properties['level-exit'] ){
                 extracted['level-exit'] = tile.inLayer.position
             }
+            if ( layer.name === 'ladder' ){
+                extracted['ladders'].push( tile.inLayer.position )
+
+            }
+            if ( layer.name === 'matter' ){
+                extracted['matter'].push( tile.inLayer.position )
+                console.log(tile)
+            }
+            const item = {
+                minX: tile.inLayer.position.x - tile.tileset.tilewidth / 2,
+                maxX: tile.inLayer.position.x + tile.tileset.tilewidth / 2 - 1,
+                minY: tile.inLayer.position.y - tile.tileset.tileheight / 2,
+                maxY: tile.inLayer.position.y + tile.tileset.tileheight / 2 - 1,
+                tile
+            };
+            extracted['tree'].insert(item);
         })
     })
+    
     // console.log('terrain terrain',terrain)
     // const collisionGroupNames = []
     // terrain.layers.forEach( ( layer, layerIdx ) => {
@@ -342,6 +509,8 @@ async function loadTerrain( url ){
             sprite.position.x = position.x
             sprite.position.y = position.y
             container.addChild( sprite )
+            //
+            tile.container = sprite
             //console.log('collisionGroup',collisionGroup,mass,role)
             // physics
 
