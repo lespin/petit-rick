@@ -96,24 +96,31 @@ async function go(){
             'left' : { go : 'turn-from-right' },
             'right' : { go : 'walk-right' },
             'up' : { go : 'climb-ladder' },
+            'down' : { go : 'descend-ladder' },
             0 :  { go : 'iddle-right' }
         },
         'iddle-left' : {
             'left' : { go : 'walk-left' },
             'right' : { go : 'turn-from-left' },
             'up' : { go : 'climb-ladder' },
+            'down' : { go : 'descend-ladder' },
             0 : { go : 'iddle-left' }
         },
         'climb-iddle' : {
             'left' : { go : 'turn-from-right' },
             'right' : { go : 'turn-from-left' },
             'up' : { go : 'climb-ladder' },
-            'down' : { go : 'climb-ladder' },
+            'down' : { go : 'descend-ladder' },
             0 : { go : 'climb-iddle' },
         },
         'climb-ladder' : {
             'up' : { go : 'climb-ladder' },
-            'down' : { go : 'climb-ladder' },
+            'down' : { go : 'descend-ladder' },
+            0 : { go : 'climb-iddle' },
+        },
+        'descend-ladder' : {
+            'up' : { go : 'climb-ladder' },
+            'down' : { go : 'descend-ladder' },
             0 : { go : 'climb-iddle' },
         },
         'turn-from-right' : {
@@ -163,7 +170,6 @@ async function go(){
     animation.on.frameChange = function (...p) {
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-
         
         if ( name === 'walk-left' ){
             if ( !animation.leftMatter ){
@@ -177,23 +183,16 @@ async function go(){
             if ( animation.onLadder ){
                 animation.container.position.y -= 1
             }
-        } else if  ( name === 'climb-ladder' ){
-            //animation.container.position.y -= 1
+        } else if  ( name === 'descend-ladder' ){
+            if ( animation.aboveLadder ){
+                animation.container.position.y += 1
+            }
         }
         //console.log('// frame change',{name,animatedSprite},frame)
     };
     animation.on.loop = function (...p) {
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-        //      console.log('// loop',{name,animatedSprite},frame)
-        /*const moveout = clampOutMatter( animation.container.position )
-          if (moveout<0){
-          if ( onLadder(animation.container.position ) ){
-          
-          } else {
-          animation.container.position.y += 1
-          }
-          }*/
     };
     
     app.stage.addChild(animation.container);
@@ -231,16 +230,12 @@ async function go(){
         }
         {
             const rightBox = {
-                minX: pl.position.x + pl.width / 2,
-                maxX: pl.position.x + pl.width / 2 + 1,
+                minX: pl.position.x + pl.width / 2 - 2,
+                maxX: pl.position.x + pl.width / 2 - 1,
                 minY: pl.position.y - pl.height / 2 ,
                 maxY: pl.position.y + pl.height / 2 - 1,
             }
             const found = rtree.search( rightBox )
-            found.forEach( (finding,i) => {
-                const { tile } = finding, { container } = tile         
-                container.tint = 0xffffff
-            })
             const rightMatter = found.find( ({tile}) => tile.layer.name === 'matter' )
             animation.rightMatter = rightMatter
         }
@@ -264,16 +259,23 @@ async function go(){
             }
             const plbb = onLadderBox
             const found = rtree.search( plbb )
-
-            // const found = rtree.search( plbb )
-            // found.forEach( (finding,i) => {
-            //     const { tile } = finding,
-            //           { container } = tile         
-            //     container.tint = 0xffffff
-            //     console.log(plbb,'found',i,finding)
-            // })
             const onLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
             animation.onLadder = onLadder
+        } {
+            const aboveLadderBox = {
+                minX: pl.position.x,// - pl.width / 2,
+                maxX: pl.position.x,// + pl.width / 2,
+                minY: pl.position.y + pl.height / 2, 
+                maxY: pl.position.y + pl.height / 2 + 1
+            }
+            const plbb = aboveLadderBox
+            const found = rtree.search( plbb )
+            found.forEach( (finding,i) => {
+                const { tile } = finding, { container } = tile         
+                container.tint = 0xffffff
+            })
+            const aboveLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
+            animation.aboveLadder = aboveLadder
         }
         // console.log('onLadder',animation.onLadder)
         
