@@ -201,11 +201,11 @@ async function go(){
 
         
         const rtree = terrain.extracted['tree']
-        rtree.all().map( finding => {
-            const { tile } = finding,
-                  { container } = tile
-            container.tint = 0x888888
-        })
+        // rtree.all().map( finding => {
+        //     const { tile } = finding,
+        //           { container } = tile
+        //     container.tint = 0x888888
+        // })
         //
         // on ladder
         //
@@ -270,10 +270,10 @@ async function go(){
             }
             const plbb = aboveLadderBox
             const found = rtree.search( plbb )
-            found.forEach( (finding,i) => {
-                const { tile } = finding, { container } = tile         
-                container.tint = 0xffffff
-            })
+            // found.forEach( (finding,i) => {
+            //     const { tile } = finding, { container } = tile         
+            //     container.tint = 0xffffff
+            // })
             const aboveLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
             animation.aboveLadder = aboveLadder
         }
