@@ -32,10 +32,10 @@ function getCommands(){
 }
 
 async function go(){
-   
+    
     var stage = new PIXI.Container();
     var ticker = new PIXI.Ticker();
-  
+    
     
     //    app.stop()
     //app.ticker.add(delta => gameLoop(delta));
@@ -119,47 +119,48 @@ async function go(){
     }
     animation.on.frameChange = function (...p) {
     }
-   
+    
     animation.on.loop = function (...p) {
-        const [name,animatedSprite] = p,
-              frame = animatedSprite.currentFrame
+        //const [name,animatedSprite] = p,
+        //frame = animatedSprite.currentFrame
     };
 
-    function getPlayerCollisionBoxes( x, y, width, height ){
-        return {
-            rightBox : {
-                minX: x + width / 2 - 2,
-                maxX: x + width / 2 - 1,
-                minY: y - height / 2 ,
-                maxY: y + height / 2 - 1,
-            },
-            bottomBox : {
-                minX: x,
-                maxX: x,
-                minY: y + height / 2 ,
-                maxY: y + height / 2 ,
-            },
-            leftBox : {
-                minX: x - width / 2,
-                maxX: x - width / 2 + 1,
-                minY: y - height / 2 ,
-                maxY: y + height / 2 - 1,
-            },
-            aboveLadderBox : {
-                minX: x,
-                maxX: x,
-                minY: y + height / 2, 
-                maxY: y + height / 2 + 1
-            },
-            onLadderBox : {
-                minX: x,
-                maxX: x,
-                minY: y,
-                maxY: y + height / 2 
+    
+    function updateSurroundings(){
+        function getPlayerCollisionBoxes( x, y, width, height ){
+            return {
+                rightBox : {
+                    minX: x + width / 2 - 2,
+                    maxX: x + width / 2 - 1,
+                    minY: y - height / 2 ,
+                    maxY: y + height / 2 - 1,
+                },
+                bottomBox : {
+                    minX: x,
+                    maxX: x,
+                    minY: y + height / 2 ,
+                    maxY: y + height / 2 ,
+                },
+                leftBox : {
+                    minX: x - width / 2,
+                    maxX: x - width / 2 + 1,
+                    minY: y - height / 2 ,
+                    maxY: y + height / 2 - 1,
+                },
+                aboveLadderBox : {
+                    minX: x,
+                    maxX: x,
+                    minY: y + height / 2, 
+                    maxY: y + height / 2 + 1
+                },
+                onLadderBox : {
+                    minX: x,
+                    maxX: x,
+                    minY: y,
+                    maxY: y + height / 2 
+                }
             }
         }
-    }
-    function updateSurroundings(){
         const pl = animation.container,
               {x,y} = pl.position,
               {width,height} = pl,
@@ -173,7 +174,7 @@ async function go(){
         //           { container } = tile
         //     container.tint = 0x888888
         // })
-       
+        
         const f1 = rtree.search( leftBox )          
         const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
         const f2 = rtree.search( rightBox )
@@ -198,11 +199,12 @@ async function go(){
         Object.assign( animation, surroundings )
         return surroundings
     }
- 
-    const fixedTimeStep = 1/24
+    
+    const fixedTimeStep = 1/48
     const world = {
         time : 0,
-        step : 0
+        step : 0,
+        commands : {}
     }
     function worldFixedStep( ){
         //console.log('do change',i,world.step,intStep,world.time)
@@ -211,7 +213,7 @@ async function go(){
         if ( !onLadder && !underMatter ){
             animation.container.position.y += 1
         } else {
-            const commands = animation.commands
+            const commands = world.commands
             /*
               const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
@@ -254,13 +256,13 @@ async function go(){
         world.step = intStep
         
     }
-      // setup RAF
+    // setup RAF
     var oldTime = Date.now();
     
     requestAnimationFrame(animate);
 
 
-        
+    
     function animate() {
         var newTime = Date.now();
         var deltaTime = newTime - oldTime;
@@ -268,18 +270,16 @@ async function go(){
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
 
-        const commands = getCommands()
 
-        animation.commands = commands
-        
-        //        console.log(commands)
-        
+        const commands = getCommands()
+        keyboardDownFront.reset()
+        world.commands = commands
+
         worldStep( deltaTime / 1000 )
-        var deltaFrame = deltaTime * 60 / 1000; //1.0 is for single frame
-	//console.log(deltaFrame)
-        // update your game there
-        //sprite.rotation += 0.1 * deltaFrame;
-	gameLoop(deltaFrame)
+        
+        //var deltaFrame = deltaTime * 60 / 1000; //1.0 is for single frame
+        
+	//gameLoop(deltaFrame)
         renderer.render(stage);
         
         requestAnimationFrame(animate);
@@ -291,22 +291,22 @@ async function go(){
 go()
 
 
-const state = playing
+// const state = playing
 
-function gameLoop(delta){
-    //Update the current game state:
-    state(delta);
-}
+// function gameLoop(delta){
+//     //Update the current game state:
+//     state(delta);
+// }
 
 
 
-function playing(dt){
-    //console.log('dt',dt)
+// function playing(dt){
+//     //console.log('dt',dt)
 
-    keyboardDownFront.reset()
-    
-    //    console.log(commands)
-}
+
+
+//     //    console.log(commands)
+// }
 
 /*
   app.loader
