@@ -2,10 +2,6 @@ import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
-
-
-
-
 const imageResolver = x => `assets/${x}`
 
 // setup renderer and ticker
@@ -34,12 +30,8 @@ function getCommands(){
 async function go(){
     
     var stage = new PIXI.Container();
-    var ticker = new PIXI.Ticker();
+//    var ticker = new PIXI.Ticker();
     
-    
-    //    app.stop()
-    //app.ticker.add(delta => gameLoop(delta));
-    //document.body.appendChild(app.view);
     
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
@@ -196,7 +188,6 @@ async function go(){
             onLadder,
             aboveLadder
         }
-        Object.assign( animation, surroundings )
         return surroundings
     }
     
@@ -208,35 +199,30 @@ async function go(){
     }
     function worldFixedStep( ){
         //console.log('do change',i,world.step,intStep,world.time)
-        const surroundings = updateSurroundings( animation.container )        
-        const { onLadder, underMatter } = animation        
+        const surroundings = updateSurroundings( animation.container )
+        const { onLadder, underMatter } = surroundings        
         if ( !onLadder && !underMatter ){
             animation.container.position.y += 1
         } else {
             const commands = world.commands
-            /*
-              const [name,animatedSprite] = p,
-              frame = animatedSprite.currentFrame
-            */
             if ( commands.left ){
-                if ( !animation.leftMatter ){
+                if ( !surroundings.leftMatter ){
                     animation.container.position.x -= 1
                 } else {
                     animation.play( 'iddle-left' )
                 }
             } else if ( commands.right ){
-                if ( !animation.rightMatter ){
+                if ( !surroundings.rightMatter ){
                     animation.container.position.x += 1
                 } else {
                     animation.play( 'iddle-right' )
                 }
-                
             } else if ( commands.up ){
-                if ( animation.onLadder ){
+                if ( surroundings.onLadder ){
                     animation.container.position.y -= 1
                 }   
             } else if ( commands.down ){
-                if ( animation.aboveLadder ){
+                if ( surroundings.aboveLadder ){
                     animation.container.position.y += 1
                 }
             }
@@ -405,7 +391,9 @@ async function loadAnimations( url ){
 }
 
 async function loadTerrain( url ){
-
+    //
+    // load tilemap
+    //
     const terrain = await loadTerrainTileMap(url ,imageResolver)
 
     const extracted = {}
