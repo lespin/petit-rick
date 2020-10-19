@@ -238,20 +238,6 @@ async function go(){
                     animation.container.position.y += 1
                 }
             }
-            /*
-        } else if  ( name === 'walk-right' ){
-            if ( !animation.rightMatter ){
-                animation.container.position.x += 1
-            }
-            } else if  ( name === 'climb-ladder' ){
-            if ( animation.onLadder ){
-                animation.container.position.y -= 1
-            }
-        } else if  ( name === 'descend-ladder' ){
-        if ( animation.aboveLadder ){
-                animation.container.position.y += 1
-            }
-            }*/
         }
     }
     
@@ -298,7 +284,7 @@ async function go(){
         
         requestAnimationFrame(animate);
     }
-    ticker.start()
+    //    ticker.start()
     //app.start()
     animation.play('walk-left')
 }
