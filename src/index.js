@@ -2,6 +2,7 @@ import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
 import { OldFilmFilter } from '@pixi/filter-old-film'
+import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 const imageResolver = x => `assets/${x}`
@@ -32,6 +33,9 @@ function getCommands(){
 async function go(){
     
     var stage = new PIXI.Container();
+    /*stage.pivot.set(0.5,0.5)
+    stage.scale.x = 1
+    stage.scale.y = 2*/
     const filmFilter = new OldFilmFilter({
         noise : 0.02,
         /*noiseSize : 0.9,*/
@@ -40,18 +44,52 @@ async function go(){
         /*scratchDensity : 0.5,*/
         sepia : 0
     })
-    /*
-    setInterval( () => {
-        filmFilter.seed = Math.random()
-        filmFilter.vignetting = 0.1 * ( Math.sin( Date.now() / 1000 ) + 1 ) / 2
-    },100)
-    */
-    stage.filters = [filmFilter];
+    // ZoomBlurFilter 
+    const rgbSplitFilter = new RGBSplitFilter()
+    function sobber(){
+        rgbSplitFilter.red.x = 0
+        rgbSplitFilter.red.y = 0
+        rgbSplitFilter.blue.x = 0
+        rgbSplitFilter.blue.y = 0
+        rgbSplitFilter.green.x = 0
+        rgbSplitFilter.green.y = 0
+    }
+    function unsobber(){
+        function sint01( f , p = 0 ){
+            return ( Math.sin(p + Date.now() * f ) + 1  ) / 2
+        }
+        function cost01( f, p = 0 ){
+            return ( Math.cos(p + Date.now() * f ) + 1  ) / 2
+        }
+        function movePixels(){
+            rgbSplitFilter.red.x = sint01(1/100)
+            rgbSplitFilter.red.y =  cost01(1/100)
+            rgbSplitFilter.blue.x = sint01(1/101)
+            rgbSplitFilter.blue.y =  cost01(1/101)
+            rgbSplitFilter.green.x = sint01(1/102)
+            rgbSplitFilter.green.y =  cost01(1/102)
+        }
+        movePixels()
+    }
+    let itv = setInterval( unsobber, 10 )
+    setTimeout( () => {
+        clearInterval( itv )
+        sobber()
+    },2000)
+    //green: new PIXI.Point(0,0),
+    //blues : new PIXI.Point(0,0),
     
+    stage.filters = [filmFilter,rgbSplitFilter];
     
+
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
     console.log('terrain',terrain)
+
+    /*
+     * Animations
+     */
+    
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
 
@@ -132,9 +170,18 @@ async function go(){
         //const [name,animatedSprite] = p,
         //frame = animatedSprite.currentFrame
     };
-
+    /*
+     * World
+     */
+    const fixedTimeStep = 1/48
+    const world = {
+        time : 0,
+        step : 0,
+        commands : {},
+        over : false
+    }
     
-    function updateSurroundings(){
+    function updateSurroundings(x,y,width,height){
         function getPlayerCollisionBoxes( x, y, width, height ){
             return {
                 rightBox : {
@@ -175,10 +222,7 @@ async function go(){
                 }
             }
         }
-        const pl = animation.container,
-              {x,y} = pl.position,
-              {width,height} = pl,
-              rtree = terrain.extracted['tree']
+        const rtree = terrain.extracted['tree']
         
         const { rightBox, leftBox, bottomBox,
                 aboveLadderBox, onLadderBox,
@@ -225,13 +269,6 @@ async function go(){
         return surroundings
     }
     
-    const fixedTimeStep = 1/48
-    const world = {
-        time : 0,
-        step : 0,
-        commands : {},
-        over : false
-    }
     function reachTreasure(animation, onTreasure){
         console.log('BEEP','treasure')
         onTreasure.tile.container.visible = false
@@ -247,7 +284,12 @@ async function go(){
         world.over = true
     }
     function worldFixedStep( ){
-        const surroundings = updateSurroundings( animation.container )
+        const pl = animation.container,
+              {x,y} = pl.position,
+              {width,height} = pl
+
+        
+        const surroundings = updateSurroundings( x, y, width, height )
         const { onLadder, underMatter } = surroundings
 
         //if ( world.over ) return
@@ -302,10 +344,6 @@ async function go(){
     // setup RAF
     var oldTime = Date.now();
     
-    requestAnimationFrame(animate);
-
-
-    
     function animate() {
 
         // get time
@@ -325,15 +363,21 @@ async function go(){
         if (world.over ) {
             filmFilter.sepia = 1
         }
+
+        // camera
+        //stage.position.x = -animation.container.position.x
+        //stage.position.y = -animation.container.position.y
+        //stage.position.y = 2
+
         // render
         renderer.render(stage);
 
         // recurse
         requestAnimationFrame(animate);
+        //stage.position.x += 1
     }
-    //    ticker.start()
-    //app.start()
-    animation.play('walk-left')
+    requestAnimationFrame(animate);
+    animation.play('iddle-left')
 }
 go()
 
