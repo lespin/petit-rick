@@ -105,6 +105,7 @@ async function go(){
     animation.on.complete = function(...p){
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
+        
         const commands = {
             up : keyboardState.state.get('ArrowUp'),
             left : keyboardState.state.get('ArrowLeft'),
@@ -117,30 +118,8 @@ async function go(){
         animation.play( followedBy.go )
     }
     animation.on.frameChange = function (...p) {
-        const [name,animatedSprite] = p,
-              frame = animatedSprite.currentFrame
-        
-        if ( name === 'walk-left' ){
-            if ( !animation.leftMatter ){
-                animation.container.position.x -= 1
-            } else {
-                animation.play( 'iddle-left' )
-            }
-        } else if  ( name === 'walk-right' ){
-            if ( !animation.rightMatter ){
-                animation.container.position.x += 1
-            }
-        } else if  ( name === 'climb-ladder' ){
-            if ( animation.onLadder ){
-                animation.container.position.y -= 1
-            }
-        } else if  ( name === 'descend-ladder' ){
-            if ( animation.aboveLadder ){
-                animation.container.position.y += 1
-            }
-        }
-        //console.log('// frame change',{name,animatedSprite},frame)
-    };
+    }
+   
     animation.on.loop = function (...p) {
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
@@ -219,18 +198,7 @@ async function go(){
         Object.assign( animation, surroundings )
         return surroundings
     }
-    /*
-    ticker.add(delta =>  {
-        const surroundings = updateSurroundings( animation.container )
-        
-        const { onLadder, underMatter } = animation
-        
-        if ( !onLadder &&  !underMatter ){
-            animation.container.position.y += delta
-        }
-        
-    })
-    */
+ 
     const fixedTimeStep = 1/24
     const world = {
         time : 0,
@@ -238,12 +206,52 @@ async function go(){
     }
     function worldFixedStep( ){
         //console.log('do change',i,world.step,intStep,world.time)
-        const surroundings = updateSurroundings( animation.container )
-        
-        const { onLadder, underMatter } = animation
-        
-        if ( !onLadder &&  !underMatter ){
+        const surroundings = updateSurroundings( animation.container )        
+        const { onLadder, underMatter } = animation        
+        if ( !onLadder && !underMatter ){
             animation.container.position.y += 1
+        } else {
+            const commands = animation.commands
+            /*
+              const [name,animatedSprite] = p,
+              frame = animatedSprite.currentFrame
+            */
+            if ( commands.left ){
+                if ( !animation.leftMatter ){
+                    animation.container.position.x -= 1
+                } else {
+                    animation.play( 'iddle-left' )
+                }
+            } else if ( commands.right ){
+                if ( !animation.rightMatter ){
+                    animation.container.position.x += 1
+                } else {
+                    animation.play( 'iddle-right' )
+                }
+                
+            } else if ( commands.up ){
+                if ( animation.onLadder ){
+                    animation.container.position.y -= 1
+                }   
+            } else if ( commands.down ){
+                if ( animation.aboveLadder ){
+                    animation.container.position.y += 1
+                }
+            }
+            /*
+        } else if  ( name === 'walk-right' ){
+            if ( !animation.rightMatter ){
+                animation.container.position.x += 1
+            }
+            } else if  ( name === 'climb-ladder' ){
+            if ( animation.onLadder ){
+                animation.container.position.y -= 1
+            }
+        } else if  ( name === 'descend-ladder' ){
+        if ( animation.aboveLadder ){
+                animation.container.position.y += 1
+            }
+            }*/
         }
     }
     
@@ -274,6 +282,12 @@ async function go(){
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
 
+        const commands = getCommands()
+
+        animation.commands = commands
+        
+        //        console.log(commands)
+        
         worldStep( deltaTime / 1000 )
         var deltaFrame = deltaTime * 60 / 1000; //1.0 is for single frame
 	//console.log(deltaFrame)
