@@ -3,6 +3,31 @@ import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
+/*var kruskal = require('node-kruskal');
+const d = [
+    [0,1,2,3],
+    [1,0,5,2],
+    [2,1,0,1],
+    [3,2,1,0]
+    ]*/
+/*
+kruskal.kruskalMST(d, function(results){
+	console.log(results);
+});
+*/
+
+/*
+var aStar = require('a-star');
+var path = aStar({
+    start : 'S',
+    isEnd : n => ( n === 'E' ),
+    neighbors : n => (['S','E']),
+    distance : (a,b) => 1,
+    heuristic : (a,b) => 1,
+    hash : n => n
+})
+console.log(path);
+*/
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 const imageResolver = x => `assets/${x}`
@@ -95,7 +120,9 @@ async function go(){
 
     const animation = AnimatedItem( animationModels )
     animation.container.position.x = terrain.extracted['level-entrance'].x
-    animation.container.position.y = terrain.extracted['level-entrance'].y    
+    animation.container.position.y = terrain.extracted['level-entrance'].y
+    animation.play('iddle-left')
+
     stage.addChild(animation.container);
 
     const retribs = {
@@ -334,7 +361,7 @@ async function go(){
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
-        for ( let i = 0 ; i < intElapsed ; i++ ){
+        for ( let i = 0 ; i < intElapsed ; i++ ){            
             worldFixedStep()
         }
         world.time = floatTime
@@ -377,7 +404,6 @@ async function go(){
         //stage.position.x += 1
     }
     requestAnimationFrame(animate);
-    animation.play('iddle-left')
 }
 go()
 
