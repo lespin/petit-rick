@@ -1,6 +1,8 @@
 import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
+import { OldFilmFilter } from '@pixi/filter-old-film'
+
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 const imageResolver = x => `assets/${x}`
 
@@ -30,7 +32,21 @@ function getCommands(){
 async function go(){
     
     var stage = new PIXI.Container();
-//    var ticker = new PIXI.Ticker();
+    const filmFilter = new OldFilmFilter({
+        noise : 0.02,
+        /*noiseSize : 0.9,*/
+        scratch : 0,        
+        vignetting : 0.1,
+        /*scratchDensity : 0.5,*/
+        sepia : 0
+    })
+    /*
+    setInterval( () => {
+        filmFilter.seed = Math.random()
+        filmFilter.vignetting = 0.1 * ( Math.sin( Date.now() / 1000 ) + 1 ) / 2
+    },100)
+    */
+    stage.filters = [filmFilter];
     
     
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
@@ -217,11 +233,13 @@ async function go(){
         over : false
     }
     function reachTreasure(animation, onTreasure){
+        console.log('BEEP','treasure')
         onTreasure.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onTreasure )
     }
     function reachExit(animation, onExit){
+        console.log('BEEP','reach exit')
         console.log( animation, onExit )
         //onExit.tile.container.visible = false
         const rtree = terrain.extracted['tree']
@@ -304,7 +322,9 @@ async function go(){
 
         // step world
         worldStep( deltaTime / 1000 )
-
+        if (world.over ) {
+            filmFilter.sepia = 1
+        }
         // render
         renderer.render(stage);
 
@@ -343,7 +363,7 @@ go()
 // import { AsciiFilter } from '@pixi/filter-ascii';
 // import { CRTFilter } from '@pixi/filter-crt'
 // import { DotFilter } from '@pixi/filter-dot'
-// import { OldFilmFilter } from '@pixi/filter-old-film'
+
 
 
 // init();
