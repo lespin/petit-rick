@@ -1,43 +1,48 @@
 import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
-const keyboardState = KeyboardState('key')(window)
-keyboardState.start()
-const keyboardDownFront = KeyboardDownFront('key')(window)
-keyboardDownFront.start()
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 
-// const ticker = new Ticker();
 
-// ticker.maxFPS = 60
-// ticker.add(dt => {
-//     // console.log(
-//     //     'pluc',
-//     //     // dt,
-//     //     ticker.deltaTime,
-//     //     ticker.FPS
-//     // )
-// })
-// ticker.start();
+
 
 const imageResolver = x => `assets/${x}`
 
+// setup renderer and ticker
+var renderer = new PIXI.Renderer({
+    width: 160,
+    height: 180,
+    resolution: 4 * ( window.devicePixelRatio || 1 ),
+    antialias:true
+})
+document.body.appendChild(renderer.view)
 
+const keyboardState = KeyboardState('key')(window)
+keyboardState.start()
+const keyboardDownFront = KeyboardDownFront('key')(window)
+keyboardDownFront.start()
+function getCommands(){
+    const commands = {
+        up : keyboardState.state.get('ArrowUp'),
+        left : keyboardState.state.get('ArrowLeft'),
+        down : keyboardState.state.get('ArrowDown'),
+        right : keyboardState.state.get('ArrowRight')
+    }
+    return commands
+}
 
 async function go(){
+   
+    var stage = new PIXI.Container();
+    var ticker = new PIXI.Ticker();
+  
     
-    const app = new PIXI.Application({
-        width: 160,
-        height: 180,
-        resolution: 4 * ( window.devicePixelRatio || 1 ),
-        antialias:true
-    });
-    app.stop()
-    app.ticker.add(delta => gameLoop(delta));
-    document.body.appendChild(app.view);
+    //    app.stop()
+    //app.ticker.add(delta => gameLoop(delta));
+    //document.body.appendChild(app.view);
     
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
-    app.stage.addChild(terrain.container);
+    stage.addChild(terrain.container);
     console.log('terrain',terrain)
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
@@ -45,6 +50,7 @@ async function go(){
     const animation = AnimatedItem( animationModels )
     animation.container.position.x = terrain.extracted['level-entrance'].x
     animation.container.position.y = terrain.extracted['level-entrance'].y    
+    stage.addChild(animation.container);
 
     const retribs = {
         'iddle-right' : {
@@ -99,28 +105,16 @@ async function go(){
     animation.on.complete = function(...p){
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-
         const commands = {
             up : keyboardState.state.get('ArrowUp'),
             left : keyboardState.state.get('ArrowLeft'),
             down : keyboardState.state.get('ArrowDown'),
             right : keyboardState.state.get('ArrowRight')
         }
-        /*
-          if ( onLadder(animation.container.position ) ){
-          console.log('onladder')
-          }*/
         const retrib = retribs[ name ]
-        //console.log('retrib',retrib)
         const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
-        //        console.log('matchedCommand',matchedCommand)
         const followedBy = retrib[ matchedCommand || 0 ]
-        //      console.log('followedBy',followedBy)
-        
-        
-        //const followedBy = retribs[ name ][ 0 ]
         animation.play( followedBy.go )
-        //        console.log('// complete',{name,animatedSprite},frame)
     }
     animation.on.frameChange = function (...p) {
         const [name,animatedSprite] = p,
@@ -152,127 +146,150 @@ async function go(){
               frame = animatedSprite.currentFrame
     };
 
-    function getPlayerCollisionBoxes( pl ){
-        const rightBox = {
-            minX: pl.position.x + pl.width / 2 - 2,
-            maxX: pl.position.x + pl.width / 2 - 1,
-            minY: pl.position.y - pl.height / 2 ,
-            maxY: pl.position.y + pl.height / 2 - 1,
+    function getPlayerCollisionBoxes( x, y, width, height ){
+        return {
+            rightBox : {
+                minX: x + width / 2 - 2,
+                maxX: x + width / 2 - 1,
+                minY: y - height / 2 ,
+                maxY: y + height / 2 - 1,
+            },
+            bottomBox : {
+                minX: x,
+                maxX: x,
+                minY: y + height / 2 ,
+                maxY: y + height / 2 ,
+            },
+            leftBox : {
+                minX: x - width / 2,
+                maxX: x - width / 2 + 1,
+                minY: y - height / 2 ,
+                maxY: y + height / 2 - 1,
+            },
+            aboveLadderBox : {
+                minX: x,
+                maxX: x,
+                minY: y + height / 2, 
+                maxY: y + height / 2 + 1
+            },
+            onLadderBox : {
+                minX: x,
+                maxX: x,
+                minY: y,
+                maxY: y + height / 2 
+            }
         }
-        const bottomBox = {
-            minX: pl.position.x,// - pl.width / 2,
-            maxX: pl.position.x,// + pl.width / 2,
-            minY: pl.position.y + pl.height / 2 ,
-            maxY: pl.position.y + pl.height / 2 ,
-        }
-        const leftBox = {
-            minX: pl.position.x - pl.width / 2,
-            maxX: pl.position.x - pl.width / 2 + 1,
-            minY: pl.position.y - pl.height / 2 ,
-            maxY: pl.position.y + pl.height / 2 - 1,
-        }
-        const aboveLadderBox = {
-            minX: pl.position.x,// - pl.width / 2,
-            maxX: pl.position.x,// + pl.width / 2,
-            minY: pl.position.y + pl.height / 2, 
-            maxY: pl.position.y + pl.height / 2 + 1
-        }
-        const onLadderBox = {
-            minX: pl.position.x,// - pl.width / 2,
-            maxX: pl.position.x,// + pl.width / 2,
-            minY: pl.position.y,// - pl.height / 2, 
-            maxY: pl.position.y + pl.height / 2 
-        }
-        return { rightBox, leftBox, bottomBox, aboveLadderBox, onLadderBox }
     }
-    app.stage.addChild(animation.container);
-    app.ticker.add(delta =>  {
+    function updateSurroundings(){
+        const pl = animation.container,
+              {x,y} = pl.position,
+              {width,height} = pl,
+              rtree = terrain.extracted['tree']
+        
+        const { rightBox, leftBox, bottomBox,
+                aboveLadderBox, onLadderBox } = getPlayerCollisionBoxes( x,y,width,height )
 
-        const rtree = terrain.extracted['tree']
         // rtree.all().map( finding => {
         //     const { tile } = finding,
         //           { container } = tile
         //     container.tint = 0x888888
         // })
-        //
-        // on ladder
-        //
-        const pl = animation.container
-        const { rightBox, leftBox, bottomBox, aboveLadderBox, onLadderBox } = getPlayerCollisionBoxes( pl )
+       
+        const f1 = rtree.search( leftBox )          
+        const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
+        const f2 = rtree.search( rightBox )
+        const rightMatter = f2.find( ({tile}) => tile.layer.name === 'matter' )
+        const f3 = rtree.search( bottomBox )
+        const underMatter = f3.find( ({tile}) => tile.layer.name === 'matter' )
+        const f4 = rtree.search( onLadderBox )
+        const onLadder = f4.find( ({tile}) => tile.layer.name === 'ladder' )
+        const f5 = rtree.search( aboveLadderBox )
+        // f5.forEach( (finding,i) => {
+        //     const { tile } = finding, { container } = tile         
+        //     container.tint = 0xffffff
+        // })
+        const aboveLadder = f5.find( ({tile}) => tile.layer.name === 'ladder' )
+        const surroundings = {
+            leftMatter,
+            rightMatter,
+            underMatter,
+            onLadder,
+            aboveLadder
+        }
+        Object.assign( animation, surroundings )
+        return surroundings
+    }
+    /*
+    ticker.add(delta =>  {
+        const surroundings = updateSurroundings( animation.container )
         
+        const { onLadder, underMatter } = animation
         
-        {
-            const found = rtree.search( leftBox )          
-            const leftMatter = found.find( ({tile}) => tile.layer.name === 'matter' )
-            animation.leftMatter = leftMatter
+        if ( !onLadder &&  !underMatter ){
+            animation.container.position.y += delta
         }
-        {
-            const found = rtree.search( rightBox )
-            const rightMatter = found.find( ({tile}) => tile.layer.name === 'matter' )
-            animation.rightMatter = rightMatter
-        }
-        {
-            const found = rtree.search( bottomBox )
-            const underMatter = found.find( ({tile}) => tile.layer.name === 'matter' )
-            animation.underMatter = underMatter
-        }
-        {
-            const plbb = onLadderBox
-            const found = rtree.search( plbb )
-            const onLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
-            animation.onLadder = onLadder
-        } {
-            const plbb = aboveLadderBox
-            const found = rtree.search( plbb )
-            // found.forEach( (finding,i) => {
-            //     const { tile } = finding, { container } = tile         
-            //     container.tint = 0xffffff
-            // })
-            const aboveLadder = found.find( ({tile}) => tile.layer.name === 'ladder' )
-            animation.aboveLadder = aboveLadder
-        }
-        // console.log('onLadder',animation.onLadder)
+        
+    })
+    */
+    const fixedTimeStep = 1/24
+    const world = {
+        time : 0,
+        step : 0
+    }
+    function worldFixedStep( ){
+        //console.log('do change',i,world.step,intStep,world.time)
+        const surroundings = updateSurroundings( animation.container )
+        
         const { onLadder, underMatter } = animation
         
         if ( !onLadder &&  !underMatter ){
             animation.container.position.y += 1
         }
+    }
+    
+    function worldStep( deltaTime ){
+        const floatTime  = world.time + deltaTime
+        const floatStep = floatTime / fixedTimeStep
+        const intStep = Math.floor( floatStep )
+        const intElapsed = intStep - world.step
+        for ( let i = 0 ; i < intElapsed ; i++ ){
+            //console.log('do change i',i,worldStep,intStep)
+            worldFixedStep()
+        }
+        world.time = floatTime
+        world.step = intStep
         
-    })
+    }
+      // setup RAF
+    var oldTime = Date.now();
+    
+    requestAnimationFrame(animate);
 
-    
-    /*
-      setTimeout( () => {
-      animation.play('turn-from-left')
-      },0)
-      setTimeout( () => {
-      animation.play('turn-from-right')
-      },2000)
-      setTimeout( () => {
-      animation.play('walk-left')
-      },4000)
-      setTimeout( () => {
-      animation.play('climb-ladder')
-      },6000)
-      setTimeout( () => {
-      animation.play('turn-from-left')
-      },8000)
-    */
-    
-    app.start()
+
+        
+    function animate() {
+        var newTime = Date.now();
+        var deltaTime = newTime - oldTime;
+        oldTime = newTime;	
+        if (deltaTime < 0) deltaTime = 0;
+        if (deltaTime > 1000) deltaTime = 1000;
+
+        worldStep( deltaTime / 1000 )
+        var deltaFrame = deltaTime * 60 / 1000; //1.0 is for single frame
+	//console.log(deltaFrame)
+        // update your game there
+        //sprite.rotation += 0.1 * deltaFrame;
+	gameLoop(deltaFrame)
+        renderer.render(stage);
+        
+        requestAnimationFrame(animate);
+    }
+    ticker.start()
+    //app.start()
     animation.play('walk-left')
 }
 go()
 
-function getControls(){
-    const commands = {
-        up : keyboardState.state.get('ArrowUp'),
-        left : keyboardState.state.get('ArrowLeft'),
-        down : keyboardState.state.get('ArrowDown'),
-        right : keyboardState.state.get('ArrowRight')
-    }
-    return commands
-}
 
 const state = playing
 
@@ -412,7 +429,6 @@ async function loadTerrain( url ){
             }
             if ( layer.name === 'matter' ){
                 extracted['matter'].push( tile.inLayer.position )
-                console.log(tile)
             }
             const item = {
                 minX: tile.inLayer.position.x - tile.tileset.tilewidth / 2,
@@ -446,8 +462,6 @@ async function loadTerrain( url ){
     })
     return { extracted, container }
 }
-
-
 
 /*
 
