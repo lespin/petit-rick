@@ -213,7 +213,6 @@ async function go(){
         commands : {}
     }
     function worldFixedStep( ){
-        //console.log('do change',i,world.step,intStep,world.time)
         const surroundings = updateSurroundings( animation.container )
         const { onLadder, underMatter } = surroundings        
         if ( !onLadder && !underMatter ){
@@ -234,7 +233,6 @@ async function go(){
                 }
             } else if ( commands.up ){
                 if ( surroundings.onLadder ){
-                    console.log(surroundings.onLadder)
                     animation.container.position.y -= 1
                 }   
             } else if ( commands.down ){
@@ -251,7 +249,6 @@ async function go(){
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
         for ( let i = 0 ; i < intElapsed ; i++ ){
-            //console.log('do change i',i,worldStep,intStep)
             worldFixedStep()
         }
         world.time = floatTime
