@@ -219,6 +219,7 @@ async function go(){
                 }
             } else if ( commands.up ){
                 if ( surroundings.onLadder ){
+                    console.log(surroundings.onLadder)
                     animation.container.position.y -= 1
                 }   
             } else if ( commands.down ){
