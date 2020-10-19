@@ -16,18 +16,18 @@ kruskal.kruskalMST(d, function(results){
 });
 */
 
-/*
+
 var aStar = require('a-star');
 var path = aStar({
     start : 'S',
     isEnd : n => ( n === 'E' ),
-    neighbors : n => (['S','E']),
+    neighbor : n => (['S','E']),
     distance : (a,b) => 1,
     heuristic : (a,b) => 1,
     hash : n => n
 })
 console.log(path);
-*/
+
 
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 const imageResolver = x => `assets/${x}`
