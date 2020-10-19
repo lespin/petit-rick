@@ -97,7 +97,7 @@ async function go(){
     animation.on.complete = function(...p){
         const [name,animatedSprite] = p,
               frame = animatedSprite.currentFrame
-        
+        // take from world ?
         const commands = {
             up : keyboardState.state.get('ArrowUp'),
             left : keyboardState.state.get('ArrowLeft'),
@@ -150,6 +150,12 @@ async function go(){
                     maxX: x,
                     minY: y,
                     maxY: y + height / 2 
+                },
+                middleBox : {
+                    minX: x - 1,
+                    maxX: x + 1,
+                    minY: y - 1,
+                    maxY: y + 1
                 }
             }
         }
@@ -159,13 +165,9 @@ async function go(){
               rtree = terrain.extracted['tree']
         
         const { rightBox, leftBox, bottomBox,
-                aboveLadderBox, onLadderBox } = getPlayerCollisionBoxes( x,y,width,height )
+                aboveLadderBox, onLadderBox,
+                middleBox } = getPlayerCollisionBoxes( x,y,width,height )
 
-        // rtree.all().map( finding => {
-        //     const { tile } = finding,
-        //           { container } = tile
-        //     container.tint = 0x888888
-        // })
         
         const f1 = rtree.search( leftBox )          
         const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
@@ -176,11 +178,24 @@ async function go(){
         const f4 = rtree.search( onLadderBox )
         const onLadder = f4.find( ({tile}) => tile.layer.name === 'ladder' )
         const f5 = rtree.search( aboveLadderBox )
-        // f5.forEach( (finding,i) => {
-        //     const { tile } = finding, { container } = tile         
-        //     container.tint = 0xffffff
-        // })
         const aboveLadder = f5.find( ({tile}) => tile.layer.name === 'ladder' )
+        const f6 = rtree.search( middleBox )
+        const onTreasure = f6.find( ({tile}) => tile.layer.name === 'treasure' )
+
+        if ( false ){
+            // show selected
+            rtree.all().map( finding => {
+                const { tile } = finding,
+                      { container } = tile
+                container.tint = 0x888888
+            })
+            f6.forEach( (finding,i) => {
+                const { tile } = finding, { container } = tile
+                if ( onTreasure ){
+                    container.tint = 0xffffff
+                }
+            })
+        }
         const surroundings = {
             leftMatter,
             rightMatter,
