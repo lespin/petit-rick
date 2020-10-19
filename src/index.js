@@ -181,6 +181,7 @@ async function go(){
         const aboveLadder = f5.find( ({tile}) => tile.layer.name === 'ladder' )
         const f6 = rtree.search( middleBox )
         const onTreasure = f6.find( ({tile}) => tile.layer.name === 'treasure' )
+        const onExit = f6.find( ({tile}) => ( tile.layer.name === 'doors'  ) && ( tile.properties['level-exit'] ) )
 
         if ( false ){
             // show selected
@@ -191,7 +192,7 @@ async function go(){
             })
             f6.forEach( (finding,i) => {
                 const { tile } = finding, { container } = tile
-                if ( onTreasure ){
+                if ( onExit ){
                     container.tint = 0xffffff
                 }
             })
@@ -201,7 +202,9 @@ async function go(){
             rightMatter,
             underMatter,
             onLadder,
-            aboveLadder
+            aboveLadder,
+            onTreasure,
+            onExit
         }
         return surroundings
     }
@@ -210,11 +213,34 @@ async function go(){
     const world = {
         time : 0,
         step : 0,
-        commands : {}
+        commands : {},
+        over : false
+    }
+    function reachTreasure(animation, onTreasure){
+        onTreasure.tile.container.visible = false
+        const rtree = terrain.extracted['tree']
+        rtree.remove( onTreasure )
+    }
+    function reachExit(animation, onExit){
+        console.log( animation, onExit )
+        //onExit.tile.container.visible = false
+        const rtree = terrain.extracted['tree']
+        rtree.remove( onExit )
+        world.over = true
     }
     function worldFixedStep( ){
         const surroundings = updateSurroundings( animation.container )
-        const { onLadder, underMatter } = surroundings        
+        const { onLadder, underMatter } = surroundings
+
+        //if ( world.over ) return
+        if ( surroundings.onTreasure ){
+            reachTreasure( animation, surroundings.onTreasure )
+        }
+        if ( surroundings.onExit ){
+            reachExit( animation, surroundings.onExit )
+            return
+        }
+        
         if ( !onLadder && !underMatter ){
             animation.container.position.y += 1
         } else {
@@ -263,24 +289,26 @@ async function go(){
 
     
     function animate() {
+
+        // get time
         var newTime = Date.now();
         var deltaTime = newTime - oldTime;
         oldTime = newTime;	
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
 
-
+        // grab commands
         const commands = getCommands()
         keyboardDownFront.reset()
         world.commands = commands
 
+        // step world
         worldStep( deltaTime / 1000 )
-        
-        //var deltaFrame = deltaTime * 60 / 1000; //1.0 is for single frame
-        
-	//gameLoop(deltaFrame)
+
+        // render
         renderer.render(stage);
-        
+
+        // recurse
         requestAnimationFrame(animate);
     }
     //    ticker.start()
@@ -288,30 +316,6 @@ async function go(){
     animation.play('walk-left')
 }
 go()
-
-
-// const state = playing
-
-// function gameLoop(delta){
-//     //Update the current game state:
-//     state(delta);
-// }
-
-
-
-// function playing(dt){
-//     //console.log('dt',dt)
-
-
-
-//     //    console.log(commands)
-// }
-
-/*
-  app.loader
-  .add('spritesheet', 'examples/assets/spritesheet/0123456789.json')
-  .load(onAssetsLoaded);
-*/
 
 
 
