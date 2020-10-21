@@ -1,20 +1,11 @@
 import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
+PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
+import { Viewport } from 'pixi-viewport'
+
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
-/*var kruskal = require('node-kruskal');
-const d = [
-    [0,1,2,3],
-    [1,0,5,2],
-    [2,1,0,1],
-    [3,2,1,0]
-    ]*/
-/*
-kruskal.kruskalMST(d, function(results){
-	console.log(results);
-});
-*/
 
 
 var aStar = require('a-star');
@@ -29,7 +20,10 @@ var path = aStar({
 console.log(path);
 
 
-PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
+
+
+
+
 const imageResolver = x => `assets/${x}`
 
 // setup renderer and ticker
@@ -57,8 +51,32 @@ function getCommands(){
 
 async function go(){
     
-    var stage = new PIXI.Container();
-    /*stage.pivot.set(0.5,0.5)
+    // create viewport
+    const viewport = new PIXI.Container({
+        //interaction: app.renderer.plugins.interaction // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
+        //rotation : Math.PI / 8
+    })
+    //viewport.fitWidth()
+    // add the viewport to the stage
+    //app.stage.addChild(viewport)
+    
+    var stage = new PIXI.Container({width:160,height:180});
+    stage.width = 160
+    stage.height = 180
+    stage.anchor = 0.5
+    console.log(stage.width,stage.height)
+    stage.pivot.x = stage.width / 2 
+    stage.pivot.y = stage.height /2 
+    setInterval( () => {
+        
+      //  stage.rotation += Math.PI / 30
+        //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+        //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+        //stage.scale = 5
+    },16)
+    viewport.addChild( stage )
+    
+   /*stage.pivot.set(0.5,0.5)
     stage.scale.x = 1
     stage.scale.y = 2*/
     const filmFilter = new OldFilmFilter({
@@ -71,40 +89,45 @@ async function go(){
     })
     // ZoomBlurFilter 
     const rgbSplitFilter = new RGBSplitFilter()
-    function sobber(){
+    /*function sobber(){
         rgbSplitFilter.red.x = 0
         rgbSplitFilter.red.y = 0
         rgbSplitFilter.blue.x = 0
         rgbSplitFilter.blue.y = 0
         rgbSplitFilter.green.x = 0
         rgbSplitFilter.green.y = 0
-    }
-    function unsobber(){
+        }*/
+    function Unsobber(){
+        let level = 10
         function sint01( f , p = 0 ){
             return ( Math.sin(p + Date.now() * f ) + 1  ) / 2
         }
         function cost01( f, p = 0 ){
             return ( Math.cos(p + Date.now() * f ) + 1  ) / 2
         }
-        function movePixels(){
-            rgbSplitFilter.red.x = sint01(1/100)
-            rgbSplitFilter.red.y =  cost01(1/100)
-            rgbSplitFilter.blue.x = sint01(1/101)
-            rgbSplitFilter.blue.y =  cost01(1/101)
-            rgbSplitFilter.green.x = sint01(1/102)
-            rgbSplitFilter.green.y =  cost01(1/102)
+        function setLevel( _level ){
+            level = _level
         }
-        movePixels()
+        function update(){
+            rgbSplitFilter.red.x = level * sint01(1/100)
+            rgbSplitFilter.red.y =  level * cost01(1/100)
+            rgbSplitFilter.blue.x = level * sint01(1/101)
+            rgbSplitFilter.blue.y =  level * cost01(1/101)
+            rgbSplitFilter.green.x = level * sint01(1/102)
+            rgbSplitFilter.green.y =  level * cost01(1/102)
+        }
+        return {
+            update,
+            setLevel
+        }
     }
-    let itv = setInterval( unsobber, 10 )
-    setTimeout( () => {
-        clearInterval( itv )
-        sobber()
-    },2000)
-    //green: new PIXI.Point(0,0),
-    //blues : new PIXI.Point(0,0),
-    
-    stage.filters = [filmFilter,rgbSplitFilter];
+    const unsobber = Unsobber()
+    unsobber.setLevel(0)   
+    stage.filters = [
+        //filmFilter
+        //,
+        rgbSplitFilter
+    ];
     
 
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
@@ -205,7 +228,8 @@ async function go(){
         time : 0,
         step : 0,
         commands : {},
-        over : false
+        over : false,
+        alcoolLevel : 100
     }
     
     function updateSurroundings(x,y,width,height){
@@ -301,6 +325,7 @@ async function go(){
         onTreasure.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onTreasure )
+        world.alcoolLevel += 200
     }
     function reachExit(animation, onExit){
         console.log('BEEP','reach exit')
@@ -311,6 +336,9 @@ async function go(){
         world.over = true
     }
     function worldFixedStep( ){
+
+        world.alcoolLevel -= 1
+        
         const pl = animation.container,
               {x,y} = pl.position,
               {width,height} = pl
@@ -387,17 +415,28 @@ async function go(){
 
         // step world
         worldStep( deltaTime / 1000 )
+
+        world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
         if (world.over ) {
             filmFilter.sepia = 1
+            unsobber.setLevel(0)
+            filmFilter.vignetting = 0.1
+        }  else {
+            
+            // camera
+            //stage.position.x = -animation.container.position.x
+            //stage.position.y = -animation.container.position.y
+            //stage.position.y = 2
+            //unsobber.setLevel(0)//world.alcoolLevel/1000)
+            const stoneness = 5 * world.alcoolLevel / 500
+            const readyness = Math.min(world.alcoolLevel,200) / 200
+            
+            filmFilter.vignetting =  0.5 - readyness / 2
+            unsobber.setLevel(stoneness)
         }
-
-        // camera
-        //stage.position.x = -animation.container.position.x
-        //stage.position.y = -animation.container.position.y
-        //stage.position.y = 2
-
+        unsobber.update()
         // render
-        renderer.render(stage);
+        renderer.render( viewport );
 
         // recurse
         requestAnimationFrame(animate);

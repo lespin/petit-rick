@@ -17,7 +17,10 @@ function KeyUpDownListener( eh ){
 export function KeyboardState(type){
     const state = new Map()
     const l = KeyUpDownListener(
-        down => e => state.set( e[ type ], down )
+        down => e => {
+            state.set( e[ type ], down )
+            e.preventDefault()
+        }
     ) 
     return $element => ({
         state,

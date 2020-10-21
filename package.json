@@ -17,6 +17,7 @@
     "a-star": "^0.2.0",
     "box-intersect": "^1.0.2",
     "p2": "^0.7.1",
+    "pixi-viewport": "^4.15.0",
     "pixi.js": "^5.3.3",
     "rbush": "^3.0.1",
     "rbush-knn": "^3.0.1",
@@ -41,6 +42,7 @@
   },
   "scripts": {
     "dev": "webpack --mode development --watch",
+    "prod": "webpack --mode production --watch",
     "start:dev": "webpack-dev-server"
   }
 }
