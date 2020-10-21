@@ -21,6 +21,56 @@ console.log(path);
 
 
 
+const retribs = {
+    'iddle-right' : {
+        'left' : { go : 'turn-from-right' },
+        'right' : { go : 'walk-right' },
+        'up' : { go : 'climb-ladder' },
+        'down' : { go : 'descend-ladder' },
+        0 :  { go : 'iddle-right' }
+    },
+    'iddle-left' : {
+        'left' : { go : 'walk-left' },
+        'right' : { go : 'turn-from-left' },
+        'up' : { go : 'climb-ladder' },
+        'down' : { go : 'descend-ladder' },
+        0 : { go : 'iddle-left' }
+    },
+    'climb-iddle' : {
+        'left' : { go : 'turn-from-right' },
+        'right' : { go : 'turn-from-left' },
+        'up' : { go : 'climb-ladder' },
+        'down' : { go : 'descend-ladder' },
+        0 : { go : 'climb-iddle' },
+    },
+    'climb-ladder' : {
+        'up' : { go : 'climb-ladder' },
+        'down' : { go : 'descend-ladder' },
+        0 : { go : 'climb-iddle' },
+    },
+    'descend-ladder' : {
+        'up' : { go : 'climb-ladder' },
+        'down' : { go : 'descend-ladder' },
+        0 : { go : 'climb-iddle' },
+    },
+    'turn-from-right' : {
+        0 : { go : 'iddle-left' },
+        'left' : { go : 'walk-left' }
+    },
+    'turn-from-left' : {
+        0 : { go :  'iddle-right' },
+        'right' : { go : 'walk-right' }
+    },
+    'walk-left' : {
+        'left' : { go : 'walk-left' },
+        0 : { go :  'iddle-left' }
+    },
+    'walk-right' : {
+        'right' : { go : 'walk-right' },
+        0 :  { go :  'iddle-right' }
+    },
+}
+
 
 
 
@@ -61,6 +111,7 @@ async function go(){
     //app.stage.addChild(viewport)
     
     var stage = new PIXI.Container({width:160,height:180});
+    stage.position.x = 30
     stage.width = 160
     stage.height = 180
     stage.anchor = 0.5
@@ -69,16 +120,16 @@ async function go(){
     stage.pivot.y = stage.height /2 
     setInterval( () => {
         
-      //  stage.rotation += Math.PI / 30
+        //  stage.rotation += Math.PI / 30
         //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
         //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
         //stage.scale = 5
     },16)
     viewport.addChild( stage )
     
-   /*stage.pivot.set(0.5,0.5)
-    stage.scale.x = 1
-    stage.scale.y = 2*/
+    /*stage.pivot.set(0.5,0.5)
+      stage.scale.x = 1
+      stage.scale.y = 2*/
     const filmFilter = new OldFilmFilter({
         noise : 0.02,
         /*noiseSize : 0.9,*/
@@ -90,13 +141,13 @@ async function go(){
     // ZoomBlurFilter 
     const rgbSplitFilter = new RGBSplitFilter()
     /*function sobber(){
-        rgbSplitFilter.red.x = 0
-        rgbSplitFilter.red.y = 0
-        rgbSplitFilter.blue.x = 0
-        rgbSplitFilter.blue.y = 0
-        rgbSplitFilter.green.x = 0
-        rgbSplitFilter.green.y = 0
-        }*/
+      rgbSplitFilter.red.x = 0
+      rgbSplitFilter.red.y = 0
+      rgbSplitFilter.blue.x = 0
+      rgbSplitFilter.blue.y = 0
+      rgbSplitFilter.green.x = 0
+      rgbSplitFilter.green.y = 0
+      }*/
     function Unsobber(){
         let level = 10
         function sint01( f , p = 0 ){
@@ -124,8 +175,7 @@ async function go(){
     const unsobber = Unsobber()
     unsobber.setLevel(0)   
     stage.filters = [
-        //filmFilter
-        //,
+        filmFilter,
         rgbSplitFilter
     ];
     
@@ -141,85 +191,40 @@ async function go(){
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
 
-    const animation = AnimatedItem( animationModels )
-    animation.container.position.x = terrain.extracted['level-entrance'].x
-    animation.container.position.y = terrain.extracted['level-entrance'].y
-    animation.play('iddle-left')
-
-    stage.addChild(animation.container);
-
-    const retribs = {
-        'iddle-right' : {
-            'left' : { go : 'turn-from-right' },
-            'right' : { go : 'walk-right' },
-            'up' : { go : 'climb-ladder' },
-            'down' : { go : 'descend-ladder' },
-            0 :  { go : 'iddle-right' }
-        },
-        'iddle-left' : {
-            'left' : { go : 'walk-left' },
-            'right' : { go : 'turn-from-left' },
-            'up' : { go : 'climb-ladder' },
-            'down' : { go : 'descend-ladder' },
-            0 : { go : 'iddle-left' }
-        },
-        'climb-iddle' : {
-            'left' : { go : 'turn-from-right' },
-            'right' : { go : 'turn-from-left' },
-            'up' : { go : 'climb-ladder' },
-            'down' : { go : 'descend-ladder' },
-            0 : { go : 'climb-iddle' },
-        },
-        'climb-ladder' : {
-            'up' : { go : 'climb-ladder' },
-            'down' : { go : 'descend-ladder' },
-            0 : { go : 'climb-iddle' },
-        },
-        'descend-ladder' : {
-            'up' : { go : 'climb-ladder' },
-            'down' : { go : 'descend-ladder' },
-            0 : { go : 'climb-iddle' },
-        },
-        'turn-from-right' : {
-            0 : { go : 'iddle-left' },
-            'left' : { go : 'walk-left' }
-        },
-        'turn-from-left' : {
-            0 : { go :  'iddle-right' },
-            'right' : { go : 'walk-right' }
-        },
-        'walk-left' : {
-            'left' : { go : 'walk-left' },
-            0 : { go :  'iddle-left' }
-        },
-        'walk-right' : {
-            'right' : { go : 'walk-right' },
-            0 :  { go :  'iddle-right' }
-        },
-    }
-    
-    animation.on.complete = function(...p){
-        const [name,animatedSprite] = p,
-              frame = animatedSprite.currentFrame
-        // take from world ?
-        const commands = {
-            up : keyboardState.state.get('ArrowUp'),
-            left : keyboardState.state.get('ArrowLeft'),
-            down : keyboardState.state.get('ArrowDown'),
-            right : keyboardState.state.get('ArrowRight')
+    const items = []
+    for ( let i = 0 ; i < 3 ; i ++ ){
+        
+        const animation = AnimatedItem( animationModels )
+        animation.container.position.x = terrain.extracted['level-entrance'].x - i * 8
+        animation.container.position.y = terrain.extracted['level-entrance'].y
+        animation.play('iddle-left')
+        stage.addChild(animation.container);
+        
+        animation.on.complete = function(...p){
+            const [name,animatedSprite] = p,
+                  frame = animatedSprite.currentFrame
+            // take from world ?
+            const commands = {
+                up : keyboardState.state.get('ArrowUp'),
+                left : keyboardState.state.get('ArrowLeft'),
+                down : keyboardState.state.get('ArrowDown'),
+                right : keyboardState.state.get('ArrowRight')
+            }
+            const retrib = retribs[ name ]
+            const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
+            const followedBy = retrib[ matchedCommand || 0 ]
+            animation.play( followedBy.go )
         }
-        const retrib = retribs[ name ]
-        const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
-        const followedBy = retrib[ matchedCommand || 0 ]
-        animation.play( followedBy.go )
+        animation.on.frameChange = function (...p) {
+        }
+        
+        animation.on.loop = function (...p) {
+            //const [name,animatedSprite] = p,
+            //frame = animatedSprite.currentFrame
+        }
+        ;
+        items.push(animation)
     }
-    animation.on.frameChange = function (...p) {
-    }
-    
-    animation.on.loop = function (...p) {
-        //const [name,animatedSprite] = p,
-        //frame = animatedSprite.currentFrame
-    };
     /*
      * World
      */
@@ -229,7 +234,7 @@ async function go(){
         step : 0,
         commands : {},
         over : false,
-        alcoolLevel : 100
+        alcoolLevel : 0
     }
     
     function updateSurroundings(x,y,width,height){
@@ -338,6 +343,8 @@ async function go(){
     function worldFixedStep( ){
 
         world.alcoolLevel -= 1
+        items.forEach( item => {
+        const animation = item
         
         const pl = animation.container,
               {x,y} = pl.position,
@@ -382,6 +389,7 @@ async function go(){
                 }
             }
         }
+        })
     }
     
     function worldStep( deltaTime ){
@@ -431,7 +439,7 @@ async function go(){
             const stoneness = 5 * world.alcoolLevel / 500
             const readyness = Math.min(world.alcoolLevel,200) / 200
             
-            filmFilter.vignetting =  0.5 - readyness / 2
+            filmFilter.vignetting =  0.125 - readyness / 8
             unsobber.setLevel(stoneness)
         }
         unsobber.update()
