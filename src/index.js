@@ -85,7 +85,7 @@ const imageResolver = x => `assets/${x}`
 // setup renderer and ticker
 const renderer = new PIXI.Renderer({
     width: 160,
-    height: 180,
+    height: 160,
     resolution: 4 * ( window.devicePixelRatio || 1 ),
     antialias:true
 })
@@ -146,14 +146,6 @@ async function go(){
     })
     // ZoomBlurFilter 
     const rgbSplitFilter = new RGBSplitFilter()
-    /*function sobber(){
-      rgbSplitFilter.red.x = 0
-      rgbSplitFilter.red.y = 0
-      rgbSplitFilter.blue.x = 0
-      rgbSplitFilter.blue.y = 0
-      rgbSplitFilter.green.x = 0
-      rgbSplitFilter.green.y = 0
-      }*/
     function Unsobber(){
         let level = 10
         function sint01( f , p = 0 ){
@@ -246,58 +238,83 @@ async function go(){
 
     const loader = new PIXI.Loader()
 
-    let _setScoreBoardCountdown    
-    function setScoreBoardCountdown( text ){
-        if ( _setScoreBoardCountdown  ){
-            //console.log('->',text)
-            _setScoreBoardCountdown( text.toString().padStart(4,'0'))
-            //
-        }
-    }
+    let _scoreboardZones
     
     loader.add('HeadingFont', '/assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
 
-        let text,
-            container
-        
-        function clear(){
-            if ( container !== undefined ){
-                //                container.destroy()
-                scoreboard.removeChildren()// container )
+        function scoreBoardText( scoreboard,x,y, options ){
+            let text,
+                container
+            
+            function clear(){
+                if ( container ){
+                    //container.destroy()
+                    //if ( container.parent(){
+                    //container.parent.removeChild(container)
+                    //}
+                    scoreboard.removeChildren()// container )
+                }
+                container = undefined
+                text = undefined
             }
-            container = undefined
-            text = undefined
-        }
-        function set( _text ){
-            if ( _text ){
-                container = createText( _text )
-                scoreboard.addChild( container )
-                text = _text
+            function set( _text ){
+                if ( _text ){
+                    container = createText( _text  )
+                    scoreboard.addChild( container )
+                    text = _text
+                }
             }
-        }
-        function update( _text ){
-            if ( _text !== text ){
-                clear()
+            function update( _text ){
+                if ( _text !== text ){
+                    clear()
+                }
+                set( _text )
             }
-            set( _text )
+            function createText( text,  options ) {
+                const textContainer = new PIXI.BitmapText(text, {
+                    font: '8px Nokia Cellphone FC',
+                    fill : '0xffffff',
+                    ...options,
+                })
+                //text.anchor.set(0.5)
+                //text.scale.x = 0.5
+                //text.scale.y = 0.5
+                textContainer.position.x = x
+                textContainer.position.y = y
+                return textContainer;
+            }
+            return { update, clear }
         }
-        function createText( text ) {
-            const textContainer = new PIXI.BitmapText(text, {
-                font: '8px Nokia Cellphone FC',
-                align: 'left',
-                fill : '0xffffff',
+
+        _scoreboardZones = {
+            countdown : scoreBoardText( scoreboard, 4,0,{
+                //align : 'left'
                 //tint : 0xffffff * Math.random()
-            })
-            //text.anchor.set(0.5)
-            //text.scale.x = 0.5
-            //text.scale.y = 0.5
-            textContainer.position.x = 4
-            textContainer.position.y = 0
-            return textContainer;
+            }),
+            treasures : scoreBoardText( scoreboard, 140,0,{
+                width : scoreboard.width
+                //align : 'right'
+                //tint : 0xffffff * Math.random()
+            }),
+            levelScore : scoreBoardText( scoreboard,50,60, {
+                width : scoreboard.width
+                //align : 'right'
+                //tint : 0xffffff * Math.random()
+            }),
         }
-        _setScoreBoardCountdown = update
-        update('666')
-        return update
+        _scoreboardZones.updateCountdown =  function(d) {
+            _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
+        }
+        _scoreboardZones.updateTreasuresFound =  function(d) {
+            //_scoreboardZones.treasures.update(Math.random().toString())
+            _scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
+        }
+        _scoreboardZones.updateLevelScore =  function(d) {
+        //_scoreboardZones.treasures.update(Math.random().toString())
+            _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
+        }
+        //_scoreboardZones.updateTreasuresFound()
+        console.log('_scoreboardZones',_scoreboardZones)
     })
     
     //items.length = 1
@@ -313,8 +330,9 @@ async function go(){
         alcoolLevel : 0,
         nTreasureFound : 0,
         nTreasure : terrain.extracted['treasure'].length,
-        countdownStepDuration : 48 * 60,
+        initialCountdown : 48 * 60,
     }
+    world.countdown = world.initialCountdown
     
     function updateSurroundings(x,y,width,height){
         function getPlayerCollisionBoxes( x, y, width, height ){
@@ -425,27 +443,26 @@ async function go(){
         console.log(world)
     }
     function exited(animation){
+        console.log('BEEP','exited')
+
+        world.over = world.time
+        console.log('over at',world.over)
+        
         sndfx.win()
-        
-        
     }
     function reachExit(animation, onExit){
         console.log('BEEP','reach exit')
         
         if ( world.canExit ){
             exited(animation)
-            console.log( animation, onExit )
-            //onExit.tile.container.visible = false
             const rtree = terrain.extracted['tree']
             rtree.remove( onExit )
-            world.over = world.time
-            console.log('over at',world.over)
         }
     }
     function worldFixedStep( ){
-        world.alcoolLevel -= 1
+        world.countdown = Math.max(0, world.countdown - 1 )
+        world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
         items
-        //            .slice(0,3)
             .forEach( item => {
                 const animation = item
                 
@@ -526,10 +543,11 @@ async function go(){
         world.commands = commands
         
         // step world
-        const d1 = Date.now()
-        worldStep( deltaTime / 1000 )
-        const d2 = Date.now()
-
+        if ( ! world.over ){
+            const d1 = Date.now()
+            worldStep( deltaTime / 1000 )
+            const d2 = Date.now()
+        }
         //        console.log('steps took',d2 - d1 )
         
         world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
@@ -551,9 +569,20 @@ async function go(){
             unsobber.setLevel(stoneness)
         }
         unsobber.update()
-        setScoreBoardCountdown( Math.max(0,world.countdownStepDuration - world.step ))
-        
-        // render
+        if ( _scoreboardZones ){
+            let remain =  world.countdown
+            _scoreboardZones.updateCountdown( remain )
+            _scoreboardZones.updateTreasuresFound( world.nTreasureFound )
+
+            if ( world.over ){
+                _scoreboardZones.updateLevelScore( `${ remain } * ${ world.nTreasureFound } = ${ remain * world.nTreasureFound }` )
+            } else {
+                _scoreboardZones.updateLevelScore('')
+            }
+
+            
+            //            _scoreboardZones.countdown.update( ''+remain.toString(10).padStart(4,' ') )
+        }
         renderer.render( viewport );
         //        console.log('1/60/end')
         // recurse
@@ -597,7 +626,7 @@ go()
 // //animate();
 
 // import PixiFps from "pixi-fps";
-import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
+    import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 
 function AnimatedItem( animationModels ){
     //
@@ -656,7 +685,7 @@ async function loadAnimations( url ){
                 time : 50
             })),
             loop : true,//layer.properties['animation-loop'],
-            speed : 0.25//layer.properties['animation-speed']
+            speed : 0.5//0.25//layer.properties['animation-speed']
         }
     })
     return animationModels    
