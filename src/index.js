@@ -185,57 +185,7 @@ async function go(){
         rgbSplitFilter
     ];
 
-    const scoreboard = new PIXI.Container()
-    stage.addChild(scoreboard)
-        
-    const basicText = new PIXI.Text('Basic text in pixi');
-    basicText.x = 50;
-    basicText.y = 100;
-    scoreboard.addChild( basicText )
-
-    // const loader = new PIXI.Loader()    
-    // loader
-    //     .add('Nokia', 'assets/fonts/bitmapFonts/nokia.xml')
-    //     .load(onAssetsLoaded);
-
     
-    // function onAssetsLoaded() {
-    //     console.log('FONT LOADED')
-    //     const bitmapFont = PIXI.BitmapFont.from('Nokia')
-    //     console.log('bitmapFont',bitmapFont)
-
-
-    //     const title = new PIXI.BitmapText("This is the title",{ fontName: "Nokia" });
-        
-    //     /*
-    //     const bitmapFontText = new PIXI.BitmapText(
-    //         'bitmap fonts are supported!\nWoo yay!',
-    //         { fill:0xffffff, font: '25px Nokia', align: 'left' }
-    //     );
-    //     */
-    //     title.x = 5;
-    //     title.y = 5;
-        
-    //     ///app.stage.addChild(bitmapFontText);
-    //     scoreboard.addChild(title)        
-        
-    // }
-
-    
-    // function createText() {
-    //     const text = new PIXI.Text('Hello Bitmap Font', {
-    //         font: '38px Fipps-Regular',
-    //         align: 'center',
-    //         fill:0xffffff
-    //     })
-    //     text.anchor.set(0.5)
-    //     text.position.x = 0//window.innerWidth / 2
-    //     text.position.y = 38//window.innerHeight / 2
-    //     //stage.addChild(text)
-    //     return text
-    // }
-    // const text = createText()
-   
 
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
@@ -290,6 +240,66 @@ async function go(){
         items.push(animation)
         
     }
+
+    const scoreboard = new PIXI.Container()
+    viewport.addChild( scoreboard )
+
+    const loader = new PIXI.Loader()
+
+    let _setScoreBoardCountdown    
+    function setScoreBoardCountdown( text ){
+        if ( _setScoreBoardCountdown  ){
+            //console.log('->',text)
+            _setScoreBoardCountdown( text.toString().padStart(4,'0'))
+            //
+        }
+    }
+    
+    loader.add('HeadingFont', '/assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
+
+        let text,
+            container
+        
+        function clear(){
+            if ( container !== undefined ){
+                //                container.destroy()
+                scoreboard.removeChildren()// container )
+            }
+            container = undefined
+            text = undefined
+        }
+        function set( _text ){
+            if ( _text ){
+                container = createText( _text )
+                scoreboard.addChild( container )
+                text = _text
+            }
+        }
+        function update( _text ){
+            if ( _text !== text ){
+                clear()
+            }
+            set( _text )
+        }
+        function createText( text ) {
+            const textContainer = new PIXI.BitmapText(text, {
+                font: '8px Nokia Cellphone FC',
+                align: 'left',
+                fill : '0xffffff',
+                //tint : 0xffffff * Math.random()
+            })
+            //text.anchor.set(0.5)
+            //text.scale.x = 0.5
+            //text.scale.y = 0.5
+            textContainer.position.x = 4
+            textContainer.position.y = 0
+            return textContainer;
+        }
+        _setScoreBoardCountdown = update
+        update('666')
+        return update
+    })
+    
     //items.length = 1
     /*
      * World
@@ -302,7 +312,8 @@ async function go(){
         over : false,
         alcoolLevel : 0,
         nTreasureFound : 0,
-        nTreasure : terrain.extracted['treasure'].length
+        nTreasure : terrain.extracted['treasure'].length,
+        countdownStepDuration : 48 * 60,
     }
     
     function updateSurroundings(x,y,width,height){
@@ -413,11 +424,16 @@ async function go(){
         }
         console.log(world)
     }
+    function exited(animation){
+        sndfx.win()
+        
+        
+    }
     function reachExit(animation, onExit){
-        console.log('exit',world)
+        console.log('BEEP','reach exit')
+        
         if ( world.canExit ){
-            sndfx.win()
-            console.log('BEEP','reach exit')
+            exited(animation)
             console.log( animation, onExit )
             //onExit.tile.container.visible = false
             const rtree = terrain.extracted['tree']
@@ -427,7 +443,6 @@ async function go(){
         }
     }
     function worldFixedStep( ){
-
         world.alcoolLevel -= 1
         items
         //            .slice(0,3)
@@ -536,6 +551,8 @@ async function go(){
             unsobber.setLevel(stoneness)
         }
         unsobber.update()
+        setScoreBoardCountdown( Math.max(0,world.countdownStepDuration - world.step ))
+        
         // render
         renderer.render( viewport );
         //        console.log('1/60/end')
