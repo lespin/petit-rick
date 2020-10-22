@@ -10,8 +10,8 @@ import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
 
 const sndfx = {
     pickup : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    cleared : () => zzfxCreateAndPlay(...[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),
-    win : () => zzfxCreateAndPlay(...[4,,351,.26,.22,.69,1,1.44,,-0.3,45,.05,.06,,,,.01,.51,.09]),
+    cleared : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
+    win : () => zzfxCreateAndPlay(...[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
 }
 
 var aStar = require('a-star');
@@ -184,7 +184,41 @@ async function go(){
         filmFilter,
         rgbSplitFilter
     ];
+
+    const scoreboard = new PIXI.Container()
+    stage.addChild(scoreboard)
+    const loader = new PIXI.Loader()    
+    loader
+        .add('desyrel', 'assets/font/desyrel.xml')
+        .load(onAssetsLoaded);
+
     
+    function onAssetsLoaded() {
+        const bitmapFontText = new PIXI.BitmapText('bitmap fonts are supported!\nWoo yay!', { font: '55px Desyrel', align: 'left' });
+        
+        bitmapFontText.x = 50;
+        bitmapFontText.y = 200;
+        
+        //app.stage.addChild(bitmapFontText);
+        scoreboard.addChild(text)        
+        
+    }
+
+    
+    // function createText() {
+    //     const text = new PIXI.Text('Hello Bitmap Font', {
+    //         font: '38px Fipps-Regular',
+    //         align: 'center',
+    //         fill:0xffffff
+    //     })
+    //     text.anchor.set(0.5)
+    //     text.position.x = 0//window.innerWidth / 2
+    //     text.position.y = 38//window.innerHeight / 2
+    //     //stage.addChild(text)
+    //     return text
+    // }
+    // const text = createText()
+   
 
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
@@ -544,11 +578,11 @@ function AnimatedItem( animationModels ){
             texture : PIXI.Texture.from( step.imageBitmap ),
             time : step.time
         })))
-        console.log('create anim', {anim,steps,loop,speed,model})
         anim.anchor.set(0.5);
         anim.scale.set(1);
         anim.animationSpeed =  speed
         animationContainer.addChild(anim);
+        // todo
         anim.loop = false//loop
         anim.onComplete = (...p) => {
             if ( on.complete )
