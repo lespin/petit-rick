@@ -1,12 +1,11 @@
-import { KeyboardState, KeyboardDownFront } from './lib/keyboardState.js'
+import { KeyboardState/*, KeyboardDownFront*/ } from './lib/keyboardState.js'
 import RBush from 'rbush';
 import  * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
-import { Viewport } from 'pixi-viewport'
+//import { Viewport } from 'pixi-viewport'
 
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
-
 
 var aStar = require('a-star');
 var path = aStar({
@@ -77,7 +76,7 @@ const retribs = {
 const imageResolver = x => `assets/${x}`
 
 // setup renderer and ticker
-var renderer = new PIXI.Renderer({
+const renderer = new PIXI.Renderer({
     width: 160,
     height: 180,
     resolution: 4 * ( window.devicePixelRatio || 1 ),
@@ -87,8 +86,8 @@ document.body.appendChild(renderer.view)
 
 const keyboardState = KeyboardState('key')(window)
 keyboardState.start()
-const keyboardDownFront = KeyboardDownFront('key')(window)
-keyboardDownFront.start()
+//const keyboardDownFront = KeyboardDownFront('key')(window)
+//keyboardDownFront.start()
 function getCommands(){
     const commands = {
         up : keyboardState.state.get('ArrowUp'),
@@ -110,21 +109,21 @@ async function go(){
     // add the viewport to the stage
     //app.stage.addChild(viewport)
     
-    var stage = new PIXI.Container({width:160,height:180});
+    const stage = new PIXI.Container({width:160,height:180});
     stage.position.x = 30
     stage.width = 160
     stage.height = 180
     stage.anchor = 0.5
-    console.log(stage.width,stage.height)
+    //    console.log(stage.width,stage.height)
     stage.pivot.x = stage.width / 2 
     stage.pivot.y = stage.height /2 
-    setInterval( () => {
-        
-        //  stage.rotation += Math.PI / 30
-        //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-        //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-        //stage.scale = 5
-    },16)
+    // setInterval( () => {
+    
+    //  stage.rotation += Math.PI / 30
+    //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+    //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+    //stage.scale = 5
+    //},16)
     viewport.addChild( stage )
     
     /*stage.pivot.set(0.5,0.5)
@@ -192,17 +191,21 @@ async function go(){
     console.log('animationModels',animationModels)
 
     const items = []
-    for ( let i = 0 ; i < 3 ; i ++ ){
+    for ( let i = 0 ; i < 4 ; i ++ ){
         
-        const animation = AnimatedItem( animationModels )
+        const animation = new AnimatedItem( animationModels )
         animation.container.position.x = terrain.extracted['level-entrance'].x - i * 8
         animation.container.position.y = terrain.extracted['level-entrance'].y
         animation.play('iddle-left')
         stage.addChild(animation.container);
+        animation.proute = i
+        //if (i === 0 ){
         
         animation.on.complete = function(...p){
+            //            console.log('complete')
             const [name,animatedSprite] = p,
                   frame = animatedSprite.currentFrame
+            //console.log('complete',name,frame)
             // take from world ?
             const commands = {
                 up : keyboardState.state.get('ArrowUp'),
@@ -215,16 +218,21 @@ async function go(){
             const followedBy = retrib[ matchedCommand || 0 ]
             animation.play( followedBy.go )
         }
-        animation.on.frameChange = function (...p) {
-        }
-        
-        animation.on.loop = function (...p) {
-            //const [name,animatedSprite] = p,
-            //frame = animatedSprite.currentFrame
-        }
-        ;
+        /*
+          animation.on.frameChange = function (...p) {
+          }
+          
+          animation.on.loop = function (...p) {
+          //const [name,animatedSprite] = p,
+          //frame = animatedSprite.currentFrame
+          }
+          ;
+        */
+        //}
         items.push(animation)
+        
     }
+    //items.length = 1
     /*
      * World
      */
@@ -284,7 +292,7 @@ async function go(){
                 aboveLadderBox, onLadderBox,
                 middleBox } = getPlayerCollisionBoxes( x,y,width,height )
 
-        
+
         const f1 = rtree.search( leftBox )          
         const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
         const f2 = rtree.search( rightBox )
@@ -338,58 +346,61 @@ async function go(){
         //onExit.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onExit )
-        world.over = true
+        world.over = world.time
+        console.log('over at',world.over)
     }
     function worldFixedStep( ){
 
         world.alcoolLevel -= 1
-        items.forEach( item => {
-        const animation = item
-        
-        const pl = animation.container,
-              {x,y} = pl.position,
-              {width,height} = pl
+        items
+//            .slice(0,3)
+            .forEach( item => {
+                const animation = item
+                
+                const pl = animation.container,
+                      {x,y} = pl.position,
+                      {width,height} = pl
 
-        
-        const surroundings = updateSurroundings( x, y, width, height )
-        const { onLadder, underMatter } = surroundings
+                
+                const surroundings = updateSurroundings( x, y, width, height )
+                const { onLadder, underMatter } = surroundings
 
-        //if ( world.over ) return
-        if ( surroundings.onTreasure ){
-            reachTreasure( animation, surroundings.onTreasure )
-        }
-        if ( surroundings.onExit ){
-            reachExit( animation, surroundings.onExit )
-            return
-        }
-        
-        if ( !onLadder && !underMatter ){
-            animation.container.position.y += 1
-        } else {
-            const commands = world.commands
-            if ( commands.left ){
-                if ( !surroundings.leftMatter ){
-                    animation.container.position.x -= 1
-                } else {
-                    animation.play( 'iddle-left' )
+                //if ( world.over ) return
+                if ( surroundings.onTreasure ){
+                    reachTreasure( animation, surroundings.onTreasure )
                 }
-            } else if ( commands.right ){
-                if ( !surroundings.rightMatter ){
-                    animation.container.position.x += 1
-                } else {
-                    animation.play( 'iddle-right' )
+                if ( surroundings.onExit ){
+                    reachExit( animation, surroundings.onExit )
+                    return
                 }
-            } else if ( commands.up ){
-                if ( surroundings.onLadder ){
-                    animation.container.position.y -= 1
-                }   
-            } else if ( commands.down ){
-                if ( surroundings.aboveLadder ){
+                
+                if ( !onLadder && !underMatter ){
                     animation.container.position.y += 1
+                } else {
+                    const commands = world.commands
+                    if ( commands.left ){
+                        if ( !surroundings.leftMatter ){
+                            animation.container.position.x -= 1
+                        } else {
+                            //animation.play( 'iddle-left' )
+                        }
+                    } else if ( commands.right ){
+                        if ( !surroundings.rightMatter ){
+                            animation.container.position.x += 1
+                        } else {
+                            //                    animation.play( 'iddle-right' )
+                        }
+                    } else if ( commands.up ){
+                        if ( surroundings.onLadder ){
+                            animation.container.position.y -= 1
+                        }   
+                    } else if ( commands.down ){
+                        if ( surroundings.aboveLadder ){
+                            animation.container.position.y += 1
+                        }
+                    }
                 }
-            }
-        }
-        })
+            })
     }
     
     function worldStep( deltaTime ){
@@ -397,6 +408,7 @@ async function go(){
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
+        //console.log('must do',intElapsed)
         for ( let i = 0 ; i < intElapsed ; i++ ){            
             worldFixedStep()
         }
@@ -405,25 +417,29 @@ async function go(){
         
     }
     // setup RAF
-    var oldTime = Date.now();
+    let oldTime = Date.now();
     
     function animate() {
-
+        //console.log('1/60')
         // get time
-        var newTime = Date.now();
-        var deltaTime = newTime - oldTime;
+        const newTime = Date.now();
+        let deltaTime = newTime - oldTime;
         oldTime = newTime;	
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
 
         // grab commands
         const commands = getCommands()
-        keyboardDownFront.reset()
+        //        keyboardDownFront.reset()
         world.commands = commands
-
+        
         // step world
+        const d1 = Date.now()
         worldStep( deltaTime / 1000 )
+        const d2 = Date.now()
 
+//        console.log('steps took',d2 - d1 )
+        
         world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
         if (world.over ) {
             filmFilter.sepia = 1
@@ -445,7 +461,7 @@ async function go(){
         unsobber.update()
         // render
         renderer.render( viewport );
-
+//        console.log('1/60/end')
         // recurse
         requestAnimationFrame(animate);
         //stage.position.x += 1
@@ -498,15 +514,22 @@ function AnimatedItem( animationModels ){
     const animations = {}
     Object.entries( animationModels ).forEach( ([name,model]) => {
         const { steps, loop, speed } = model
-        const anim = new PIXI.AnimatedSprite(steps);
+        const anim = new PIXI.AnimatedSprite( steps.map( step => ({
+            texture : PIXI.Texture.from( step.imageBitmap ),
+            time : step.time
+        })))
+        console.log('create anim', {anim,steps,loop,speed,model})
         anim.anchor.set(0.5);
         anim.scale.set(1);
-        anim.animationSpeed = speed
+        anim.animationSpeed =  speed
         animationContainer.addChild(anim);
         anim.loop = false//loop
-        anim.onComplete = (...p) => on.complete( name, anim, ...p )
-        anim.onFrameChange = (...p) => on.frameChange( name, anim, ...p )
-        anim.onLoop = on.loop
+        anim.onComplete = (...p) => {
+            if ( on.complete )
+                on.complete( name, anim, ...p )
+        }
+        // anim.onFrameChange = (...p) => on.frameChange( name, anim, ...p )
+        // anim.onLoop = on.loop
         anim.visible = false
         animations[ name ] = anim
     })
@@ -534,11 +557,12 @@ async function loadAnimations( url ){
     terrain.layers.forEach( ( layer, layerIdx ) => {
         animationModels[ layer.name ] = {
             steps : layer.tiles.map( tile => ({
+                imageBitmap : tile.imageBitmap,
                 texture : PIXI.Texture.from( tile.imageBitmap ),
                 time : 50
             })),
-            loop : layer.properties['animation-loop'],
-            speed : layer.properties['animation-speed']
+            loop : true,//layer.properties['animation-loop'],
+            speed : 0.25//layer.properties['animation-speed']
         }
     })
     return animationModels    

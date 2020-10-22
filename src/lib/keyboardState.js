@@ -19,7 +19,7 @@ export function KeyboardState(type){
     const l = KeyUpDownListener(
         down => e => {
             state.set( e[ type ], down )
-            e.preventDefault()
+         //   e.preventDefault()
         }
     ) 
     return $element => ({
