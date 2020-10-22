@@ -187,22 +187,39 @@ async function go(){
 
     const scoreboard = new PIXI.Container()
     stage.addChild(scoreboard)
-    const loader = new PIXI.Loader()    
-    loader
-        .add('desyrel', 'assets/font/desyrel.xml')
-        .load(onAssetsLoaded);
+        
+    const basicText = new PIXI.Text('Basic text in pixi');
+    basicText.x = 50;
+    basicText.y = 100;
+    scoreboard.addChild( basicText )
+
+    // const loader = new PIXI.Loader()    
+    // loader
+    //     .add('Nokia', 'assets/fonts/bitmapFonts/nokia.xml')
+    //     .load(onAssetsLoaded);
 
     
-    function onAssetsLoaded() {
-        const bitmapFontText = new PIXI.BitmapText('bitmap fonts are supported!\nWoo yay!', { font: '55px Desyrel', align: 'left' });
+    // function onAssetsLoaded() {
+    //     console.log('FONT LOADED')
+    //     const bitmapFont = PIXI.BitmapFont.from('Nokia')
+    //     console.log('bitmapFont',bitmapFont)
+
+
+    //     const title = new PIXI.BitmapText("This is the title",{ fontName: "Nokia" });
         
-        bitmapFontText.x = 50;
-        bitmapFontText.y = 200;
+    //     /*
+    //     const bitmapFontText = new PIXI.BitmapText(
+    //         'bitmap fonts are supported!\nWoo yay!',
+    //         { fill:0xffffff, font: '25px Nokia', align: 'left' }
+    //     );
+    //     */
+    //     title.x = 5;
+    //     title.y = 5;
         
-        //app.stage.addChild(bitmapFontText);
-        scoreboard.addChild(text)        
+    //     ///app.stage.addChild(bitmapFontText);
+    //     scoreboard.addChild(title)        
         
-    }
+    // }
 
     
     // function createText() {
