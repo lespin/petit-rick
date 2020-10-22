@@ -240,7 +240,7 @@ async function go(){
 
     let _scoreboardZones
     
-    loader.add('HeadingFont', '/assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
+    loader.add('HeadingFont', 'assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
 
         function scoreBoardText( scoreboard,x,y, options ){
             let text,
