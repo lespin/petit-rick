@@ -6,6 +6,13 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
+import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
+
+const sndfx = {
+    pickup : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
+    cleared : () => zzfxCreateAndPlay(...[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),
+    win : () => zzfxCreateAndPlay(...[4,,351,.26,.22,.69,1,1.44,,-0.3,45,.05,.06,,,,.01,.51,.09]),
+}
 
 var aStar = require('a-star');
 var path = aStar({
@@ -242,7 +249,9 @@ async function go(){
         step : 0,
         commands : {},
         over : false,
-        alcoolLevel : 0
+        alcoolLevel : 0,
+        nTreasureFound : 0,
+        nTreasure : terrain.extracted['treasure'].length
     }
     
     function updateSurroundings(x,y,width,height){
@@ -332,28 +341,45 @@ async function go(){
         }
         return surroundings
     }
-    
+    function openExitDoor(){
+        world.canExit = true
+    }
+    function allTreasureFound(){
+        console.log('BEEP','allTreasureFound') 
+        sndfx.cleared()
+        openExitDoor()
+    }
     function reachTreasure(animation, onTreasure){
         console.log('BEEP','treasure')
+        sndfx.pickup()
         onTreasure.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onTreasure )
         world.alcoolLevel += 200
+        world.nTreasureFound += 1
+        if ( world.nTreasureFound === world.nTreasure ){
+            allTreasureFound()
+        }
+        console.log(world)
     }
     function reachExit(animation, onExit){
-        console.log('BEEP','reach exit')
-        console.log( animation, onExit )
-        //onExit.tile.container.visible = false
-        const rtree = terrain.extracted['tree']
-        rtree.remove( onExit )
-        world.over = world.time
-        console.log('over at',world.over)
+        console.log('exit',world)
+        if ( world.canExit ){
+            sndfx.win()
+            console.log('BEEP','reach exit')
+            console.log( animation, onExit )
+            //onExit.tile.container.visible = false
+            const rtree = terrain.extracted['tree']
+            rtree.remove( onExit )
+            world.over = world.time
+            console.log('over at',world.over)
+        }
     }
     function worldFixedStep( ){
 
         world.alcoolLevel -= 1
         items
-//            .slice(0,3)
+        //            .slice(0,3)
             .forEach( item => {
                 const animation = item
                 
@@ -371,7 +397,7 @@ async function go(){
                 }
                 if ( surroundings.onExit ){
                     reachExit( animation, surroundings.onExit )
-                    return
+                    //return
                 }
                 
                 if ( !onLadder && !underMatter ){
@@ -438,7 +464,7 @@ async function go(){
         worldStep( deltaTime / 1000 )
         const d2 = Date.now()
 
-//        console.log('steps took',d2 - d1 )
+        //        console.log('steps took',d2 - d1 )
         
         world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
         if (world.over ) {
@@ -461,7 +487,7 @@ async function go(){
         unsobber.update()
         // render
         renderer.render( viewport );
-//        console.log('1/60/end')
+        //        console.log('1/60/end')
         // recurse
         requestAnimationFrame(animate);
         //stage.position.x += 1
@@ -577,6 +603,7 @@ async function loadTerrain( url ){
     const extracted = {}
     extracted.ladders = []    
     extracted.matter = []
+    extracted.treasure = []
     extracted.tree = new RBush();
 
     //
@@ -595,6 +622,9 @@ async function loadTerrain( url ){
             }
             if ( layer.name === 'matter' ){
                 extracted['matter'].push( tile.inLayer.position )
+            }
+            if ( layer.name === 'treasure' ){
+                extracted['treasure'].push( tile.inLayer.position )
             }
             const item = {
                 minX: tile.inLayer.position.x - tile.tileset.tilewidth / 2,
