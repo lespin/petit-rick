@@ -4,6 +4,34 @@ import { ktof } from './lib/frequencies.js'
 var seedrandom = require('seedrandom');
 var rng = seedrandom('muz-1');
 
+// function RingBuffer( buffer ){
+//     const widx = 0,
+//           length = 0
+//     function push( v ){
+//         buffer[ widx ] = v
+//         widx = ( widx + 1 ) % buffer.length
+//         length = Math.max( length, widx + 1 )
+//     }
+//     return { push }
+// }
+function VoiceAllocator( nvoices ){
+    const voices = new Array(nvoices).fill(0).map( (_,idx) => ({
+        idx,
+        end : 0
+    }))
+    function event( start, end ){
+        let voiceIdx = voices.find( v => v.end < start )
+        if ( voiceIdx < 0 ){
+            // nothing free, take first
+            voiceIdx = 0
+        } 
+        const voice = voices[ voiceIdx ]
+        // replace
+        voices.splice( voiceIdx, 1, { ...voice, end } )
+        return voiceIdx
+    }
+    return { event }
+}
 function SinusMonoSynth(ac){
     
     const osc = ac.createOscillator(),
@@ -44,8 +72,6 @@ export function LiveMusicComposer( ){
     }
     function generateSome( partitionTime, needed ){
         const f = ktof( k )
-        console.log(tempo)
-        tempo = 1
         return [
             [ 0, 'noteOn', f, 0.5, 0.01 ],
             [ tempo/3, 'noteOff', f, 0.4, 0.5 ],

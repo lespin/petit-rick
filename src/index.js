@@ -659,7 +659,11 @@ async function go(){
             requestAnimationFrame(animate);
         }
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
-        composer.setTempo( 1 / ( 1 + world.nTreasureFound ) )
+        if ( world.over ){
+            composer.setTempo( 1 )
+        } else {
+            composer.setTempo( 1 / ( 1 + world.nTreasureFound ) )
+        }
         
         //stage.position.x += 1
     }
