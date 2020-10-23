@@ -8,6 +8,8 @@ import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
 
+var seedrandom = require('seedrandom');
+
 import * as Stats from 'stats.js'
 var stats = new Stats();
 stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
@@ -16,14 +18,15 @@ document.body.appendChild( stats.dom );
 import { PageVisibility } from './lib/domVisibility.js'
 const pageVisibility = PageVisibility()
 pageVisibility.on.change.push( visible => {
-    console.log('visible?',visible)
+    console.log('visible?',visible,'at',new Date())
 })
 
-
+var rng = seedrandom('fx-1');
+console.log('random',rng())
 const sndfx = {
-    pickup : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    cleared : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    win : () => zzfxCreateAndPlay(...[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
+    pickup : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
+    cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
+    win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
 }
 
 var aStar = require('a-star');
@@ -612,7 +615,7 @@ async function go(){
     }
     requestAnimationFrame(animate);
 }
-//go()
+go()
 
 
 
