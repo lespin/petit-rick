@@ -215,7 +215,7 @@
  </layer>
  <layer id="33" name="climb-iddle" width="8" height="13">
   <properties>
-   <property name="animation-loop" type="bool" value="false"/>
+   <property name="animation-loop" type="bool" value="true"/>
    <property name="animation-speed" type="float" value="1"/>
   </properties>
   <data encoding="csv">

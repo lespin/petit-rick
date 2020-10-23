@@ -8,6 +8,18 @@ import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
 
+import * as Stats from 'stats.js'
+var stats = new Stats();
+stats.showPanel( 1 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+document.body.appendChild( stats.dom );
+
+import { PageVisibility } from './lib/domVisibility.js'
+const pageVisibility = PageVisibility()
+pageVisibility.on.change.push( visible => {
+    console.log('visible?',visible)
+})
+
+
 const sndfx = {
     pickup : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     cleared : () => zzfxCreateAndPlay(...[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
@@ -216,6 +228,7 @@ async function go(){
             const retrib = retribs[ name ]
             const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
             const followedBy = retrib[ matchedCommand || 0 ]
+            console.log('@',Date.now(),followedBy)
             animation.play( followedBy.go )
         }
         /*
@@ -517,8 +530,11 @@ async function go(){
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
-        //console.log('must do',intElapsed)
-        for ( let i = 0 ; i < intElapsed ; i++ ){            
+        if ( intElapsed > 1 ){
+            console.log('must do',intElapsed)
+        }
+        
+        for ( let i = 0 ; i < intElapsed ; i++ ){
             worldFixedStep()
         }
         world.time = floatTime
@@ -527,8 +543,11 @@ async function go(){
     }
     // setup RAF
     let oldTime = Date.now();
+
     
     function animate() {
+
+        stats.begin();
         //console.log('1/60')
         // get time
         const newTime = Date.now();
@@ -586,12 +605,14 @@ async function go(){
         renderer.render( viewport );
         //        console.log('1/60/end')
         // recurse
+	stats.end();
+        
         requestAnimationFrame(animate);
         //stage.position.x += 1
     }
     requestAnimationFrame(animate);
 }
-go()
+//go()
 
 
 
@@ -648,8 +669,9 @@ function AnimatedItem( animationModels ){
         // todo
         anim.loop = false//loop
         anim.onComplete = (...p) => {
-            if ( on.complete )
-                on.complete( name, anim, ...p )
+            if ( on.complete ){
+                //on.complete( name, anim, ...p )
+            }
         }
         // anim.onFrameChange = (...p) => on.frameChange( name, anim, ...p )
         // anim.onLoop = on.loop
@@ -665,6 +687,7 @@ function AnimatedItem( animationModels ){
         }
         const anim = animations[ name ]
         anim.visible = true
+        anim.stop()
         anim.gotoAndPlay(0)
         _previousAnimation = name
     }
