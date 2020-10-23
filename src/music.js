@@ -88,6 +88,92 @@ export function LiveMusicComposer( ){
 
         fragIdx++
 
+        return oneToZero([
+            [            
+                { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+                { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+                { dt : pause }
+            ],
+            [            
+                { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+                { dt : played, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
+                { dt : pause }
+            ],
+            [            
+                { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+                { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
+                { dt : pause },
+                { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+                { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
+                { dt : pause },
+            ],
+            
+        ])
+    }    
+    return { generateSome, transpose, setTempo }
+}
+function oneToZero( ones ){
+
+    // add absolute time for each channel
+    const absolute = ones.flatMap( one => {
+        let t = 0
+        return one.map( event => {
+            const { dt } = event
+            t += dt
+            return [ t, event ]
+        })        
+    })
+    absolute.sort( (a,b) => {
+        const [ta,eventa] = a
+        const [tb,eventb] = b
+        if ( ta !== tb ){
+            // sort by time
+            return ta - tb
+        } else {
+            // and channel
+            return eventa.channel - eventb.channel
+        }
+    })
+    let lastTime = 0
+    const zero = absolute.map( ([time,event]) => {
+        const dt = time - lastTime        
+        lastTime = time
+        return { ...event, dt }
+    })
+    return zero
+}
+
+
+export function LiveMusicComposer2( ){
+    const k0 = 48
+    let k = k0
+    let tempo
+    function transpose( keyOffset ){
+        k = k0 + ( k + keyOffset ) % 12
+    }
+    function setTempo( _tempo ){
+        tempo = _tempo
+    }
+    let fragIdx = 0
+    function generateSome( partitionTime, needed ){
+        //console.log('needed',needed)
+        const mkFrags = k => ([
+            [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
+            [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
+        ])
+        const frags = mkFrags( k )
+        const [f1,f2,f3] = frags[ fragIdx%frags.length ]
+        
+        let duration =  60/tempo,
+            pause = duration * 0.90,
+            played = duration - pause
+
+        const attack = 0.01,
+              release = 0.1,
+              velocity = 0.5
+
+        fragIdx++
+
         return [            
             { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
             { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
