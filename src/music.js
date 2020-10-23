@@ -85,46 +85,43 @@ export function Music(){
     
     function run( ac, generateSome, synth ){
         const { noteOn, noteOff } = synth
+
         const LATENCY = 0.3,
               INTERVAL = 1/20
 
         const livePartition = {
-            duration : 0,
-            //measure : [],
-            //tempo : [{ time : 0, tempo : 1 }], // 60 bpm
-            //timeSignature : [{ time : 0, beats : 4 }] // 60 bpm
+            duration : 0, // partition time
         }
-        // function requestTempo( tempo ){
-        //     livePartition.requestedTempo = tempo
-        // }
         
         function sequence( acTime, duration ){
 
-            // can remove ?
+            // todo : remove ?
             if ( duration === 0 ) return
             
             const partitionTime = livePartition.duration
             const stopCap = partitionTime + duration
 
             let iidt = 0
+            // call generateSome until enough duration is generated
             while ( livePartition.duration < stopCap ){
 
-                // call generateSome until enough duration is generated
                 const remain = stopCap - livePartition.duration
                 const events = generateSome( livePartition.duration, remain ) // remain time is indicative
                 let idt = 0
                 while ( events.length ){
-                    // unpile each generated event,
+
                     const event = events.shift()
                     const [ dt, eventType ] = event
+
                     // accum events time
                     idt += dt
+
                     // accum sequence time
                     iidt += dt
+
                     // generate webaudio parameters curves (in ac time)
                     if ( eventType === 'noteOn' ){
                         const [_,__,f,v,a] = event
-                        
                         noteOn( acTime + iidt, f, v, a )
                     } else if ( eventType === 'noteOff' ){
                         const [_,__,f,v,r] = event
@@ -139,18 +136,23 @@ export function Music(){
         }
 
         
-        let plannedUntil = 0
+        let plannedUntil = 0 // in ac time
         setInterval( () => {
+            
             const acTime = ac.currentTime
+
             // plan LATENCY ahead
             const left = acTime + LATENCY
             const right = acTime + 2 * LATENCY
+            
             // trim time segment to unplanned
             const rLeft = Math.max( left, plannedUntil )
             const rRight = Math.max( right, plannedUntil )
+
             // do not call for zero length
             if ( rLeft === rRight )
                 return 
+
             // sequence returns its end in ac time
             plannedUntil = sequence( rLeft, rRight - rLeft )
             
