@@ -29,13 +29,13 @@ const sndfx = {
     cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
 }
-import { Music } from './music.js'
+import { Music, LiveMusicComposer } from './music.js'
 
-let _composer
+const composer = LiveMusicComposer()
+
 setTimeout( async () => {
-    const music = Music()
-    const { ac, synth, composer } = await music.start()
-    _composer = composer
+    const music = Music( composer )
+    const { ac, synth } = await music.start()
     console.log('Music',ac,synth,composer)
     
 },2000)
@@ -495,9 +495,13 @@ async function go(){
         rtree.remove( onTreasure )
         world.alcoolLevel += 200
         world.nTreasureFound += 1
+
+        composer.transpose( 3 )
+
         if ( world.nTreasureFound === world.nTreasure ){
             allTreasureFound()
-        }
+        } 
+
         console.log(world)
     }
     function exited(animation){
@@ -654,9 +658,9 @@ async function go(){
         if ( ! world.over ){
             requestAnimationFrame(animate);
         }
-        if ( _composer ){
-            _composer.setFreq( 440 * world.nTreasureFound )
-        }
+        //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
+        composer.setTempo( 1 / ( 1 + world.nTreasureFound ) )
+        
         //stage.position.x += 1
     }
     requestAnimationFrame(animate);

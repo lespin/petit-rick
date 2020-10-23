@@ -30,51 +30,34 @@ function SinusMonoSynth(ac){
     }
     return { noteOn, noteOff, output : gain, stop }
 }
-        /*  
-      let partIdx = 0
 
-        const notes = [0,4,7,11,12].map( x => x + 48 )
-        let musicTick = 0,
-            tickLength = 0.5
+export function LiveMusicComposer( ){
+    const k0 = 48
 
-        let _t = 0
-        const part = notes.flatMap( (key,i) => {
-            const duration = (i%2)?2:1,
-                  volume = 1
-            const events = [
-                { time : _t , type : 'noteOn', key, volume },
-              //  { time : _t+duration, type : 'noteOff', key, volume }
-            ]
-            _t += duration
-            return events
-        })
-        console.log(part)
-        */
-
-export function LiveMusicComposer(){
-    let _f = 440
-    function setFreq(__f){
-        _f = __f
+    let k = k0
+    let tempo 
+    function transpose( keyOffset ){
+        k = k0 + ( k + keyOffset ) % 12
+    }
+    function setTempo( _tempo ){
+        tempo = _tempo
     }
     function generateSome( partitionTime, needed ){
-        //const time = livePartition.duration
-        //const lastTempo = livePartition.tempo[ livePartition.tempo.length - 1 ]
-        //console.log('needed',needed,'@',time,lastTempo)
-        //const lastMeasureStart = livePartition.timeSignature[ livePartition.timeSignature.length - 1 ]
-        //const f = 400  +Math.random()*50
-       const f = _f
+        const f = ktof( k )
+        console.log(tempo)
+        tempo = 1
         return [
             [ 0, 'noteOn', f, 0.5, 0.01 ],
-            [ 0.4, 'noteOff', f, 0.4, 0.5 ],
+            [ tempo/3, 'noteOff', f, 0.4, 0.5 ],
             [ 0, 'noteOn', f, 0.5, 0.01 ],
-            [ 0.2, 'noteOff', f, 0.4, 0.5 ],
-            [ 0.2, 'noteOn', f*1.5, 0.5, 0.01 ],
-            [ 2, 'noteOff', f, 0.4, 0.5 ]
+            [ tempo/3, 'noteOff', f, 0.4, 0.5 ],
+            [ 0, 'noteOn', f*1.5, 0.5, 0.01 ],
+            [ tempo/3, 'noteOff', f, 0.4, 0.5 ]
         ]
     }    
-    return { generateSome,setFreq }
+    return { generateSome, transpose, setTempo }
 }
-export function Music(){
+export function Music( composer ){
     
 
     function setupSynth(ac){
@@ -89,6 +72,7 @@ export function Music(){
     }
     
     function run( ac, generateSome, synth ){
+        
         const { noteOn, noteOff } = synth
 
         const LATENCY = 0.3,
@@ -168,7 +152,6 @@ export function Music(){
     async function start( ){
         const ac = await getAudioContext()
         const synth = setupSynth(ac)
-        const composer = LiveMusicComposer()
         run( ac, composer.generateSome, synth )
         return { ac, synth, composer }
     }
@@ -177,3 +160,24 @@ export function Music(){
         start
     }
 }
+        /*  
+      let partIdx = 0
+
+        const notes = [0,4,7,11,12].map( x => x + 48 )
+        let musicTick = 0,
+            tickLength = 0.5
+
+        let _t = 0
+        const part = notes.flatMap( (key,i) => {
+            const duration = (i%2)?2:1,
+                  volume = 1
+            const events = [
+                { time : _t , type : 'noteOn', key, volume },
+              //  { time : _t+duration, type : 'noteOff', key, volume }
+            ]
+            _t += duration
+            return events
+        })
+        console.log(part)
+        */
+
