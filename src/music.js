@@ -60,13 +60,18 @@ function SinusMonoSynth(ac){
 }
 export function LiveMusicComposer( ){
     const k0 = 48
-    let k = k0
+    let k = k0,
+        keyTarget = k,
+        keyTargets = []
+    
     let tempo
     function transpose( keyOffset ){
-        k = k0 + ( k + keyOffset ) % 12
+        keyTarget = k0 + ( keyTarget + keyOffset ) % 12        
+        keyTargets.push( keyTarget )
     }
+    let tempoTarget
     function setTempo( _tempo ){
-        tempo = _tempo
+        tempoTarget = _tempo
     }
     let fragIdx = 0
     function generateSome( partitionTime, needed ){
@@ -75,8 +80,20 @@ export function LiveMusicComposer( ){
             [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
             [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
         ])
+        
         const frags = mkFrags( k )
         const [f1,f2,f3] = frags[ fragIdx%frags.length ]
+
+        if ( keyTargets.length === 0 ){
+        } else if ( keyTargets.length === 1 ) {
+            if ( (fragIdx % frags.length) === 0 ){
+                k = keyTargets.shift() 
+            }
+        } else {
+            k = keyTargets.shift() 
+        }
+
+        tempo = tempoTarget
         
         let duration =  60/tempo,
             pause = duration * 0.90,
@@ -96,7 +113,7 @@ export function LiveMusicComposer( ){
             ],
             [            
                 { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
-                { dt : played, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
+                { dt : played+pause, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
                 { dt : pause }
             ],
             [            

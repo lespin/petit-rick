@@ -6,6 +6,7 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
+import { GlowFilter } from '@pixi/filter-glow';
 import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
 
 var seedrandom = require('seedrandom');
@@ -32,6 +33,7 @@ const sndfx = {
 import { Music, LiveMusicComposer } from './music.js'
 
 const composer = LiveMusicComposer()
+window.composer = composer
 
 setTimeout( async () => {
     const music = Music( composer )
@@ -189,6 +191,13 @@ async function go(){
     /*stage.pivot.set(0.5,0.5)
       stage.scale.x = 1
       stage.scale.y = 2*/
+    const glowFilter = new GlowFilter()
+
+    setInterval( () => {
+        const s01 = ( 1 + Math.sin( Date.now() / 500 ) ) / 2
+        glowFilter.outerStrength = 1 + s01 * 1
+    },100 )
+    
     const filmFilter = new OldFilmFilter({
         noise : 0.02,
         /*noiseSize : 0.9,*/
@@ -227,13 +236,14 @@ async function go(){
     unsobber.setLevel(0)   
     stage.filters = [
         filmFilter,
-        rgbSplitFilter
+        rgbSplitFilter,
     ];
 
     
 
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
+
     console.log('terrain',terrain)
 
     /*
@@ -244,15 +254,22 @@ async function go(){
     console.log('animationModels',animationModels)
 
     const entrances = terrain.extracted['level-entrance']
+    const exits = terrain.extracted['level-exit']
+    
+
     const items = []
 
+    exits.forEach( exit => {
+        exit.container.filters = [ glowFilter ]
+    })
     entrances.forEach( entrance => {
-    
+        const entrancePosition = entrance.inLayer.position
+        
         //for ( let i = 0 ; i < 4 ; i ++ ){
         
         const animation = new AnimatedItem( animationModels )
-        animation.container.position.x = entrance.x
-        animation.container.position.y = entrance.y
+        animation.container.position.x = entrancePosition.x
+        animation.container.position.y = entrancePosition.y
         //animation.play('iddle-left')
         animation.play('walk-left')
         stage.addChild(animation.container);
@@ -728,7 +745,7 @@ function AnimatedItem( animationModels ){
             //console.log('oncomplete',name,model)
             if ( on.complete ){
                 setTimeout(() => {
-                    //on.complete( name, anim, ...p )
+                    on.complete( name, anim, ...p )
                 },1)
             }
         }
@@ -785,6 +802,7 @@ async function loadTerrain( url ){
     extracted.matter = []
     extracted.treasure = []
     extracted['level-entrance'] = []
+    extracted['level-exit'] = []
     extracted.tree = new RBush();
 
     //
@@ -793,10 +811,10 @@ async function loadTerrain( url ){
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
             if ( tile.properties['level-entrance'] ){
-                extracted['level-entrance'].push( tile.inLayer.position )
+                extracted['level-entrance'].push( tile )
             }
             if ( tile.properties['level-exit'] ){
-                extracted['level-exit'] = tile.inLayer.position
+                extracted['level-exit'].push( tile )
             }
             if ( layer.name === 'ladder' ){
                 extracted['ladders'].push( tile.inLayer.position )
@@ -826,7 +844,7 @@ async function loadTerrain( url ){
         layer.tiles.forEach( tile => {
             const position = tile.inLayer.position,
                   imageBitmap = tile.imageBitmap
-            const collisionMaskNames = tile.properties['collision-mask']
+            const collisionMaskNames = tile.properties['collision-mask']                       
             const sprite = PIXI.Sprite.from( imageBitmap )
             sprite.anchor.set(0.5)
             sprite.position.x = position.x
