@@ -14,45 +14,88 @@ var rng = seedrandom('muz-1');
 //     }
 //     return { push }
 // }
-function VoiceAllocator( nvoices ){
-    const voices = new Array(nvoices).fill(0).map( (_,idx) => ({
-        idx,
-        end : -1
-    }))
-    function event( start, end ){
+// function VoiceAllocator( nvoices ){
+//     const voices = new Array(nvoices).fill(0).map( (_,idx) => ({
+//         idx,
+//         end : -1
+//     }))
+//     function event( start, end ){
 
-        // get unallocated voice
-        let voiceIdx = voices.findIndex( v => v.end < start )
+//         // get unallocated voice
+//         let voiceIdx = voices.findIndex( v => v.end < start )
 
-        // if none, take first (~oldest)
-        if ( voiceIdx < 0 ){
-            voiceIdx = 0
-        } 
-        const voice = voices[ voiceIdx ]
+//         // if none, take first (~oldest)
+//         if ( voiceIdx < 0 ){
+//             voiceIdx = 0
+//         } 
+//         const voice = voices[ voiceIdx ]
 
-        // remove        
-        voices.splice( voiceIdx, 1 )
+//         // remove        
+//         voices.splice( voiceIdx, 1 )
 
-        // put at end
-        voices.push({ ...voice, end } )
+//         // put at end
+//         voices.push({ ...voice, end } )
 
-        return voice
+//         return voice
         
+//     }
+//     return { event }
+// }
+// /*
+// const voiceAllocator = VoiceAllocator( 4 )
+// console.log(voiceAllocator.event(0,2))
+// console.log(voiceAllocator.event(0,0.99))
+// console.log(voiceAllocator.event(0,0.5))
+// console.log(voiceAllocator.event(0,2))
+// console.log(voiceAllocator.event(1,2))
+// console.log(voiceAllocator.event(0.51,2))
+// //console.log('voiceAllocator',voiceAllocator)
+// */
+// function SinusPolySynth( ac, polyphony ){
+    
+//     const gain = ac.createGain()
+//     gain.gain.value = 1.0
+
+//     const voiceAllocator = VoiceAllocator( polyphony )
+//     const monoSynths = new Array( polyphony ).fill(0).map( () => {
+//         const sinusMonoSynth = SinusMonoSynth(ac)
+//         sinusMonoSynth.output.connect( gain )
+//         return sinusMonoSynth
+//     })
+//     function noteOn(){
+        
+//     }
+//     function stop(){
+//         monoSynths.forEach( monoSynth => monoSynth.stop() )
+//     }
+//     return { noteOn, noteOff, output : gain, stop }
+    
+// }
+function MultiChannelSynth( ac, channelCount ){
+    const gain = ac.createGain()
+    gain.gain.value = 1.0
+    
+    const monoSynths = new Array( channelCount ).fill(0).map( () => {
+        const sinusMonoSynth = SinusMonoSynth(ac)
+        sinusMonoSynth.output.connect( gain )
+        return sinusMonoSynth
+    })
+    function getMonoSynth( channel ){
+        const monoSynth = monoSynths[ channel ]
+        if ( !monoSynth )  throw new Error( 'no channel '+ channel)
+        return monoSynth
     }
-    return { event }
+    function noteOn( p ){
+        getMonoSynth( p.channel ).noteOn( p )
+    }
+    function noteOff( p ){
+        getMonoSynth( p.channel ).noteOff( p )
+    }
+    function stop(){
+        monoSynths.forEach( monoSynth => monoSynth.stop() )
+    }
+    return { noteOn, noteOff, output : gain, stop }
 }
-/*
-const voiceAllocator = VoiceAllocator( 4 )
-console.log(voiceAllocator.event(0,2))
-console.log(voiceAllocator.event(0,0.99))
-console.log(voiceAllocator.event(0,0.5))
-console.log(voiceAllocator.event(0,2))
-console.log(voiceAllocator.event(1,2))
-console.log(voiceAllocator.event(0.51,2))
-*/
-
-console.log('voiceAllocator',voiceAllocator)
-
 function SinusMonoSynth(ac){
     
     const osc = ac.createOscillator(),
@@ -63,15 +106,17 @@ function SinusMonoSynth(ac){
     osc.connect( gain )
     osc.start()
     
-    function noteOn( time, frequency, volume, attack ){
-        osc.frequency.linearRampToValueAtTime( frequency, time )
-        gain.gain.cancelScheduledValues( time )
+    function noteOn( { time, frequency, velocity, attack } ){
+        //osc.frequency.linearRampToValueAtTime( frequency, time )
+        osc.frequency.setValueAtTime( frequency, time )
+  //      gain.gain.cancelScheduledValues( time )
+//        gain.gain.setValueAtTime( 0, time )
         gain.gain.linearRampToValueAtTime( 0, time )
-        gain.gain.linearRampToValueAtTime( volume, time + attack )
+        gain.gain.linearRampToValueAtTime( velocity, time + attack )
     }
-    function noteOff( time, frequency, volume, release = 1/44100 ){
+    function noteOff( { time, frequency, velocity, release } ){
         osc.frequency.linearRampToValueAtTime( frequency, time )
-        gain.gain.linearRampToValueAtTime( volume, time)
+        gain.gain.linearRampToValueAtTime( velocity, time)
         gain.gain.linearRampToValueAtTime( 0, time+release )
     }
     function stop(){
@@ -82,7 +127,6 @@ function SinusMonoSynth(ac){
 
 export function LiveMusicComposer( ){
     const k0 = 48
-
     let k = k0
     let tempo 
     function transpose( keyOffset ){
@@ -92,14 +136,30 @@ export function LiveMusicComposer( ){
         tempo = _tempo
     }
     function generateSome( partitionTime, needed ){
-        const f = ktof( k )
-        return [
-            [ 0, 'noteOn', f, 0.5, 0.01 ],
-            [ tempo/3, 'noteOff', f, 0.4, 0.5 ],
-            [ 0, 'noteOn', f, 0.5, 0.01 ],
-            [ tempo/3, 'noteOff', f, 0.4, 0.5 ],
-            [ 0, 'noteOn', f*1.5, 0.5, 0.01 ],
-            [ tempo/3, 'noteOff', f, 0.4, 0.5 ]
+        console.log('needed',needed)
+        const f1 = ktof( k ),
+              f2 = ktof( k+3 ),
+              f3 = ktof( k+7 )
+        let duration =  60/tempo/3,
+            pause = duration * 0.90,
+            played = duration - pause
+
+        const attack = 0.01,
+              release = 0.1,
+              velocity = 0.5
+        return [            
+            { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+
+            { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1*1.5, velocity, attack } ,
+            
+            { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+            { dt : pause, channel : 0, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+            { dt : played, channel : 0, eventType : 'noteOff', frequency : f2, velocity, release } ,
+            
+            { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1*1.5, velocity, release } ,
+            
+            { dt : pause }
+            
         ]
     }    
     return { generateSome, transpose, setTempo }
@@ -112,10 +172,14 @@ export function Music( composer ){
         safeOutput.output.gain.value = 1
         safeOutput.output.connect( ac.destination )
 
+        /*
         const sinusMonoSynth = SinusMonoSynth(ac)
-        
         sinusMonoSynth.output.connect( safeOutput.input )
         return sinusMonoSynth
+        */
+        const multiChannelSynth = MultiChannelSynth( ac, 4 )
+        multiChannelSynth.output.connect( safeOutput.input )
+        return multiChannelSynth
     }
     
     function run( ac, generateSome, synth ){
@@ -147,8 +211,8 @@ export function Music( composer ){
                 while ( events.length ){
 
                     const event = events.shift()
-                    const [ dt, eventType ] = event
-
+                    const { dt, eventType } = event
+                    console.log(dt,eventType,event)
                     // accum events time
                     idt += dt
 
@@ -157,11 +221,9 @@ export function Music( composer ){
 
                     // generate webaudio parameters curves (in ac time)
                     if ( eventType === 'noteOn' ){
-                        const [_,__,f,v,a] = event
-                        noteOn( acTime + iidt, f, v, a )
+                        noteOn( { time : acTime + iidt, ...event } )
                     } else if ( eventType === 'noteOff' ){
-                        const [_,__,f,v,r] = event
-                        noteOff( acTime + iidt, f, v, r )
+                        noteOff( { time : acTime + iidt, ...event } )
                     }
                 }
                 // update partition time
