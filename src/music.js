@@ -52,22 +52,27 @@ function SinusMonoSynth(ac){
         */
 
 export function LiveMusicComposer(){
+    let _f = 440
+    function setFreq(__f){
+        _f = __f
+    }
     function generateSome( partitionTime, needed ){
         //const time = livePartition.duration
         //const lastTempo = livePartition.tempo[ livePartition.tempo.length - 1 ]
         //console.log('needed',needed,'@',time,lastTempo)
         //const lastMeasureStart = livePartition.timeSignature[ livePartition.timeSignature.length - 1 ]
-        const f = 400  +Math.random()*50
+        //const f = 400  +Math.random()*50
+       const f = _f
         return [
             [ 0, 'noteOn', f, 0.5, 0.01 ],
             [ 0.4, 'noteOff', f, 0.4, 0.5 ],
             [ 0, 'noteOn', f, 0.5, 0.01 ],
             [ 0.2, 'noteOff', f, 0.4, 0.5 ],
             [ 0.2, 'noteOn', f*1.5, 0.5, 0.01 ],
-            [ 0.2, 'noteOff', f, 0.4, 0.5 ]
+            [ 2, 'noteOff', f, 0.4, 0.5 ]
         ]
     }    
-    return { generateSome }
+    return { generateSome,setFreq }
 }
 export function Music(){
     
@@ -160,12 +165,12 @@ export function Music(){
         
     }
 
-    function start( ){
-        getAudioContext().then( async ac => {
-            const synth = setupSynth(ac)
-            const composer = LiveMusicComposer()
-            run( ac, composer.generateSome, synth )
-        })
+    async function start( ){
+        const ac = await getAudioContext()
+        const synth = setupSynth(ac)
+        const composer = LiveMusicComposer()
+        run( ac, composer.generateSome, synth )
+        return { ac, synth, composer }
     }
     
     return {

@@ -31,9 +31,12 @@ const sndfx = {
 }
 import { Music } from './music.js'
 
-setTimeout( () => {
+let _composer
+setTimeout( async () => {
     const music = Music()
-    music.start()
+    const { ac, synth, composer } = await music.start()
+    _composer = composer
+    console.log('Music',ac,synth,composer)
     
 },2000)
 
@@ -650,6 +653,9 @@ async function go(){
 	stats.end();
         if ( ! world.over ){
             requestAnimationFrame(animate);
+        }
+        if ( _composer ){
+            _composer.setFreq( 440 * world.nTreasureFound )
         }
         //stage.position.x += 1
     }
