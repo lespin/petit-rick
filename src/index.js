@@ -206,17 +206,20 @@ async function go(){
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
 
+    const entrances = terrain.extracted['level-entrance']
     const items = []
-    for ( let i = 0 ; i < 4 ; i ++ ){
+
+    entrances.forEach( entrance => {
+    
+        //for ( let i = 0 ; i < 4 ; i ++ ){
         
         const animation = new AnimatedItem( animationModels )
-        animation.container.position.x = terrain.extracted['level-entrance'].x - i * 8
-        animation.container.position.y = terrain.extracted['level-entrance'].y
+        animation.container.position.x = entrance.x
+        animation.container.position.y = entrance.y
         //animation.play('iddle-left')
         animation.play('walk-left')
         stage.addChild(animation.container);
-        animation.proute = i
-        //if (i === 0 ){
+
         
         animation.on.complete = function(...p){
             //            console.log('complete')
@@ -249,7 +252,7 @@ async function go(){
         //}
         items.push(animation)
         
-    }
+    })
 
     const scoreboard = new PIXI.Container()
     viewport.addChild( scoreboard )
@@ -734,6 +737,7 @@ async function loadTerrain( url ){
     extracted.ladders = []    
     extracted.matter = []
     extracted.treasure = []
+    extracted['level-entrance'] = []
     extracted.tree = new RBush();
 
     //
@@ -742,7 +746,7 @@ async function loadTerrain( url ){
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
             if ( tile.properties['level-entrance'] ){
-                extracted['level-entrance'] = tile.inLayer.position
+                extracted['level-entrance'].push( tile.inLayer.position )
             }
             if ( tile.properties['level-exit'] ){
                 extracted['level-exit'] = tile.inLayer.position
