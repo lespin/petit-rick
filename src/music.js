@@ -2,75 +2,9 @@ import { getAudioContext } from './lib/audio.js'
 import { SafeOutput } from './lib/safeoutput.js'
 import { ktof } from './lib/frequencies.js'
 var seedrandom = require('seedrandom');
-var rng = seedrandom('muz-1');
+var rng = seedrandom('muz-1')
+//const notes = [0,4,7,11,12].map( x => x + 48 )
 
-// function RingBuffer( buffer ){
-//     const widx = 0,
-//           length = 0
-//     function push( v ){
-//         buffer[ widx ] = v
-//         widx = ( widx + 1 ) % buffer.length
-//         length = Math.max( length, widx + 1 )
-//     }
-//     return { push }
-// }
-// function VoiceAllocator( nvoices ){
-//     const voices = new Array(nvoices).fill(0).map( (_,idx) => ({
-//         idx,
-//         end : -1
-//     }))
-//     function event( start, end ){
-
-//         // get unallocated voice
-//         let voiceIdx = voices.findIndex( v => v.end < start )
-
-//         // if none, take first (~oldest)
-//         if ( voiceIdx < 0 ){
-//             voiceIdx = 0
-//         } 
-//         const voice = voices[ voiceIdx ]
-
-//         // remove        
-//         voices.splice( voiceIdx, 1 )
-
-//         // put at end
-//         voices.push({ ...voice, end } )
-
-//         return voice
-        
-//     }
-//     return { event }
-// }
-// /*
-// const voiceAllocator = VoiceAllocator( 4 )
-// console.log(voiceAllocator.event(0,2))
-// console.log(voiceAllocator.event(0,0.99))
-// console.log(voiceAllocator.event(0,0.5))
-// console.log(voiceAllocator.event(0,2))
-// console.log(voiceAllocator.event(1,2))
-// console.log(voiceAllocator.event(0.51,2))
-// //console.log('voiceAllocator',voiceAllocator)
-// */
-// function SinusPolySynth( ac, polyphony ){
-    
-//     const gain = ac.createGain()
-//     gain.gain.value = 1.0
-
-//     const voiceAllocator = VoiceAllocator( polyphony )
-//     const monoSynths = new Array( polyphony ).fill(0).map( () => {
-//         const sinusMonoSynth = SinusMonoSynth(ac)
-//         sinusMonoSynth.output.connect( gain )
-//         return sinusMonoSynth
-//     })
-//     function noteOn(){
-        
-//     }
-//     function stop(){
-//         monoSynths.forEach( monoSynth => monoSynth.stop() )
-//     }
-//     return { noteOn, noteOff, output : gain, stop }
-    
-// }
 function MultiChannelSynth( ac, channelCount ){
     const gain = ac.createGain()
     gain.gain.value = 1.0
@@ -127,41 +61,41 @@ function SinusMonoSynth(ac){
 export function LiveMusicComposer( ){
     const k0 = 48
     let k = k0
-    let tempo 
+    let tempo
     function transpose( keyOffset ){
         k = k0 + ( k + keyOffset ) % 12
     }
     function setTempo( _tempo ){
         tempo = _tempo
     }
+    let fragIdx = 0
     function generateSome( partitionTime, needed ){
-        console.log('needed',needed)
-        const f1 = ktof( k ),
-              f2 = ktof( k+3 ),
-              f3 = ktof( k+7 )
-        let duration =  60/tempo/3,
+        //console.log('needed',needed)
+        const mkFrags = k => ([
+            [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
+            [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
+        ])
+        const frags = mkFrags( k )
+        const [f1,f2,f3] = frags[ fragIdx%frags.length ]
+        
+        let duration =  60/tempo,
             pause = duration * 0.90,
             played = duration - pause
 
-        const attack = 0.1,
+        const attack = 0.01,
               release = 0.1,
               velocity = 0.5
-        
+
+        fragIdx++
+
         return [            
             { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-            { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1*1.5, velocity, attack } ,
-            { dt : 0, channel : 2, eventType : 'noteOn', frequency : f1*2, velocity, attack } ,
-            
+            { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+            { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
             { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
-            { dt : 0, channel : 2, eventType : 'noteOff', frequency : f1*2, velocity, release } ,
-
-            { dt : pause, channel : 0, eventType : 'noteOn', frequency : f2, velocity, attack } ,
-            { dt : played, channel : 0, eventType : 'noteOff', frequency : f2, velocity, release } ,
-            
-            { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1*1.5, velocity, release } ,
-            
+            { dt : 0, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
+            { dt : 0, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
             { dt : pause }
-            
         ]
     }    
     return { generateSome, transpose, setTempo }
@@ -214,7 +148,7 @@ export function Music( composer ){
 
                     const event = events.shift()
                     const { dt, eventType } = event
-                    console.log(dt,eventType,event)
+                    // console.log(dt,eventType,event)
                     // accum events time
                     idt += dt
 
@@ -271,24 +205,6 @@ export function Music( composer ){
         start
     }
 }
-        /*  
-      let partIdx = 0
+   
 
-        const notes = [0,4,7,11,12].map( x => x + 48 )
-        let musicTick = 0,
-            tickLength = 0.5
-
-        let _t = 0
-        const part = notes.flatMap( (key,i) => {
-            const duration = (i%2)?2:1,
-                  volume = 1
-            const events = [
-                { time : _t , type : 'noteOn', key, volume },
-              //  { time : _t+duration, type : 'noteOff', key, volume }
-            ]
-            _t += duration
-            return events
-        })
-        console.log(part)
-        */
-
+        
