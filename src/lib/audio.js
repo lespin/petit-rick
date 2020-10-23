@@ -58,7 +58,7 @@ import { SafeOutput } from './safeoutput.js'
 //console.log('LinearScaler',LinearScaler)
 // import MyWorkletProcessor from './MyWorkletProcessor.js'
 // import MyWorkletNode from './MyWorkletNode.js'
-
+if ( false )
 getAudioContext().then( async ac => {
 
     /*

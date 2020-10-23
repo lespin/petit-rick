@@ -29,6 +29,13 @@ const sndfx = {
     cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
 }
+import { Music } from './music.js'
+
+setTimeout( () => {
+    const music = Music()
+    music.start()
+    
+},2000)
 
 var aStar = require('a-star');
 var path = aStar({
@@ -66,6 +73,7 @@ function HiScores(){
     return { load, save, setScore }
 }
 const hiScores = HiScores()
+window.hiScores = hiScores
 
 
 
@@ -564,7 +572,7 @@ async function go(){
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
-        if ( intElapsed > 1 ){
+        if ( intElapsed > 2 ){
             console.log('must do',intElapsed)
         }
         
@@ -708,7 +716,7 @@ function AnimatedItem( animationModels ){
             //console.log('oncomplete',name,model)
             if ( on.complete ){
                 setTimeout(() => {
-                    on.complete( name, anim, ...p )
+                    //on.complete( name, anim, ...p )
                 },1)
             }
         }
