@@ -1,8 +1,6 @@
 export function PageVisibility(){    
     
     const on = {
-        visible : [],
-        hidden : [],
         change : []
     }
     var hidden, visibilityChange; 
@@ -15,15 +13,12 @@ export function PageVisibility(){
     } else if (typeof document.webkitHidden !== "undefined") {
         hidden = "webkitHidden";
         visibilityChange = "webkitvisibilitychange";
-    }    
+    }
+    function isVisible(){
+        return !document[hidden]
+    }
     function handleVisibilityChange() {        
-        if (document[hidden]) {
-            on.change.forEach( f => f(false) )
-            on.hidden.forEach( f => f() )
-        } else {
-            on.change.forEach( f => f(true) )
-            on.visible.forEach( f => f() )
-        }
+        on.change.forEach( f => f() )
     }
     if (typeof document.addEventListener === "undefined"
         || hidden === undefined) {
@@ -33,5 +28,5 @@ export function PageVisibility(){
         document.addEventListener(visibilityChange, handleVisibilityChange, false);
     }
 
-    return { on }
+    return { on, isVisible }
 }

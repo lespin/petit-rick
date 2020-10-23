@@ -17,12 +17,13 @@ document.body.appendChild( stats.dom );
 
 import { PageVisibility } from './lib/domVisibility.js'
 const pageVisibility = PageVisibility()
-pageVisibility.on.change.push( visible => {
-    console.log('visible?',visible,'at',new Date())
+pageVisibility.on.change.push( () => {
+    
+    console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
 
 var rng = seedrandom('fx-1');
-console.log('random',rng())
+
 const sndfx = {
     pickup : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
@@ -211,7 +212,8 @@ async function go(){
         const animation = new AnimatedItem( animationModels )
         animation.container.position.x = terrain.extracted['level-entrance'].x - i * 8
         animation.container.position.y = terrain.extracted['level-entrance'].y
-        animation.play('iddle-left')
+        //animation.play('iddle-left')
+        animation.play('walk-left')
         stage.addChild(animation.container);
         animation.proute = i
         //if (i === 0 ){
@@ -220,7 +222,7 @@ async function go(){
             //            console.log('complete')
             const [name,animatedSprite] = p,
                   frame = animatedSprite.currentFrame
-            //console.log('complete',name,frame)
+            console.log('complete',name,frame)
             // take from world ?
             const commands = {
                 up : keyboardState.state.get('ArrowUp'),
@@ -312,7 +314,7 @@ async function go(){
                 //align : 'right'
                 //tint : 0xffffff * Math.random()
             }),
-            levelScore : scoreBoardText( scoreboard,50,60, {
+            levelScore : scoreBoardText( scoreboard,54,60, {
                 width : scoreboard.width
                 //align : 'right'
                 //tint : 0xffffff * Math.random()
@@ -667,13 +669,17 @@ function AnimatedItem( animationModels ){
         })))
         anim.anchor.set(0.5);
         anim.scale.set(1);
-        anim.animationSpeed =  speed
+        anim.animationSpeed =  speed 
         animationContainer.addChild(anim);
         // todo
         anim.loop = false//loop
+        
         anim.onComplete = (...p) => {
+            console.log('oncomplete',name,model)
             if ( on.complete ){
-                //on.complete( name, anim, ...p )
+                setTimeout(() => {
+                    on.complete( name, anim, ...p )
+                },1)
             }
         }
         // anim.onFrameChange = (...p) => on.frameChange( name, anim, ...p )
@@ -683,6 +689,7 @@ function AnimatedItem( animationModels ){
     })
     let _previousAnimation = undefined
     function play( name ){
+        console.log('play anim',name)
         if ( _previousAnimation !== undefined ){
             const anim =  animations[ _previousAnimation  ]
             anim.stop()
@@ -710,8 +717,8 @@ async function loadAnimations( url ){
                 texture : PIXI.Texture.from( tile.imageBitmap ),
                 time : 50
             })),
-            loop : true,//layer.properties['animation-loop'],
-            speed : 0.5//0.25//layer.properties['animation-speed']
+            loop : layer.properties['animation-loop'],
+            speed :layer.properties['animation-speed']
         }
     })
     return animationModels    
