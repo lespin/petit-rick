@@ -41,6 +41,32 @@ var path = aStar({
 })
 console.log(path);
 
+function HiScores(){
+    function load(){
+        const ls = localStorage.getItem( 'hiscores' )
+        if ( ls ){
+            return JSON.parse( ls )
+        } else {
+            return {
+                list : [
+                    { name : 'Lionel J.', score : 666 },
+                    { name : 'Chriac J.', score : 676 },
+                ]
+            }
+        }
+    }
+    function save( hiscores ){
+        localStorage.setItem( 'hiscores', JSON.stringify( hiscores ) )
+    }
+    function setScore( name, score ){
+        const hiscores = load()
+        hiscores.list = [...hiscores.list,{name,score}].sort( (a,b) => b.score - a.score )
+        return hiscores
+    }
+    return { load, save, setScore }
+}
+const hiScores = HiScores()
+
 
 
 const retribs = {
@@ -225,7 +251,7 @@ async function go(){
             //            console.log('complete')
             const [name,animatedSprite] = p,
                   frame = animatedSprite.currentFrame
-            console.log('complete',name,frame)
+//            console.log('complete',name,frame)
             // take from world ?
             const commands = {
                 up : keyboardState.state.get('ArrowUp'),
@@ -236,7 +262,7 @@ async function go(){
             const retrib = retribs[ name ]
             const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
             const followedBy = retrib[ matchedCommand || 0 ]
-            console.log('@',Date.now(),followedBy)
+//            console.log('@',Date.now(),followedBy)
             animation.play( followedBy.go )
         }
         /*
@@ -335,7 +361,7 @@ async function go(){
             _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
         }
         //_scoreboardZones.updateTreasuresFound()
-        console.log('_scoreboardZones',_scoreboardZones)
+//        console.log('_scoreboardZones',_scoreboardZones)
     })
     
     //items.length = 1
@@ -614,8 +640,9 @@ async function go(){
         //        console.log('1/60/end')
         // recurse
 	stats.end();
-        
-        requestAnimationFrame(animate);
+        if ( ! world.over ){
+            requestAnimationFrame(animate);
+        }
         //stage.position.x += 1
     }
     requestAnimationFrame(animate);
@@ -678,7 +705,7 @@ function AnimatedItem( animationModels ){
         anim.loop = false//loop
         
         anim.onComplete = (...p) => {
-            console.log('oncomplete',name,model)
+            //console.log('oncomplete',name,model)
             if ( on.complete ){
                 setTimeout(() => {
                     on.complete( name, anim, ...p )
@@ -692,7 +719,7 @@ function AnimatedItem( animationModels ){
     })
     let _previousAnimation = undefined
     function play( name ){
-        console.log('play anim',name)
+        //console.log('play anim',name)
         if ( _previousAnimation !== undefined ){
             const anim =  animations[ _previousAnimation  ]
             anim.stop()
