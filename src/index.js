@@ -590,10 +590,8 @@ async function go(){
         world.step = intStep
         
     }
-    // setup RAF
+   
     let oldTime = Date.now();
-
-    
     function animate() {
 
         stats.begin();
@@ -662,7 +660,7 @@ async function go(){
         if ( world.over ){
             composer.setTempo( 1 )
         } else {
-            composer.setTempo( 1 / ( 1 + world.nTreasureFound ) )
+            composer.setTempo( 1 / ( 1 + world.nTreasureFound / 4 ) )
         }
         
         //stage.position.x += 1

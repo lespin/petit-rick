@@ -17,21 +17,42 @@ var rng = seedrandom('muz-1');
 function VoiceAllocator( nvoices ){
     const voices = new Array(nvoices).fill(0).map( (_,idx) => ({
         idx,
-        end : 0
+        end : -1
     }))
     function event( start, end ){
-        let voiceIdx = voices.find( v => v.end < start )
+
+        // get unallocated voice
+        let voiceIdx = voices.findIndex( v => v.end < start )
+
+        // if none, take first (~oldest)
         if ( voiceIdx < 0 ){
-            // nothing free, take first
             voiceIdx = 0
         } 
         const voice = voices[ voiceIdx ]
-        // replace
-        voices.splice( voiceIdx, 1, { ...voice, end } )
-        return voiceIdx
+
+        // remove        
+        voices.splice( voiceIdx, 1 )
+
+        // put at end
+        voices.push({ ...voice, end } )
+
+        return voice
+        
     }
     return { event }
 }
+/*
+const voiceAllocator = VoiceAllocator( 4 )
+console.log(voiceAllocator.event(0,2))
+console.log(voiceAllocator.event(0,0.99))
+console.log(voiceAllocator.event(0,0.5))
+console.log(voiceAllocator.event(0,2))
+console.log(voiceAllocator.event(1,2))
+console.log(voiceAllocator.event(0.51,2))
+*/
+
+console.log('voiceAllocator',voiceAllocator)
+
 function SinusMonoSynth(ac){
     
     const osc = ac.createOscillator(),
