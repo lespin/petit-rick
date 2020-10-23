@@ -124,7 +124,6 @@ function SinusMonoSynth(ac){
     }
     return { noteOn, noteOff, output : gain, stop }
 }
-
 export function LiveMusicComposer( ){
     const k0 = 48
     let k = k0
@@ -144,15 +143,18 @@ export function LiveMusicComposer( ){
             pause = duration * 0.90,
             played = duration - pause
 
-        const attack = 0.01,
+        const attack = 0.1,
               release = 0.1,
               velocity = 0.5
+        
         return [            
             { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-
             { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1*1.5, velocity, attack } ,
+            { dt : 0, channel : 2, eventType : 'noteOn', frequency : f1*2, velocity, attack } ,
             
             { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+            { dt : 0, channel : 2, eventType : 'noteOff', frequency : f1*2, velocity, release } ,
+
             { dt : pause, channel : 0, eventType : 'noteOn', frequency : f2, velocity, attack } ,
             { dt : played, channel : 0, eventType : 'noteOff', frequency : f2, velocity, release } ,
             
