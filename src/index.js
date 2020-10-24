@@ -45,33 +45,29 @@ function StorageItem( name ){
     }
 }
 function HiScores( level ){
-    const { get, set, remove } = StorageItem( level )    
+    const { get, set, remove } = StorageItem( level )
+    const defaultValue = {
+        list : [
+            { name : 'Lionel J.', score : 666 },
+            { name : 'Chriac J.', score : 676 },
+        ]
+    }
     function load(){
         const ls = get()
         if ( ls ){
             return JSON.parse( ls )
         } else {
-            return {
-                list : [
-                    { name : 'Lionel J.', score : 666 },
-                    { name : 'Chriac J.', score : 676 },
-                ]
-            }
+            return defaultValue
         }
-    }
-    function save( hiscores ){
-        set( JSON.stringify( hiscores ) )
     }
     function setScore( name, score ){
         const hiscores = load()
-        hiscores.list = [
-            ...hiscores.list,
-            {name,score}
-        ].sort( (a,b) => b.score - a.score )
+        hiscores.list.push( { name, score } )
+        hiscores.list.sort( (a,b) => b.score - a.score )
         set( JSON.stringify( hiscores ) )
         return hiscores
     }
-    return { load, save, setScore, remove }
+    return { load, setScore, remove }
 }
 
 
