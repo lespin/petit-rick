@@ -72,10 +72,16 @@ function HiScores(){
     }
     function setScore( name, score ){
         const hiscores = load()
-        hiscores.list = [...hiscores.list,{name,score}].sort( (a,b) => b.score - a.score )
+        hiscores.list = [
+            ...hiscores.list,
+            {name,score}
+        ].sort( (a,b) => b.score - a.score )
         return hiscores
     }
-    return { load, save, setScore }
+    function purge(){
+        localStorage.removeItem( 'hiscores' )
+    }
+    return { load, save, setScore, purge }
 }
 const hiScores = HiScores()
 window.hiScores = hiScores
@@ -520,10 +526,26 @@ async function go(){
 
         console.log(world)
     }
+    function computeScore(){
+        const score = world.countdown * world.nTreasureFound
+        world.score = score        
+
+        const name = 'you'
+        const hs = hiScores.setScore( name, score )
+        hiScores.save( hs )
+        const rank = hs.list.findIndex( r => {
+            return ( r.name === name ) && ( r.score === score )
+        })
+        world.rank = rank
+        //console.log('you rank',rank)
+        //console.log( hiScores.load() )
+    }
     function exited(animation){
         console.log('BEEP','exited')
 
         world.over = world.time
+        computeScore()
+        
         console.log('over at',world.over)
         
         sndfx.win()
@@ -657,7 +679,7 @@ async function go(){
             _scoreboardZones.updateTreasuresFound( world.nTreasureFound )
 
             if ( world.over ){
-                _scoreboardZones.updateLevelScore( `${ remain } * ${ world.nTreasureFound } = ${ remain * world.nTreasureFound }` )
+                _scoreboardZones.updateLevelScore( `place : #${ world.rank + 1 } \n${ remain } * ${ world.nTreasureFound } = ${ world.score }` )
             } else {
                 _scoreboardZones.updateLevelScore('')
             }

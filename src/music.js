@@ -179,7 +179,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
             }
         }
         //console.log('needed',needed)
-        console.log(fragIdx, measureInfo(), { tempo, tempoTarget } )
+        // console.log(fragIdx, measureInfo(), { tempo, tempoTarget } )
         
         let nbeats = 3,
             duration =  60/tempo / nbeats,
@@ -215,7 +215,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
         const pat2 = RythmPattern([1,0.5,0.3],musicSeed+'22'+beatNum)
         const pat3 = RythmPattern([1,0.5,0.3],musicSeed+'33'+beatNum)
         const pat4 = RythmPattern([0,0.5,0.0],musicSeed+'44'+beatNum) // urgency
-        console.log( pat1, pat2, pat3 )
+        // console.log( pat1, pat2, pat3 )
         fragIdx++
 
         const ones = [[pat1,f1,0],[pat2,f2,1],[pat3,f3,2],[pat4,f3*2,3]].map( ([pat,f,channel]) => {
