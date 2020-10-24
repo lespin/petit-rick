@@ -95,16 +95,16 @@ export function LiveMusicComposer( musicSeed = '5' ){
     const k0 = 48
     let k = k0,
         keyTarget = k,
-        keyTargets = [],
-        conclude = false
+        keyTargets = []
     
     function transpose( keyOffset ){
         keyTarget = k0 + ( keyTarget + keyOffset ) % 12        
         keyTargets.push( keyTarget )
     }
-    
+    let concludes = false
+    let wantsConclusion = false
     function conclusion( _conclude ){
-        conclude = _conclude
+        wantsConclusion = _conclude
     }
 
     let timeSignature
@@ -138,7 +138,12 @@ export function LiveMusicComposer( musicSeed = '5' ){
             if ( Math.abs( middle - tempoTarget ) <= 1 ){
                 tempo = tempoTarget
             } else {
-                tempo = middle
+                const diff = middle - tempo
+                const adiff = Math.abs( diff ),
+                      sdiff = Math.sign( diff )
+                const cadiff = Math.min( adiff, 5 )
+                const cdiff = sdiff * cadiff
+                tempo += cdiff
             }            
         }
     }
@@ -147,10 +152,22 @@ export function LiveMusicComposer( musicSeed = '5' ){
         const { measureNum, beatNum } = measureInfo()
         lerpTempo()
 
-        if ( keyTargets.length && ( beatNum === 0 ) ){
-            k = keyTargets.shift()
+        if ( wantsConclusion ){
+            if ( beatNum === 0 ){
+                concludes = true
+            } 
+        } else {
+            if ( beatNum === 0 ){
+                concludes = false
+            } 
         }
-        
+        if ( concludes ){
+            keyTargets.length = 0
+        } else {
+            if ( keyTargets.length && ( beatNum === 0 ) ){
+                k = keyTargets.shift()
+            }
+        }
         //console.log('needed',needed)
         console.log(fragIdx, measureInfo(), { tempo, tempoTarget } )
         
@@ -163,10 +180,19 @@ export function LiveMusicComposer( musicSeed = '5' ){
               release = 0.1,
               velocity = 0.5
 
-        const chordSequence = [
-            [ 0 , 0+12+4 , 0+12+10 ],
-            [ 0-7 , 0+12 , 0+12+8 ],
-        ]
+        let chordSequence
+        if ( concludes ){
+            chordSequence = [
+                [ 7 , 12+2 , 12+11 ],
+                [ 0 , 12+4 , 12+12 ],
+            ]
+        } else {
+            chordSequence = [
+                [ 0 , 0+12+4 , 0+12+10 ],
+                [ 0-7 , 0+12 , 0+12+8 ]
+            ]
+        }
+        
         
         const chordSequenceIdx = fragIdx%chordSequence.length
         const chord = chordSequence[ chordSequenceIdx ]       

@@ -675,9 +675,10 @@ async function go(){
         }
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
         if ( world.over ){
-            composer.setTempo( 60 +  world.nTreasureFound + 1 )
+            composer.conclusion(true)
+            composer.setTempo( 40 )
         } else {
-            composer.setTempo( 60 +  world.nTreasureFound * 5 )
+            composer.setTempo( 60 +  world.nTreasureFound * 40 )
         }
         
         //stage.position.x += 1
