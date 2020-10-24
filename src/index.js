@@ -489,54 +489,53 @@ async function go(){
     function worldFixedStep( ){
         world.countdown = Math.max(0, world.countdown - 1 )
         world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
-        items
-            .forEach( item => {
-                const animation = item
-                
-                const pl = animation.container,
-                      {x,y} = pl.position,
-                      {width,height} = pl
+        items.forEach( item => {
+            const animation = item
+            
+            const pl = animation.container,
+                  {x,y} = pl.position,
+                  {width,height} = pl
 
-                
-                const surroundings = updateSurroundings( x, y, width, height )
-                const { onLadder, underMatter } = surroundings
+            
+            const surroundings = updateSurroundings( x, y, width, height )
+            const { onLadder, underMatter } = surroundings
 
-                //if ( world.over ) return
-                if ( surroundings.onTreasure ){
-                    reachTreasure( animation, surroundings.onTreasure )
-                }
-                if ( surroundings.onExit ){
-                    reachExit( animation, surroundings.onExit )
-                    //return
-                }
-                
-                if ( !onLadder && !underMatter ){
-                    animation.container.position.y += 1
-                } else {
-                    const commands = world.commands
-                    if ( commands.left ){
-                        if ( !surroundings.leftMatter ){
-                            animation.container.position.x -= 1
-                        } else {
-                            //animation.play( 'iddle-left' )
-                        }
-                    } else if ( commands.right ){
-                        if ( !surroundings.rightMatter ){
-                            animation.container.position.x += 1
-                        } else {
-                            //                    animation.play( 'iddle-right' )
-                        }
-                    } else if ( commands.up ){
-                        if ( surroundings.onLadder ){
-                            animation.container.position.y -= 1
-                        }   
-                    } else if ( commands.down ){
-                        if ( surroundings.aboveLadder ){
-                            animation.container.position.y += 1
-                        }
+            //if ( world.over ) return
+            if ( surroundings.onTreasure ){
+                reachTreasure( animation, surroundings.onTreasure )
+            }
+            if ( surroundings.onExit ){
+                reachExit( animation, surroundings.onExit )
+                //return
+            }
+            
+            if ( !onLadder && !underMatter ){
+                animation.container.position.y += 1
+            } else {
+                const commands = world.commands
+                if ( commands.left ){
+                    if ( !surroundings.leftMatter ){
+                        animation.container.position.x -= 1
+                    } else {
+                        //animation.play( 'iddle-left' )
+                    }
+                } else if ( commands.right ){
+                    if ( !surroundings.rightMatter ){
+                        animation.container.position.x += 1
+                    } else {
+                        //                    animation.play( 'iddle-right' )
+                    }
+                } else if ( commands.up ){
+                    if ( surroundings.onLadder ){
+                        animation.container.position.y -= 1
+                    }   
+                } else if ( commands.down ){
+                    if ( surroundings.aboveLadder ){
+                        animation.container.position.y += 1
                     }
                 }
-            })
+            }
+        })
     }
     
     function worldStep( deltaTime ){
@@ -562,9 +561,6 @@ async function go(){
     })
     function animate() {
         
-        if ( !  pageVisibility.isVisible() ){
-            console.log('NOT VIZ')
-        }
         stats.begin();
         //console.log('1/60')
         // get time
