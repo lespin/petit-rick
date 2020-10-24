@@ -245,8 +245,17 @@ async function go(){
         rgbSplitFilter,
     ];
 
-    
+    /*
+     * Scoreboard
+     */
+    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )    
+    const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
+    viewport.addChild( scoreboardContainer )
 
+
+    /*
+     * terrain
+     */ 
     const terrain  = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
 
@@ -315,10 +324,6 @@ async function go(){
     })
 
 
-    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
-    
-    const { _scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
-    viewport.addChild( scoreboardContainer )
     
     //items.length = 1
     /*
@@ -595,19 +600,19 @@ async function go(){
             unsobber.setLevel(stoneness)
         }
         unsobber.update()
-        if ( _scoreboardZones ){
+        if ( scoreboardZones ){
             let remain =  world.countdown
-            _scoreboardZones.updateCountdown( remain )
-            _scoreboardZones.updateTreasuresFound( world.nTreasureFound )
+            scoreboardZones.updateCountdown( remain )
+            scoreboardZones.updateTreasuresFound( world.nTreasureFound )
 
             if ( world.over ){
-                _scoreboardZones.updateLevelScore( `place : #${ world.rank + 1 } \n${ remain } * ${ world.nTreasureFound } = ${ world.score }` )
+                scoreboardZones.updateLevelScore( `place : #${ world.rank + 1 } \n${ remain } * ${ world.nTreasureFound } = ${ world.score }` )
             } else {
-                _scoreboardZones.updateLevelScore('')
+                scoreboardZones.updateLevelScore('')
             }
 
             
-            //            _scoreboardZones.countdown.update( ''+remain.toString(10).padStart(4,' ') )
+            //            scoreboardZones.countdown.update( ''+remain.toString(10).padStart(4,' ') )
         }
         renderer.render( viewport );
         //        console.log('1/60/end')
@@ -829,20 +834,12 @@ function loadBitmapFont( url ){
 
 function ScoreBoard( fontName ){
     const scoreboardContainer = new PIXI.Container()
-
-    
-    console.log('fontName',fontName)
-    //loader.add('HeadingFont', 'assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
-
     function scoreBoardText( x,y, options ){
         let text,
             container = new PIXI.Container()
-        //scoreboard.addChild( container )
-        
         function clear(){
             if ( container ){
                 container.removeChildren()
-                //scoreboard.removeChild( container )
             }
             text = undefined
         }
@@ -871,7 +868,7 @@ function ScoreBoard( fontName ){
         }
         return { update, clear, container }
     }
-    const _scoreboardZones = {
+    const scoreboardZones = {
         countdown : scoreBoardText( 4,0, {
             align : 'center',
             width : '200px',
@@ -882,19 +879,19 @@ function ScoreBoard( fontName ){
 
     
 
-    scoreboardContainer.addChild( _scoreboardZones.countdown.container )
-    scoreboardContainer.addChild( _scoreboardZones.treasures.container )
-    scoreboardContainer.addChild( _scoreboardZones.levelScore.container )
+    scoreboardContainer.addChild( scoreboardZones.countdown.container )
+    scoreboardContainer.addChild( scoreboardZones.treasures.container )
+    scoreboardContainer.addChild( scoreboardZones.levelScore.container )
     
     
-    _scoreboardZones.updateCountdown =  function(d) {
-        _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
+    scoreboardZones.updateCountdown =  function(d) {
+        scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
     }
-    _scoreboardZones.updateTreasuresFound =  function(d) {
-        _scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
+    scoreboardZones.updateTreasuresFound =  function(d) {
+        scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
     }
-    _scoreboardZones.updateLevelScore =  function(d) {
-        _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
+    scoreboardZones.updateLevelScore =  function(d) {
+        scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
     }
-    return { _scoreboardZones, scoreboardContainer }
+    return { scoreboardZones, scoreboardContainer }
 }
