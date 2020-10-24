@@ -37,9 +37,17 @@ var path = aStar({
     hash : n => n
 })
 console.log(path);
-function HiScores(){
+function StorageItem( name ){
+    return {
+        get : () => localStorage.getItem( name ),
+        set : v =>  localStorage.setItem( name, v ),
+        remove : () => localStorage.removeItem( name )
+    }
+}
+function HiScores( level ){
+    const { get, set, remove } = StorageItem( level )    
     function load(){
-        const ls = localStorage.getItem( 'hiscores' )
+        const ls = get()
         if ( ls ){
             return JSON.parse( ls )
         } else {
@@ -52,7 +60,7 @@ function HiScores(){
         }
     }
     function save( hiscores ){
-        localStorage.setItem( 'hiscores', JSON.stringify( hiscores ) )
+        set( JSON.stringify( hiscores ) )
     }
     function setScore( name, score ){
         const hiscores = load()
@@ -60,16 +68,12 @@ function HiScores(){
             ...hiscores.list,
             {name,score}
         ].sort( (a,b) => b.score - a.score )
+        set( JSON.stringify( hiscores ) )
         return hiscores
     }
-    function purge(){
-        localStorage.removeItem( 'hiscores' )
-    }
-    return { load, save, setScore, purge }
+    return { load, save, setScore, remove }
 }
 
-const hiScores = HiScores()
-window.hiScores = hiScores
 
 const retribs = {
     'iddle-right' : {
@@ -150,11 +154,16 @@ function getCommands(){
 }
 const composer = LiveMusicComposer()
 window.composer = composer
+
 const music = Music( composer )
 const { ac, synth } = music.start() // no await
+
 async function go(){
-    console.log('Music',ac,synth,composer)
-    
+    const mapName = 'map2'
+
+    const hiScores = HiScores( mapName )
+    window.hiScores = hiScores
+
     /*
      * viewport
      */
@@ -208,7 +217,6 @@ async function go(){
     /*
      * terrain
      */
-    const mapName = 'map1'
     const mapFilename = `${ mapName }.tmx`
     const mapUrl = resolveResourceUrl( mapFilename  )
     const terrain = await loadTerrain( mapUrl )
@@ -423,7 +431,6 @@ async function go(){
         world.score = score
         const name = 'you'
         const hs = hiScores.setScore( name, score )
-        hiScores.save( hs )
         const rank = hs.list.findIndex( r => {
             return ( r.name === name ) && ( r.score === score )
         })
