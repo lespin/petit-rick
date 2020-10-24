@@ -394,8 +394,6 @@ async function go(){
             return ( r.name === name ) && ( r.score === score )
         })
         world.rank = rank
-        //console.log('you rank',rank)
-        //console.log( hiScores.load() )
     }
     function exited(animation){
         console.log('BEEP','exited')
@@ -422,13 +420,11 @@ async function go(){
                   {width,height} = pl
             const surroundings = updateSurroundings( x, y, width, height )
             const { onLadder, underMatter } = surroundings
-            //if ( world.over ) return
             if ( surroundings.onTreasure ){
                 reachTreasure( animation, surroundings.onTreasure )
             }
             if ( surroundings.onExit ){
                 reachExit( animation, surroundings.onExit )
-                //return
             }
             if ( !onLadder && !underMatter ){
                 animation.container.position.y += 1
