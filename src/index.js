@@ -23,10 +23,10 @@ const sndfx = {
     cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),
 }
+// warmup ...
+Object.values( sndfx ).forEach( f => f() )
 import { Music, LiveMusicComposer } from './music.js'
-/*setTimeout( async () => {
-  },2000)
-*/
+
 var aStar = require('a-star');
 var path = aStar({
     start : 'S',
