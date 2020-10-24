@@ -154,21 +154,7 @@ async function go(){
     //viewport.fitWidth()
     // add the viewport to the stage
     //app.stage.addChild(viewport)
-    const stage = new PIXI.Container({width:160,height:180});
-    stage.position.x = 30
-    stage.width = 160
-    stage.height = 180
-    stage.anchor = 0.5
-    // console.log(stage.width,stage.height)
-    stage.pivot.x = stage.width / 2
-    stage.pivot.y = stage.height /2
-    // setInterval( () => {
-    // stage.rotation += Math.PI / 30
-    //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-    //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-    //stage.scale = 5
-    //},16)
-    viewport.addChild( stage )
+
     /*stage.pivot.set(0.5,0.5)
       stage.scale.x = 1
       stage.scale.y = 2*/
@@ -213,20 +199,38 @@ async function go(){
     }
     const unsobber = Unsobber()
     unsobber.setLevel(0)
-    stage.filters = [
-        filmFilter,
-        rgbSplitFilter,
-    ];
-    /*
-     * Scoreboard
-     */
-    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
-    const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
-    viewport.addChild( scoreboardContainer )
+
+    function createStage( width, height) {
+        const stage = new PIXI.Container()//{width,height})
+        stage.position.x = 8*4
+        stage.position.y = 8
+        //stage.width = width
+        
+        stage.height = height
+        stage.anchor = 0.5
+    // console.log(stage.width,stage.height)
+        stage.pivot.x = stage.width / 2
+        stage.pivot.y = stage.height /2
+        // setInterval( () => {
+        // stage.rotation += Math.PI / 30
+        //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+        //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
+        //stage.scale = 5
+        //},16)
+        return stage
+    }
     /*
      * terrain
      */
     const terrain = await loadTerrain( 'assets/map1.tmx' )
+
+    const stage = createStage()// terrain.tilemap.width/2, terrain.tilemap.height /2 )
+    console.log('stage',stage)
+    viewport.addChild( stage )   
+    stage.filters = [
+        filmFilter,
+        rgbSplitFilter,
+    ];
     stage.addChild(terrain.container);
     console.log('terrain',terrain)
     /*
@@ -264,6 +268,13 @@ async function go(){
         }
         items.push(animation)
     })
+    /*
+     * Scoreboard
+     */
+    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
+    const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
+    viewport.addChild( scoreboardContainer )
+
     /*
      * World
      */
@@ -680,7 +691,7 @@ async function loadTerrain( url ){
             tile.container = sprite
         })
     })
-    return { extracted, container }
+    return { extracted, container, tilemap : terrain }
 }
 /*
 //import { Ticker } from '@pixi/ticker'
@@ -736,24 +747,21 @@ function ScoreBoard( fontName ){
         return { update, clear, container }
     }
     const scoreboardZones = {
-        countdown : scoreBoardText( 4,0, {
-            align : 'center',
-            width : '200px',
-        }),
-        treasures : scoreBoardText( 140,0 ),
-        levelScore : scoreBoardText( 54,60 )
+        countdown : scoreBoardText( 1, 0 ),
+        treasures : scoreBoardText( 140, 0 ),
+        levelScore : scoreBoardText( 54, 60 )
     }
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
     scoreboardContainer.addChild( scoreboardZones.levelScore.container )
     scoreboardZones.updateCountdown = function(d) {
-        scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
+        scoreboardZones.countdown.update( d.toString(10).padStart(4,'0') )
     }
     scoreboardZones.updateTreasuresFound = function(d) {
-        scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
+        scoreboardZones.treasures.update( d.toString(10).padStart(3,'0') )
     }
     scoreboardZones.updateLevelScore = function(d) {
-        scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
+        scoreboardZones.levelScore.update( d.toString(10) )
     }
     return { scoreboardZones, scoreboardContainer }
 }
