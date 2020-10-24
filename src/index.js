@@ -37,21 +37,31 @@ var path = aStar({
     hash : n => n
 })
 console.log(path);
-function StorageItem( name ){
+
+function JSONStorageItem( key, defaultValue ){
+    const si = StorageItem( key, defaultValue ),
+          get = () => JSON.parse( si.get() ),
+          set = v => si.set( JSON.stringify( v ) )   
+    function edit( f ){
+        set( f( get() ) )
+    }
+    return { edit }
+}
+function StorageItem( name, defaultValue ){
     return {
-        get : () => localStorage.getItem( name ),
+        get : () => localStorage.getItem( name ) || defaultValue ,
         set : v =>  localStorage.setItem( name, v ),
         remove : () => localStorage.removeItem( name )
     }
 }
 function HiScores( level ){
-    const { get, set, remove } = StorageItem( level )
     const defaultValue = {
         list : [
             { name : 'Lionel J.', score : 666 },
             { name : 'Chriac J.', score : 676 },
         ]
     }
+    const { get, set, remove } = StorageItem( level )
     function load(){
         const ls = get()
         if ( ls ){
