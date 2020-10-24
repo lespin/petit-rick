@@ -340,9 +340,9 @@ async function go(){
                     const pixiText = createText( _text  )
                     if ( !container){
                         container = new PIXI.Container()
+                        scoreboard.addChild( container )
                     }
                     container.addChild( pixiText )                   
-                    scoreboard.addChild( container )
                     text = _text
                 }
             }
@@ -365,7 +365,10 @@ async function go(){
             return { update, clear }
         }
         _scoreboardZones = {
-            countdown : scoreBoardText( scoreboard, 4,0 ),
+            countdown : scoreBoardText( scoreboard, 4,0, {
+                align : 'center',
+                width : '200px',
+            }),
             treasures : scoreBoardText( scoreboard, 140,0 ),
             levelScore : scoreBoardText( scoreboard,54,60 )
         }
