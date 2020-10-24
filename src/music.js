@@ -5,31 +5,6 @@ var seedrandom = require('seedrandom');
 var rng = seedrandom('muz-1')
 //const notes = [0,4,7,11,12].map( x => x + 48 )
 
-function MultiChannelSynth( ac, channelCount ){
-    const gain = ac.createGain()
-    gain.gain.value = 1.0
-    
-    const monoSynths = new Array( channelCount ).fill(0).map( () => {
-        const sinusMonoSynth = SinusMonoSynth(ac)
-        sinusMonoSynth.output.connect( gain )
-        return sinusMonoSynth
-    })
-    function getMonoSynth( channel ){
-        const monoSynth = monoSynths[ channel ]
-        if ( !monoSynth )  throw new Error( 'no channel '+ channel)
-        return monoSynth
-    }
-    function noteOn( p ){
-        getMonoSynth( p.channel ).noteOn( p )
-    }
-    function noteOff( p ){
-        getMonoSynth( p.channel ).noteOff( p )
-    }
-    function stop(){
-        monoSynths.forEach( monoSynth => monoSynth.stop() )
-    }
-    return { noteOn, noteOff, output : gain, stop }
-}
 function SinusMonoSynth(ac){
     
     const osc = ac.createOscillator(),
@@ -58,76 +33,170 @@ function SinusMonoSynth(ac){
     }
     return { noteOn, noteOff, output : gain, stop }
 }
+function MultiChannelSynth( ac, channelCount ){
+    const gain = ac.createGain()
+    gain.gain.value = 1.0
+    
+    const monoSynths = new Array( channelCount ).fill(0).map( () => {
+        const sinusMonoSynth = SinusMonoSynth(ac)
+        sinusMonoSynth.output.connect( gain )
+        return sinusMonoSynth
+    })
+    function getMonoSynth( channel ){
+        const monoSynth = monoSynths[ channel ]
+        if ( !monoSynth )  throw new Error( 'no channel '+ channel)
+        return monoSynth
+    }
+    function noteOn( p ){
+        getMonoSynth( p.channel ).noteOn( p )
+    }
+    function noteOff( p ){
+        getMonoSynth( p.channel ).noteOff( p )
+    }
+    function stop(){
+        monoSynths.forEach( monoSynth => monoSynth.stop() )
+    }
+    return { noteOn, noteOff, output : gain, stop }
+}
 export function LiveMusicComposer( ){
     const k0 = 48
     let k = k0,
         keyTarget = k,
-        keyTargets = []
+        keyTargets = [],
+        conclude = false
     
-    let tempo
     function transpose( keyOffset ){
         keyTarget = k0 + ( keyTarget + keyOffset ) % 12        
         keyTargets.push( keyTarget )
     }
-    let tempoTarget
+    function conclusion( _conclude ){
+        conclude = _conclude
+    }
+    let fragIdx = 0
+
+    let timeSignature
+    setTimeSignature( 4 )
+    function setTimeSignature( num ){
+        timeSignature = {
+            start : fragIdx,
+            num,
+        }
+    }
+    function measureInfo(){
+        const { start, num } = timeSignature
+        const beat = fragIdx - start
+        const measureNum  = Math.floor( beat / num )
+        const beatNum = beat % num
+        return { measureNum, beatNum }
+    }
+    
+    // tempo
+    let tempo = 60
+    let tempoTarget = tempo
     function setTempo( _tempo ){
         tempoTarget = _tempo
     }
-    let fragIdx = 0
-    function generateSome( partitionTime, needed ){
-        //console.log('needed',needed)
-        const mkFrags = k => ([
-            [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
-            [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
-        ])
-        
-        const frags = mkFrags( k )
-        const [f1,f2,f3] = frags[ fragIdx%frags.length ]
-
-        if ( keyTargets.length === 0 ){
-        } else if ( keyTargets.length === 1 ) {
-            if ( (fragIdx % frags.length) === 0 ){
-                k = keyTargets.shift() 
-            }
-        } else {
-            k = keyTargets.shift() 
+    function lerp(a,b,p){
+        return ( 1 - p ) * a + p * b
+    }
+    function lerpTempo(){
+        if ( tempo !== tempoTarget ){
+            const middle = lerp( tempo, tempoTarget, 0.6 )
+            if ( Math.abs( middle - tempoTarget ) <= 1 ){
+                tempo = tempoTarget
+            } else {
+                tempo = middle
+            }            
         }
+        return { tempo }
+    }
+    function generateSome( partitionTime, needed ){
 
-        tempo = tempoTarget
+        const { measureNum, beatNum } = measureInfo()
+        const { tempo } = lerpTempo()
         
-        let duration =  60/tempo,
+        //console.log('needed',needed)
+        console.log(measureInfo(), { tempo, tempoTarget } )
+        
+        
+        let duration =  1, //* 60/tempo,
             pause = duration * 0.90,
             played = duration - pause
 
-        const attack = 0.01,
+        const attack = 0.001,
               release = 0.1,
               velocity = 0.5
 
         fragIdx++
-
         return oneToZero([
             [            
-                { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-                { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+                { dt : 0, channel : 0, eventType : 'noteOn', frequency : ktof(60+beatNum), velocity, attack } ,
+                { dt : played, channel : 0, eventType : 'noteOff', frequency : ktof(60+beatNum), velocity, release } ,
                 { dt : pause }
             ],
-            [            
-                { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
-                { dt : played+pause, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
-                { dt : pause }
-            ],
-            [            
-                { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
-                { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
-                { dt : pause },
-                { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
-                { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
-                { dt : pause },
-            ],
-            
         ])
+        // const chordSequence = [
+        //     [ 0 , 0+12+4 , 0+12+10 ],
+        //     [ 0-7 , 0+12 , 0+12+8 ],
+        // ]
+                
+        // const mkFrags = k => ([
+        //     [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
+        //     [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
+        // ])        
+        // const chordSequenceIdx = fragIdx%chordSequence.length
+        // const chord = chordSequence[ chordSequenceIdx ]       
+        // const [f1,f2,f3] = chord.map( ck => ktof( k + ck ) )
+                                      
+        
+        // // if ( conclude ){
+            
+        // // }
+        
+        // // if ( keyTargets.length === 0 ){
+        // // } else if ( keyTargets.length === 1 ) {
+        // //     if ( (fragIdx % frags.length) === 0 ){
+        // //         k = keyTargets.shift() 
+        // //     }
+        // // } else {
+        // //     k = keyTargets.shift() 
+        // // }
+        
+        // tempo = tempoTarget
+        
+        // let duration =  1,//60/tempo,
+        //     pause = duration * 0.90,
+        //     played = duration - pause
+
+        // const attack = 0.01,
+        //       release = 0.1,
+        //       velocity = 0.5
+
+        // fragIdx++
+
+        // return oneToZero([
+        //     [            
+        //         { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+        //         { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+        //         { dt : pause }
+        //     ],
+        //     [            
+        //         { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+        //         { dt : played+pause, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
+        //         { dt : pause }
+        //     ],
+        //     [            
+        //         { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+        //         { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
+        //         { dt : pause },
+        //         { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+        //         { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
+        //         { dt : pause },
+        //     ],
+            
+        // ])
     }    
-    return { generateSome, transpose, setTempo }
+    return { generateSome, transpose, setTempo, conclusion }
 }
 function oneToZero( ones ){
 
@@ -161,48 +230,48 @@ function oneToZero( ones ){
 }
 
 
-export function LiveMusicComposer2( ){
-    const k0 = 48
-    let k = k0
-    let tempo
-    function transpose( keyOffset ){
-        k = k0 + ( k + keyOffset ) % 12
-    }
-    function setTempo( _tempo ){
-        tempo = _tempo
-    }
-    let fragIdx = 0
-    function generateSome( partitionTime, needed ){
-        //console.log('needed',needed)
-        const mkFrags = k => ([
-            [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
-            [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
-        ])
-        const frags = mkFrags( k )
-        const [f1,f2,f3] = frags[ fragIdx%frags.length ]
+// export function LiveMusicComposer2( ){
+//     const k0 = 48
+//     let k = k0
+//     let tempo
+//     function transpose( keyOffset ){
+//         k = k0 + ( k + keyOffset ) % 12
+//     }
+//     function setTempo( _tempo ){
+//         tempo = _tempo
+//     }
+//     let fragIdx = 0
+//     function generateSome( partitionTime, needed ){
+//         //console.log('needed',needed)
+//         const mkFrags = k => ([
+//             [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
+//             [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
+//         ])
+//         const frags = mkFrags( k )
+//         const [f1,f2,f3] = frags[ fragIdx%frags.length ]
         
-        let duration =  60/tempo,
-            pause = duration * 0.90,
-            played = duration - pause
+//         let duration =  60/tempo,
+//             pause = duration * 0.90,
+//             played = duration - pause
 
-        const attack = 0.01,
-              release = 0.1,
-              velocity = 0.5
+//         const attack = 0.01,
+//               release = 0.1,
+//               velocity = 0.5
 
-        fragIdx++
+//         fragIdx++
 
-        return [            
-            { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-            { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
-            { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
-            { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
-            { dt : 0, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
-            { dt : 0, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
-            { dt : pause }
-        ]
-    }    
-    return { generateSome, transpose, setTempo }
-}
+//         return [            
+//             { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+//             { dt : 0, channel : 1, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+//             { dt : 0, channel : 2, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+//             { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+//             { dt : 0, channel : 1, eventType : 'noteOff', frequency : f2, velocity, release } ,
+//             { dt : 0, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
+//             { dt : pause }
+//         ]
+//     }    
+//     return { generateSome, transpose, setTempo }
+// }
 export function Music( composer ){
     
 

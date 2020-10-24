@@ -677,7 +677,7 @@ async function go(){
         if ( world.over ){
             composer.setTempo( 60 +  world.nTreasureFound + 1 )
         } else {
-            composer.setTempo( 60 +  world.nTreasureFound  )
+            composer.setTempo( 60 +  world.nTreasureFound * 5 )
         }
         
         //stage.position.x += 1
