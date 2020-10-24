@@ -67,8 +67,10 @@ function HiScores(){
     }
     return { load, save, setScore, purge }
 }
+
 const hiScores = HiScores()
 window.hiScores = hiScores
+
 const retribs = {
     'iddle-right' : {
         'left' : { go : 'turn-from-right' },
@@ -118,8 +120,9 @@ const retribs = {
         0 : { go : 'iddle-right' }
     },
 }
-const imageResolver = x => `assets/${x}`
-// setup renderer and ticker
+const resolveResourceUrl = x => `assets/${x}`
+
+// setup renderer
 const renderer = new PIXI.Renderer({
     width: 160,
     height: 160,
@@ -151,18 +154,15 @@ const music = Music( composer )
 const { ac, synth } = music.start() // no await
 async function go(){
     console.log('Music',ac,synth,composer)
-    // create viewport
-    const viewport = new PIXI.Container({
-        //interaction: app.renderer.plugins.interaction // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
-        //rotation : Math.PI / 8
-    })
-    //viewport.fitWidth()
-    // add the viewport to the stage
-    //app.stage.addChild(viewport)
+    
+    /*
+     * viewport
+     */
+    const viewport = new PIXI.Container({ })
 
-    /*stage.pivot.set(0.5,0.5)
-      stage.scale.x = 1
-      stage.scale.y = 2*/
+    /*
+     * filters
+     */
     const glowFilter = new GlowFilter()
     setInterval( () => {
         const s01 = ( 1 + Math.sin( Date.now() / 500 ) ) / 2
@@ -205,34 +205,32 @@ async function go(){
     const unsobber = Unsobber()
     unsobber.setLevel(0)
 
+    /*
+     * terrain
+     */
+    const mapName = 'map1'
+    const mapFilename = `${ mapName }.tmx`
+    const mapUrl = resolveResourceUrl( mapFilename  )
+    const terrain = await loadTerrain( mapUrl )
+    renderer.resize( terrain.extracted.bounds.maxX + 1,
+                     terrain.extracted.bounds.maxY + 1 )
+
+    /*
+     * stage
+     */
     function createStage( width, height) {
         const stage = new PIXI.Container()//{width,height})
         stage.position.x = 0//8*4
         stage.position.y = 0//8
-        //stage.width = width
-        
         stage.height = height
         stage.anchor = 0.5
-    // console.log(stage.width,stage.height)
         stage.pivot.x = stage.width / 2
         stage.pivot.y = stage.height /2
         stage.scale.x = 1
-        // setInterval( () => {
-        // stage.rotation += Math.PI / 30
-        //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-        //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
-        //stage.scale = 5
-        //},16)
         return stage
     }
-    /*
-     * terrain
-     */
-    const terrain = await loadTerrain( 'assets/map1.tmx' )
-    renderer.resize( terrain.extracted.bounds.maxX + 1,
-                     terrain.extracted.bounds.maxY + 1 )
 
-    const stage = createStage()// terrain.tilemap.width/2, terrain.tilemap.height /2 )
+    const stage = createStage()
     console.log('stage',stage)
     viewport.addChild( stage )   
     stage.filters = [
@@ -241,6 +239,7 @@ async function go(){
     ];
     stage.addChild(terrain.container);
     console.log('terrain',terrain)
+    
     /*
      * Animations
      */
@@ -276,6 +275,7 @@ async function go(){
         }
         items.push(animation)
     })
+    
     /*
      * Scoreboard
      */
@@ -502,8 +502,13 @@ async function go(){
         world.time = floatTime
         world.step = intStep
     }
+
+    /*
+     * animate
+     */ 
     let oldTime = Date.now();
     pageVisibility.on.change.push( () => {
+        // time is not counted when page is not visible and RAF not called
         oldTime = Date.now();
     })
     function animate() {
@@ -515,14 +520,18 @@ async function go(){
         oldTime = newTime;	
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
+        
         // grab commands
         const commands = getCommands()
         // keyboardDownFront.reset()
         world.commands = commands
+        
         // step world
         if ( ! world.over ){
             worldStep( deltaTime / 1000 )
         }
+        
+        // setup rendering fx and sounds
         world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500))
         if (world.over ) {
             filmFilter.sepia = 1
@@ -548,7 +557,6 @@ async function go(){
         renderer.render( viewport );
 	stats.end();
         //if ( ! world.over ){
-        requestAnimationFrame(animate);
         //}
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
         if ( world.over ){
@@ -559,6 +567,9 @@ async function go(){
             //composer.setTempo( 60 + world.nTreasureFound * 40 )
             composer.setUrgency( world.countdown, world.initialCountdown )
         }
+        
+        // recurse
+        requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
 }
@@ -639,7 +650,7 @@ async function loadAnimations( url ){
     //
     // load animation model from special tilesheet
     //
-    const terrain = await loadTerrainTileMap(url ,imageResolver)
+    const terrain = await loadTerrainTileMap(url ,resolveResourceUrl)
     const animationModels = {}
     terrain.layers.forEach( ( layer, layerIdx ) => {
         animationModels[ layer.name ] = {
@@ -658,7 +669,7 @@ async function loadTerrain( url ){
     //
     // load tilemap
     //
-    const terrain = await loadTerrainTileMap(url ,imageResolver)
+    const terrain = await loadTerrainTileMap(url ,resolveResourceUrl)
     const extracted = {}
     extracted.ladders = []
     extracted.matter = []
