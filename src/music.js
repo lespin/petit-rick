@@ -4,7 +4,12 @@ import { ktof } from './lib/frequencies.js'
 var seedrandom = require('seedrandom');
 var rng = seedrandom('muz-1')
 //const notes = [0,4,7,11,12].map( x => x + 48 )
-
+function lerp(a,b,p){
+    return ( 1 - p ) * a + p * b
+}
+function clamp(v,min,max){
+    return Math.max( min, Math.min( v, max ) )
+}
 function SinusMonoSynth(ac){
     
     const osc = ac.createOscillator(),
@@ -126,13 +131,18 @@ export function LiveMusicComposer( musicSeed = '5' ){
     // tempo
     let tempo = 60
     let tempoTarget = tempo
+    function setUrgency( remain, total ){
+        const lowTempo = 60,
+              highTempo = 120
+        const r = clamp( remain / total, 0, 1 )
+        let tempo = lerp( highTempo, lowTempo, r )
+        setTempo( tempo )
+    }
     function setTempo( _tempo ){
         tempoTarget = _tempo
     }
-    function lerp(a,b,p){
-        return ( 1 - p ) * a + p * b
-    }
     function lerpTempo(){
+        const maxTempoChange = 2
         if ( tempo !== tempoTarget ){
             const middle = lerp( tempo, tempoTarget, 0.6 )
             if ( Math.abs( middle - tempoTarget ) <= 1 ){
@@ -141,7 +151,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
                 const diff = middle - tempo
                 const adiff = Math.abs( diff ),
                       sdiff = Math.sign( diff )
-                const cadiff = Math.min( adiff, 5 )
+                const cadiff = Math.min( adiff, maxTempoChange )
                 const cdiff = sdiff * cadiff
                 tempo += cdiff
             }            
@@ -302,7 +312,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
             
         // ])
     }    
-    return { generateSome, transpose, setTempo, conclusion }
+    return { generateSome, transpose, setTempo, conclusion, setUrgency }
 }
 function oneToZero( ones ){
 

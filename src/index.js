@@ -408,7 +408,6 @@ async function go(){
         initialCountdown : 48 * 60,
     }
     world.countdown = world.initialCountdown
-    
     function updateSurroundings(x,y,width,height){
         function getPlayerCollisionBoxes( x, y, width, height ){
             return {
@@ -676,9 +675,13 @@ async function go(){
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
         if ( world.over ){
             composer.conclusion(true)
-            composer.setTempo( 40 )
+            //composer.setTempo( 40 )
+            composer.setUrgency( world.initialCountdown, world.initialCountdown )
+            
         } else {
-            composer.setTempo( 60 +  world.nTreasureFound * 40 )
+            //composer.setTempo( 60 +  world.nTreasureFound * 40 )
+            composer.setUrgency( world.countdown, world.initialCountdown )
+            
         }
         
         //stage.position.x += 1
