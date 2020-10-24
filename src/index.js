@@ -325,23 +325,20 @@ async function go(){
 
         function scoreBoardText( scoreboard,x,y, options ){
             let text,
-                container
-
+                container = new PIXI.Container()
+            
+            scoreboard.addChild( container )
             function clear(){
                 if ( container ){
                     container.removeChildren()
                     //scoreboard.removeChild( container )
                 }
-                container = undefined
                 text = undefined
             }
             function set( _text ){
                 if ( _text ){
                     const pixiText = createText( _text  )
-                    if ( !container){
-                        container = new PIXI.Container()
-                        scoreboard.addChild( container )
-                    }
+                  
                     container.addChild( pixiText )                   
                     text = _text
                 }
