@@ -329,22 +329,18 @@ async function go(){
 
             function clear(){
                 if ( container ){
-                    //container.destroy()
-                    //if ( container.parent(){
-                    //container.parent.removeChild(container)
-                    //} 
                     container.removeChildren()
-                    scoreboard.removeChild( container )
-                    //scoreboard.removeChildren()// container )
+                    //scoreboard.removeChild( container )
                 }
                 container = undefined
                 text = undefined
             }
             function set( _text ){
                 if ( _text ){
-                    
                     const pixiText = createText( _text  )
-                    container = new PIXI.Container()
+                    if ( !container){
+                        container = new PIXI.Container()
+                    }
                     container.addChild( pixiText )                   
                     scoreboard.addChild( container )
                     text = _text
@@ -362,45 +358,26 @@ async function go(){
                     fill : '0xffffff',
                     ...options,
                 })
-                //text.anchor.set(0.5)
-                //text.scale.x = 0.5
-                //text.scale.y = 0.5
                 textContainer.position.x = x
                 textContainer.position.y = y
                 return textContainer;
             }
             return { update, clear }
         }
-
         _scoreboardZones = {
-            countdown : scoreBoardText( scoreboard, 4,0,{
-                //align : 'left'
-                //tint : 0xffffff * Math.random()
-            }),
-            treasures : scoreBoardText( scoreboard, 140,0,{
-                width : scoreboard.width
-                //align : 'right'
-                //tint : 0xffffff * Math.random()
-            }),
-            levelScore : scoreBoardText( scoreboard,54,60, {
-                width : scoreboard.width
-                //align : 'right'
-                //tint : 0xffffff * Math.random()
-            }),
+            countdown : scoreBoardText( scoreboard, 4,0 ),
+            treasures : scoreBoardText( scoreboard, 140,0 ),
+            levelScore : scoreBoardText( scoreboard,54,60 )
         }
         _scoreboardZones.updateCountdown =  function(d) {
             _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
         }
         _scoreboardZones.updateTreasuresFound =  function(d) {
-            //_scoreboardZones.treasures.update(Math.random().toString())
             _scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
         }
         _scoreboardZones.updateLevelScore =  function(d) {
-        //_scoreboardZones.treasures.update(Math.random().toString())
             _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
         }
-        //_scoreboardZones.updateTreasuresFound()
-//        console.log('_scoreboardZones',_scoreboardZones)
     })
     
     //items.length = 1
