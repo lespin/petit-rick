@@ -13,7 +13,7 @@ var seedrandom = require('seedrandom');
 
 import * as Stats from 'stats.js'
 var stats = new Stats();
-stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+stats.showPanel( 0 ); 
 //document.body.appendChild( stats.dom );
 
 import { PageVisibility } from './lib/domVisibility.js'
@@ -32,16 +32,11 @@ const sndfx = {
 }
 import { Music, LiveMusicComposer } from './music.js'
 
-const composer = LiveMusicComposer()
-window.composer = composer
 
-setTimeout( async () => {
-    const music = Music( composer )
-    const { ac, synth } = await music.start()
-    console.log('Music',ac,synth,composer)
+/*setTimeout( async () => {
     
 },2000)
-
+*/
 var aStar = require('a-star');
 var path = aStar({
     start : 'S',
@@ -166,8 +161,18 @@ function getCommands(){
     return commands
 }
 
+const composer = LiveMusicComposer()
+window.composer = composer
+
+const music = Music( composer )
+const { ac, synth } = music.start() // no await
+
 async function go(){
+
     
+    console.log('Music',ac,synth,composer)
+
+
     // create viewport
     const viewport = new PIXI.Container({
         //interaction: app.renderer.plugins.interaction // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
@@ -279,22 +284,14 @@ async function go(){
     })
     entrances.forEach( entrance => {
         const entrancePosition = entrance.inLayer.position
-        
-        //for ( let i = 0 ; i < 4 ; i ++ ){
-        
         const animation = new AnimatedItem( animationModels )
         animation.container.position.x = entrancePosition.x
         animation.container.position.y = entrancePosition.y
-        //animation.play('iddle-left')
         animation.play('walk-left')
         stage.addChild(animation.container);
-
-        
         animation.on.complete = function(...p){
-            //            console.log('complete')
             const [name,animatedSprite] = p,
                   frame = animatedSprite.currentFrame
-            //            console.log('complete',name,frame)
             // take from world ?
             const commands = {
                 up : keyboardState.state.get('ArrowUp'),
@@ -305,27 +302,11 @@ async function go(){
             const retrib = retribs[ name ]
             const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
             const followedBy = retrib[ matchedCommand || 0 ]
-            //            console.log('@',Date.now(),followedBy)
             animation.play( followedBy.go )
         }
-        /*
-          animation.on.frameChange = function (...p) {
-          }
-          
-          animation.on.loop = function (...p) {
-          //const [name,animatedSprite] = p,
-          //frame = animatedSprite.currentFrame
-          }
-          ;
-        */
-        //}
         items.push(animation)
-        
     })
 
-
-    
-    //items.length = 1
     /*
      * World
      */
@@ -577,11 +558,8 @@ async function go(){
         
         // step world
         if ( ! world.over ){
-            const d1 = Date.now()
             worldStep( deltaTime / 1000 )
-            const d2 = Date.now()
         }
-        //        console.log('steps took',d2 - d1 )
         
         world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
         if (world.over ) {
@@ -589,15 +567,8 @@ async function go(){
             unsobber.setLevel(0)
             filmFilter.vignetting = 0.1
         }  else {
-            
-            // camera
-            //stage.position.x = -animation.container.position.x
-            //stage.position.y = -animation.container.position.y
-            //stage.position.y = 2
-            //unsobber.setLevel(0)//world.alcoolLevel/1000)
             const stoneness = 5 * world.alcoolLevel / 500
             const readyness = Math.min(world.alcoolLevel,200) / 200
-            
             filmFilter.vignetting =  0.125 - readyness / 8
             unsobber.setLevel(stoneness)
         }
@@ -612,17 +583,12 @@ async function go(){
             } else {
                 scoreboardZones.updateLevelScore('')
             }
-
-            
-            //            scoreboardZones.countdown.update( ''+remain.toString(10).padStart(4,' ') )
         }
         renderer.render( viewport );
-        //        console.log('1/60/end')
-        // recurse
 	stats.end();
-        if ( ! world.over ){
+        //if ( ! world.over ){
             requestAnimationFrame(animate);
-        }
+        //}
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
         if ( world.over ){
             composer.conclusion(true)
@@ -634,8 +600,6 @@ async function go(){
             composer.setUrgency( world.countdown, world.initialCountdown )
             
         }
-        
-        //stage.position.x += 1
     }
     requestAnimationFrame(animate);
 }
