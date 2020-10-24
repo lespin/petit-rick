@@ -259,6 +259,18 @@ async function go(){
      */
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
+
+    // substitute animation
+    terrain.extracted['substitute-animation'].forEach( tile => {
+        const position = tile.inLayer.position
+        const animation = new AnimatedItem( animationModels )
+        animation.container.position.x = position.x
+        animation.container.position.y = position.y
+        console.log('substriute',tile,tile.properties['substitute-animation'] )
+        animation.play( tile.properties['substitute-animation'] )
+        stage.addChild(animation.container);
+    })
+    
     const entrances = terrain.extracted['level-entrance']
     const exits = terrain.extracted['level-exit']
     const items = []
@@ -357,16 +369,19 @@ async function go(){
         }
         const rtree = terrain.extracted['tree']
         function treeCellIsMatter( { tile } ){
-            return tile.layer.name === 'matter'
+            return tile && tile.layer.name === 'matter'
         }
         function treeCellIsLadder( { tile } ){
-            return tile.layer.name === 'ladder'
+            return tile && tile.layer.name === 'ladder'
         }
         function treeCellIsTreasure( { tile } ){
-            return tile.layer.name === 'treasure' 
+            return tile && tile.layer.name === 'treasure' 
         }
         function treeCellIsExitDoor( { tile } ){
-            return  ( tile.layer.name === 'doors' ) && ( tile.properties['level-exit'] )
+            return  tile && ( tile.layer.name === 'doors' ) && ( tile.properties['level-exit'] )
+        }
+        function treeCellIsMine( { tile } ){
+            return  tile && ( tile.layer.name === 'mine' ) || ( tile.properties['mine'] )
         }
         const boxes = getPlayerCollisionBoxes( x,y,width,height ),
               f1 = rtree.search( boxes.leftBox ),
@@ -383,7 +398,8 @@ async function go(){
             onLadder : f4.find( treeCellIsLadder ),
             aboveLadder : f5.find( treeCellIsLadder ),
             onTreasure : f6.find( treeCellIsTreasure ),
-            onExit : f6.find( treeCellIsExitDoor )
+            onExit : f6.find( treeCellIsExitDoor ),
+            onMine : f6.find( treeCellIsMine )
         }
         // if ( false ){
         //     // show selected
@@ -466,6 +482,9 @@ async function go(){
                   {x,y} = pl.position,
                   {width,height} = pl
             const surroundings = getSurroundings( x, y, width, height )
+            if ( surroundings.onMine ){
+                console.log(surroundings.onMine)
+            }
             const { onLadder, underMatter } = surroundings
             if ( surroundings.onTreasure ){
                 reachTreasure( animation, surroundings.onTreasure )
@@ -631,7 +650,7 @@ function AnimatedItem( animationModels ){
         anim.animationSpeed = speed
         animationContainer.addChild(anim);
         // todo
-        anim.loop = false//loop
+        anim.loop = loop
         anim.onComplete = (...p) => {
             //console.log('oncomplete',name,model)
             if ( on.complete ){
@@ -691,6 +710,7 @@ async function loadTerrain( url ){
     extracted.treasure = []
     extracted['level-entrance'] = []
     extracted['level-exit'] = []
+    extracted['substitute-animation'] = []
     extracted.tree = new RBush();
     extracted.bounds = {
         minX : Number.POSITIVE_INFINITY,
@@ -718,6 +738,9 @@ async function loadTerrain( url ){
             if ( layer.name === 'treasure' ){
                 extracted['treasure'].push( tile.inLayer.position )
             }
+            if ( tile.properties['substitute-animation'] ){
+                extracted['substitute-animation'].push( tile )
+            }
             const item = {
                 minX: tile.inLayer.position.x - tile.tileset.tilewidth / 2,
                 maxX: tile.inLayer.position.x + tile.tileset.tilewidth / 2 - 1,
@@ -740,9 +763,11 @@ async function loadTerrain( url ){
     const container = new PIXI.Container();
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
+            if ( tile.properties['substitute-animation'] )
+                return
             const position = tile.inLayer.position,
                   imageBitmap = tile.imageBitmap
-            const collisionMaskNames = tile.properties['collision-mask']
+            // const collisionMaskNames = tile.properties['collision-mask']
             const sprite = PIXI.Sprite.from( imageBitmap )
             sprite.anchor.set(0.5)
             sprite.position.x = position.x

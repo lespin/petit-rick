@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.1" orientation="orthogonal" renderorder="right-down" width="8" height="13" tilewidth="8" tileheight="8" infinite="0" nextlayerid="34" nextobjectid="1">
+<map version="1.2" tiledversion="1.2.1" orientation="orthogonal" renderorder="right-down" width="8" height="13" tilewidth="8" tileheight="8" infinite="0" nextlayerid="35" nextobjectid="1">
  <tileset firstgid="1" name="sprites" tilewidth="8" tileheight="8" tilecount="256" columns="16">
   <image source="sprites.png" width="128" height="128"/>
  </tileset>
  <layer id="23" name="walk-right" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="0.5"/>
   </properties>
   <data encoding="csv">
@@ -26,7 +26,7 @@
  </layer>
  <layer id="24" name="walk-left" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="0.5"/>
   </properties>
   <data encoding="csv">
@@ -89,7 +89,7 @@
  </layer>
  <layer id="27" name="climb-ladder" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="0.5"/>
   </properties>
   <data encoding="csv">
@@ -110,7 +110,7 @@
  </layer>
  <layer id="28" name="descend-ladder" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="0.5"/>
   </properties>
   <data encoding="csv">
@@ -131,7 +131,7 @@
  </layer>
  <layer id="29" name="iddle-right" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="1"/>
   </properties>
   <data encoding="csv">
@@ -152,7 +152,7 @@
  </layer>
  <layer id="30" name="iddle-left" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="1"/>
   </properties>
   <data encoding="csv">
@@ -173,7 +173,7 @@
  </layer>
  <layer id="31" name="fall-left" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="0.5"/>
   </properties>
   <data encoding="csv">
@@ -194,7 +194,7 @@
  </layer>
  <layer id="32" name="fall-right" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="1"/>
   </properties>
   <data encoding="csv">
@@ -215,7 +215,7 @@
  </layer>
  <layer id="33" name="climb-iddle" width="8" height="13" locked="1">
   <properties>
-   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-loop" type="bool" value="false"/>
    <property name="animation-speed" type="float" value="1"/>
   </properties>
   <data encoding="csv">
@@ -230,6 +230,27 @@
 0,0,0,0,0,0,0,0,
 52,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="34" name="burning-thing" width="8" height="13">
+  <properties>
+   <property name="animation-loop" type="bool" value="true"/>
+   <property name="animation-speed" type="float" value="1"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,
+38,39,2147483686,2147483688,2147483687,40,0,0,
 0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0
 </data>
