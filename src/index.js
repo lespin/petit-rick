@@ -557,8 +557,14 @@ async function go(){
     }
     
     let oldTime = Date.now();
+    pageVisibility.on.change.push( () => {
+        oldTime = Date.now();
+    })
     function animate() {
-
+        
+        if ( !  pageVisibility.isVisible() ){
+            console.log('NOT VIZ')
+        }
         stats.begin();
         //console.log('1/60')
         // get time
