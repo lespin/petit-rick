@@ -488,7 +488,9 @@ async function go(){
             }
         })
     }
+
     function worldStep( deltaTime ){
+        // do multiple world fixed step (todo : interpolation ?)
         const floatTime = world.time + deltaTime
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
