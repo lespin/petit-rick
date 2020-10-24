@@ -291,7 +291,9 @@ async function go(){
         initialCountdown : 48 * 60,
     }
     world.countdown = world.initialCountdown
-    function updateSurroundings(x,y,width,height){
+
+    
+    function getSurroundings(x,y,width,height){
         function getPlayerCollisionBoxes( x, y, width, height ){
             return {
                 rightBox : {
@@ -333,46 +335,59 @@ async function go(){
             }
         }
         const rtree = terrain.extracted['tree']
-        const { rightBox, leftBox, bottomBox,
-                aboveLadderBox, onLadderBox,
-                middleBox } = getPlayerCollisionBoxes( x,y,width,height )
-        const f1 = rtree.search( leftBox )
-        const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
-        const f2 = rtree.search( rightBox )
-        const rightMatter = f2.find( ({tile}) => tile.layer.name === 'matter' )
-        const f3 = rtree.search( bottomBox )
-        const underMatter = f3.find( ({tile}) => tile.layer.name === 'matter' )
-        const f4 = rtree.search( onLadderBox )
-        const onLadder = f4.find( ({tile}) => tile.layer.name === 'ladder' )
-        const f5 = rtree.search( aboveLadderBox )
-        const aboveLadder = f5.find( ({tile}) => tile.layer.name === 'ladder' )
-        const f6 = rtree.search( middleBox )
-        const onTreasure = f6.find( ({tile}) => tile.layer.name === 'treasure' )
-        const onExit = f6.find( ({tile}) => ( tile.layer.name === 'doors' ) && ( tile.properties['level-exit'] ) )
-        if ( false ){
-            // show selected
-            rtree.all().map( finding => {
-                const { tile } = finding,
-                      { container } = tile
-                container.tint = 0x888888
-            })
-            f6.forEach( (finding,i) => {
-                const { tile } = finding, { container } = tile
-                if ( onExit ){
-                    container.tint = 0xffffff
-                }
-            })
+        function treeCellIsMatter( { tile } ){
+            return tile.layer.name === 'matter'
         }
-        const surroundings = {
-            leftMatter,
-            rightMatter,
-            underMatter,
-            onLadder,
-            aboveLadder,
-            onTreasure,
-            onExit
+        function treeCellIsLadder( { tile } ){
+            return tile.layer.name === 'ladder'
         }
-        return surroundings
+        function treeCellIsTreasure( { tile } ){
+            return tile.layer.name === 'treasure' 
+        }
+        function treeCellIsExitDoor( { tile } ){
+            return  ( tile.layer.name === 'doors' ) && ( tile.properties['level-exit'] )
+        }
+        const boxes = getPlayerCollisionBoxes( x,y,width,height ),
+              f1 = rtree.search( boxes.leftBox ),
+              f2 = rtree.search( boxes.rightBox ),
+              f3 = rtree.search( boxes.bottomBox ),
+              f4 = rtree.search( boxes.onLadderBox ),
+              f5 = rtree.search( boxes.aboveLadderBox ),
+              f6 = rtree.search( boxes.middleBox )
+        
+        return {
+            leftMatter : f1.find( treeCellIsMatter ),
+            rightMatter : f2.find( treeCellIsMatter ),
+            underMatter : f3.find( treeCellIsMatter ),
+            onLadder : f4.find( treeCellIsLadder ),
+            aboveLadder : f5.find( treeCellIsLadder ),
+            onTreasure : f6.find( treeCellIsTreasure ),
+            onExit : f6.find( treeCellIsExitDoor )
+        }
+        // if ( false ){
+        //     // show selected
+        //     rtree.all().map( finding => {
+        //         const { tile } = finding,
+        //               { container } = tile
+        //         container.tint = 0x888888
+        //     })
+        //     f6.forEach( (finding,i) => {
+        //         const { tile } = finding, { container } = tile
+        //         if ( onExit ){
+        //             container.tint = 0xffffff
+        //         }
+        //     })
+        // }
+        // const surroundings = {
+        //     leftMatter,
+        //     rightMatter,
+        //     underMatter,
+        //     onLadder,
+        //     aboveLadder,
+        //     onTreasure,
+        //     onExit
+        // }
+        // return surroundings
     }
     function openExitDoor(){
         world.canExit = true
@@ -430,7 +445,7 @@ async function go(){
             const pl = animation.container,
                   {x,y} = pl.position,
                   {width,height} = pl
-            const surroundings = updateSurroundings( x, y, width, height )
+            const surroundings = getSurroundings( x, y, width, height )
             const { onLadder, underMatter } = surroundings
             if ( surroundings.onTreasure ){
                 reachTreasure( animation, surroundings.onTreasure )
