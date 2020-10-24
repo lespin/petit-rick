@@ -326,8 +326,8 @@ async function go(){
         function scoreBoardText( scoreboard,x,y, options ){
             let text,
                 container = new PIXI.Container()
+            //scoreboard.addChild( container )
             
-            scoreboard.addChild( container )
             function clear(){
                 if ( container ){
                     container.removeChildren()
@@ -338,8 +338,7 @@ async function go(){
             function set( _text ){
                 if ( _text ){
                     const pixiText = createText( _text  )
-                  
-                    container.addChild( pixiText )                   
+                    container.addChild( pixiText )
                     text = _text
                 }
             }
@@ -359,7 +358,7 @@ async function go(){
                 textContainer.position.y = y
                 return textContainer;
             }
-            return { update, clear }
+            return { update, clear, container }
         }
         _scoreboardZones = {
             countdown : scoreBoardText( scoreboard, 4,0, {
@@ -369,6 +368,12 @@ async function go(){
             treasures : scoreBoardText( scoreboard, 140,0 ),
             levelScore : scoreBoardText( scoreboard,54,60 )
         }
+
+        scoreboard.addChild( _scoreboardZones.countdown.container )
+        scoreboard.addChild( _scoreboardZones.treasures.container )
+        scoreboard.addChild( _scoreboardZones.levelScore.container )
+
+        
         _scoreboardZones.updateCountdown =  function(d) {
             _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
         }
