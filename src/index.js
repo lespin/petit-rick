@@ -326,21 +326,26 @@ async function go(){
         function scoreBoardText( scoreboard,x,y, options ){
             let text,
                 container
-            
+
             function clear(){
                 if ( container ){
                     //container.destroy()
                     //if ( container.parent(){
                     //container.parent.removeChild(container)
-                    //}
-                    scoreboard.removeChildren()// container )
+                    //} 
+                    container.removeChildren()
+                    scoreboard.removeChild( container )
+                    //scoreboard.removeChildren()// container )
                 }
                 container = undefined
                 text = undefined
             }
             function set( _text ){
                 if ( _text ){
-                    container = createText( _text  )
+                    
+                    const pixiText = createText( _text  )
+                    container = new PIXI.Container()
+                    container.addChild( pixiText )                   
                     scoreboard.addChild( container )
                     text = _text
                 }
@@ -348,8 +353,8 @@ async function go(){
             function update( _text ){
                 if ( _text !== text ){
                     clear()
+                    set( _text )
                 }
-                set( _text )
             }
             function createText( text,  options ) {
                 const textContainer = new PIXI.BitmapText(text, {
