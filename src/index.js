@@ -126,6 +126,11 @@ const renderer = new PIXI.Renderer({
     resolution: 4 * ( window.devicePixelRatio || 1 ),
     antialias:true
 })
+renderer.view.style = 'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
+console.log('BOBY',document.body)
+document.body.style = 'background-color: #1b1b1b;'
+
+window.pixirenderer = renderer
 document.body.appendChild(renderer.view)
 const keyboardState = KeyboardState('key')(window)
 keyboardState.start()
@@ -224,6 +229,8 @@ async function go(){
      * terrain
      */
     const terrain = await loadTerrain( 'assets/map1.tmx' )
+    renderer.resize( terrain.extracted.bounds.maxX + 1,
+                     terrain.extracted.bounds.maxY + 1 )
 
     const stage = createStage()// terrain.tilemap.width/2, terrain.tilemap.height /2 )
     console.log('stage',stage)
@@ -659,6 +666,12 @@ async function loadTerrain( url ){
     extracted['level-entrance'] = []
     extracted['level-exit'] = []
     extracted.tree = new RBush();
+    extracted.bounds = {
+        minX : Number.POSITIVE_INFINITY,
+        maxX : Number.NEGATIVE_INFINITY,
+        minY : Number.POSITIVE_INFINITY,
+        maxY : Number.NEGATIVE_INFINITY
+    }
     //
     // special tiles
     //
@@ -686,6 +699,12 @@ async function loadTerrain( url ){
                 maxY: tile.inLayer.position.y + tile.tileset.tileheight / 2 - 1,
                 tile
             };
+            const { bounds } = extracted
+            bounds.minX = Math.min( bounds.minX, item.minX )
+            bounds.maxX = Math.max( bounds.maxX, item.maxX )
+            bounds.minY = Math.min( bounds.minY, item.minY )
+            bounds.maxY = Math.max( bounds.maxY, item.maxY )
+            
             extracted['tree'].insert(item);
         })
     })
