@@ -1,41 +1,31 @@
 import { KeyboardState/*, KeyboardDownFront*/ } from './lib/keyboardState.js'
 import RBush from 'rbush';
-import  * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 //import { Viewport } from 'pixi-viewport'
-
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 import { GlowFilter } from '@pixi/filter-glow';
 import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
-
 var seedrandom = require('seedrandom');
-
 import * as Stats from 'stats.js'
 var stats = new Stats();
-stats.showPanel( 0 ); 
+stats.showPanel( 0 );
 //document.body.appendChild( stats.dom );
-
 import { PageVisibility } from './lib/domVisibility.js'
 const pageVisibility = PageVisibility()
 pageVisibility.on.change.push( () => {
-    
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
-
 var rng = seedrandom('fx-1');
-
 const sndfx = {
     pickup : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
     cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),    
+    win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),
 }
 import { Music, LiveMusicComposer } from './music.js'
-
-
 /*setTimeout( async () => {
-    
-},2000)
+  },2000)
 */
 var aStar = require('a-star');
 var path = aStar({
@@ -47,7 +37,6 @@ var path = aStar({
     hash : n => n
 })
 console.log(path);
-
 function HiScores(){
     function load(){
         const ls = localStorage.getItem( 'hiscores' )
@@ -80,16 +69,13 @@ function HiScores(){
 }
 const hiScores = HiScores()
 window.hiScores = hiScores
-
-
-
 const retribs = {
     'iddle-right' : {
         'left' : { go : 'turn-from-right' },
         'right' : { go : 'walk-right' },
         'up' : { go : 'climb-ladder' },
         'down' : { go : 'descend-ladder' },
-        0 :  { go : 'iddle-right' }
+        0 : { go : 'iddle-right' }
     },
     'iddle-left' : {
         'left' : { go : 'walk-left' },
@@ -120,24 +106,19 @@ const retribs = {
         'left' : { go : 'walk-left' }
     },
     'turn-from-left' : {
-        0 : { go :  'iddle-right' },
+        0 : { go : 'iddle-right' },
         'right' : { go : 'walk-right' }
     },
     'walk-left' : {
         'left' : { go : 'walk-left' },
-        0 : { go :  'iddle-left' }
+        0 : { go : 'iddle-left' }
     },
     'walk-right' : {
         'right' : { go : 'walk-right' },
-        0 :  { go :  'iddle-right' }
+        0 : { go : 'iddle-right' }
     },
 }
-
-
-
-
 const imageResolver = x => `assets/${x}`
-
 // setup renderer and ticker
 const renderer = new PIXI.Renderer({
     width: 160,
@@ -146,7 +127,6 @@ const renderer = new PIXI.Renderer({
     antialias:true
 })
 document.body.appendChild(renderer.view)
-
 const keyboardState = KeyboardState('key')(window)
 keyboardState.start()
 //const keyboardDownFront = KeyboardDownFront('key')(window)
@@ -160,19 +140,12 @@ function getCommands(){
     }
     return commands
 }
-
 const composer = LiveMusicComposer()
 window.composer = composer
-
 const music = Music( composer )
 const { ac, synth } = music.start() // no await
-
 async function go(){
-
-    
     console.log('Music',ac,synth,composer)
-
-
     // create viewport
     const viewport = new PIXI.Container({
         //interaction: app.renderer.plugins.interaction // the interaction module is important for wheel to work properly when renderer.view is placed or scaled
@@ -181,62 +154,57 @@ async function go(){
     //viewport.fitWidth()
     // add the viewport to the stage
     //app.stage.addChild(viewport)
-    
     const stage = new PIXI.Container({width:160,height:180});
     stage.position.x = 30
     stage.width = 160
     stage.height = 180
     stage.anchor = 0.5
-    //    console.log(stage.width,stage.height)
-    stage.pivot.x = stage.width / 2 
-    stage.pivot.y = stage.height /2 
+    // console.log(stage.width,stage.height)
+    stage.pivot.x = stage.width / 2
+    stage.pivot.y = stage.height /2
     // setInterval( () => {
-    
-    //  stage.rotation += Math.PI / 30
+    // stage.rotation += Math.PI / 30
     //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
     //stage.scale.y = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
     //stage.scale = 5
     //},16)
     viewport.addChild( stage )
-    
     /*stage.pivot.set(0.5,0.5)
       stage.scale.x = 1
       stage.scale.y = 2*/
     const glowFilter = new GlowFilter()
-
     setInterval( () => {
         const s01 = ( 1 + Math.sin( Date.now() / 500 ) ) / 2
         glowFilter.outerStrength = 1 + s01 * 1
     },100 )
-    
     const filmFilter = new OldFilmFilter({
         noise : 0.02,
         /*noiseSize : 0.9,*/
-        scratch : 0,        
+        scratch : 0,
         vignetting : 0.1,
         /*scratchDensity : 0.5,*/
         sepia : 0
     })
-    // ZoomBlurFilter 
+    // ZoomBlurFilter
     const rgbSplitFilter = new RGBSplitFilter()
     function Unsobber(){
         let level = 10
         function sint01( f , p = 0 ){
-            return ( Math.sin(p + Date.now() * f ) + 1  ) / 2
+            return ( Math.sin(p + Date.now() * f ) + 1 ) / 2
         }
         function cost01( f, p = 0 ){
-            return ( Math.cos(p + Date.now() * f ) + 1  ) / 2
+            return ( Math.cos(p + Date.now() * f ) + 1 ) / 2
         }
         function setLevel( _level ){
             level = _level
         }
         function update(){
             rgbSplitFilter.red.x = level * sint01(1/100)
-            rgbSplitFilter.red.y =  level * cost01(1/100)
+            rgbSplitFilter.red.y = level * cost01(1/100)
             rgbSplitFilter.blue.x = level * sint01(1/101)
-            rgbSplitFilter.blue.y =  level * cost01(1/101)
+            rgbSplitFilter.blue.y = level * cost01(1/101)
             rgbSplitFilter.green.x = level * sint01(1/102)
-            rgbSplitFilter.green.y =  level * cost01(1/102)
+            rgbSplitFilter.green.y = level * cost01(1/102)
         }
         return {
             update,
@@ -244,41 +212,31 @@ async function go(){
         }
     }
     const unsobber = Unsobber()
-    unsobber.setLevel(0)   
+    unsobber.setLevel(0)
     stage.filters = [
         filmFilter,
         rgbSplitFilter,
     ];
-
     /*
      * Scoreboard
      */
-    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )    
+    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
     const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
     viewport.addChild( scoreboardContainer )
-
-
     /*
      * terrain
-     */ 
-    const terrain  = await loadTerrain( 'assets/map1.tmx' )
+     */
+    const terrain = await loadTerrain( 'assets/map1.tmx' )
     stage.addChild(terrain.container);
-
     console.log('terrain',terrain)
-
     /*
      * Animations
      */
-    
     const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
-
     const entrances = terrain.extracted['level-entrance']
     const exits = terrain.extracted['level-exit']
-    
-
     const items = []
-
     exits.forEach( exit => {
         exit.container.filters = [ glowFilter ]
     })
@@ -306,7 +264,6 @@ async function go(){
         }
         items.push(animation)
     })
-
     /*
      * World
      */
@@ -346,14 +303,14 @@ async function go(){
                 aboveLadderBox : {
                     minX: x,
                     maxX: x,
-                    minY: y + height / 2, 
+                    minY: y + height / 2,
                     maxY: y + height / 2 + 1
                 },
                 onLadderBox : {
                     minX: x,
                     maxX: x,
                     minY: y,
-                    maxY: y + height / 2 
+                    maxY: y + height / 2
                 },
                 middleBox : {
                     minX: x - 1,
@@ -364,13 +321,10 @@ async function go(){
             }
         }
         const rtree = terrain.extracted['tree']
-        
         const { rightBox, leftBox, bottomBox,
                 aboveLadderBox, onLadderBox,
                 middleBox } = getPlayerCollisionBoxes( x,y,width,height )
-
-
-        const f1 = rtree.search( leftBox )          
+        const f1 = rtree.search( leftBox )
         const leftMatter = f1.find( ({tile}) => tile.layer.name === 'matter' )
         const f2 = rtree.search( rightBox )
         const rightMatter = f2.find( ({tile}) => tile.layer.name === 'matter' )
@@ -382,8 +336,7 @@ async function go(){
         const aboveLadder = f5.find( ({tile}) => tile.layer.name === 'ladder' )
         const f6 = rtree.search( middleBox )
         const onTreasure = f6.find( ({tile}) => tile.layer.name === 'treasure' )
-        const onExit = f6.find( ({tile}) => ( tile.layer.name === 'doors'  ) && ( tile.properties['level-exit'] ) )
-
+        const onExit = f6.find( ({tile}) => ( tile.layer.name === 'doors' ) && ( tile.properties['level-exit'] ) )
         if ( false ){
             // show selected
             rtree.all().map( finding => {
@@ -413,7 +366,7 @@ async function go(){
         world.canExit = true
     }
     function allTreasureFound(){
-        console.log('BEEP','allTreasureFound') 
+        console.log('BEEP','allTreasureFound')
         sndfx.cleared()
         openExitDoor()
     }
@@ -425,19 +378,15 @@ async function go(){
         rtree.remove( onTreasure )
         world.alcoolLevel += 200
         world.nTreasureFound += 1
-
         composer.transpose( 3 )
-
         if ( world.nTreasureFound === world.nTreasure ){
             allTreasureFound()
-        } 
-
+        }
         console.log(world)
     }
     function computeScore(){
         const score = world.countdown * world.nTreasureFound
-        world.score = score        
-
+        world.score = score
         const name = 'you'
         const hs = hiScores.setScore( name, score )
         hiScores.save( hs )
@@ -450,17 +399,13 @@ async function go(){
     }
     function exited(animation){
         console.log('BEEP','exited')
-
         world.over = world.time
         computeScore()
-        
         console.log('over at',world.over)
-        
         sndfx.win()
     }
     function reachExit(animation, onExit){
         console.log('BEEP','reach exit')
-        
         if ( world.canExit ){
             exited(animation)
             const rtree = terrain.extracted['tree']
@@ -472,15 +417,11 @@ async function go(){
         world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
         items.forEach( item => {
             const animation = item
-            
             const pl = animation.container,
                   {x,y} = pl.position,
                   {width,height} = pl
-
-            
             const surroundings = updateSurroundings( x, y, width, height )
             const { onLadder, underMatter } = surroundings
-
             //if ( world.over ) return
             if ( surroundings.onTreasure ){
                 reachTreasure( animation, surroundings.onTreasure )
@@ -489,7 +430,6 @@ async function go(){
                 reachExit( animation, surroundings.onExit )
                 //return
             }
-            
             if ( !onLadder && !underMatter ){
                 animation.container.position.y += 1
             } else {
@@ -504,12 +444,12 @@ async function go(){
                     if ( !surroundings.rightMatter ){
                         animation.container.position.x += 1
                     } else {
-                        //                    animation.play( 'iddle-right' )
+                        // animation.play( 'iddle-right' )
                     }
                 } else if ( commands.up ){
                     if ( surroundings.onLadder ){
                         animation.container.position.y -= 1
-                    }   
+                    }
                 } else if ( commands.down ){
                     if ( surroundings.aboveLadder ){
                         animation.container.position.y += 1
@@ -518,30 +458,25 @@ async function go(){
             }
         })
     }
-    
     function worldStep( deltaTime ){
-        const floatTime  = world.time + deltaTime
+        const floatTime = world.time + deltaTime
         const floatStep = floatTime / fixedTimeStep
         const intStep = Math.floor( floatStep )
         const intElapsed = intStep - world.step
         if ( intElapsed > 2 ){
             console.log('must do',intElapsed)
         }
-        
         for ( let i = 0 ; i < intElapsed ; i++ ){
             worldFixedStep()
         }
         world.time = floatTime
         world.step = intStep
-        
     }
-    
     let oldTime = Date.now();
     pageVisibility.on.change.push( () => {
         oldTime = Date.now();
     })
     function animate() {
-        
         stats.begin();
         //console.log('1/60')
         // get time
@@ -550,34 +485,30 @@ async function go(){
         oldTime = newTime;	
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
-
         // grab commands
         const commands = getCommands()
-        //        keyboardDownFront.reset()
+        // keyboardDownFront.reset()
         world.commands = commands
-        
         // step world
         if ( ! world.over ){
             worldStep( deltaTime / 1000 )
         }
-        
-        world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500)) 
+        world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500))
         if (world.over ) {
             filmFilter.sepia = 1
             unsobber.setLevel(0)
             filmFilter.vignetting = 0.1
-        }  else {
+        } else {
             const stoneness = 5 * world.alcoolLevel / 500
             const readyness = Math.min(world.alcoolLevel,200) / 200
-            filmFilter.vignetting =  0.125 - readyness / 8
+            filmFilter.vignetting = 0.125 - readyness / 8
             unsobber.setLevel(stoneness)
         }
         unsobber.update()
         if ( scoreboardZones ){
-            let remain =  world.countdown
+            let remain = world.countdown
             scoreboardZones.updateCountdown( remain )
             scoreboardZones.updateTreasuresFound( world.nTreasureFound )
-
             if ( world.over ){
                 scoreboardZones.updateLevelScore( `place : #${ world.rank + 1 } \n${ remain } * ${ world.nTreasureFound } = ${ world.score }` )
             } else {
@@ -587,59 +518,45 @@ async function go(){
         renderer.render( viewport );
 	stats.end();
         //if ( ! world.over ){
-            requestAnimationFrame(animate);
+        requestAnimationFrame(animate);
         //}
         //_omposer.setFreq( 440 * ( 1+ world.nTreasureFound ) )
         if ( world.over ){
             composer.conclusion(true)
             //composer.setTempo( 40 )
             composer.setUrgency( world.initialCountdown, world.initialCountdown )
-            
         } else {
-            //composer.setTempo( 60 +  world.nTreasureFound * 40 )
+            //composer.setTempo( 60 + world.nTreasureFound * 40 )
             composer.setUrgency( world.countdown, world.initialCountdown )
-            
         }
     }
     requestAnimationFrame(animate);
 }
 go()
-
-
-
-
 // //import 'p2/build/p2.min.js'
 // import p2 from 'p2'
 // import * as PIXI from 'pixi.js'
 // // import * as Audio from './lib/audio.js'
 // // Audio.getAudioContext().then( ac => {
-// //     console.log('running!',ac)
+// // console.log('running!',ac)
 // // })
-
-
 // //console.log('PIXI',PIXI)
 // /*var container, graphics, zoom,
-//   world, boxShape, boxBody, planeBody, planeShape;*/
+// world, boxShape, boxBody, planeBody, planeShape;*/
 // /*
-//   import { BlurFilter } from '@pixi/filter-blur';
-//   import { Container } from '@pixi/display';
-//   import { Graphics } from '@pixi/graphics';
-//   import { Sprite } from '@pixi/sprite';
+// import { BlurFilter } from '@pixi/filter-blur';
+// import { Container } from '@pixi/display';
+// import { Graphics } from '@pixi/graphics';
+// import { Sprite } from '@pixi/sprite';
 // */
-
 // import { GlowFilter } from '@pixi/filter-glow';
 // import { AsciiFilter } from '@pixi/filter-ascii';
 // import { CRTFilter } from '@pixi/filter-crt'
 // import { DotFilter } from '@pixi/filter-dot'
-
-
-
 // init();
 // //animate();
-
 // import PixiFps from "pixi-fps";
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
-
 function AnimatedItem( animationModels ){
     //
     // instanciate animation model (multiple animations in a container)
@@ -655,11 +572,10 @@ function AnimatedItem( animationModels ){
         })))
         anim.anchor.set(0.5);
         anim.scale.set(1);
-        anim.animationSpeed =  speed 
+        anim.animationSpeed = speed
         animationContainer.addChild(anim);
         // todo
         anim.loop = false//loop
-        
         anim.onComplete = (...p) => {
             //console.log('oncomplete',name,model)
             if ( on.complete ){
@@ -677,7 +593,7 @@ function AnimatedItem( animationModels ){
     function play( name ){
         //console.log('play anim',name)
         if ( _previousAnimation !== undefined ){
-            const anim =  animations[ _previousAnimation  ]
+            const anim = animations[ _previousAnimation ]
             anim.stop()
             anim.visible = false
         }
@@ -688,7 +604,6 @@ function AnimatedItem( animationModels ){
         _previousAnimation = name
     }
     return { container : animationContainer, on, play }
-    
 }
 async function loadAnimations( url ){
     //
@@ -707,23 +622,20 @@ async function loadAnimations( url ){
             speed :layer.properties['animation-speed']
         }
     })
-    return animationModels    
+    return animationModels
 }
-
 async function loadTerrain( url ){
     //
     // load tilemap
     //
     const terrain = await loadTerrainTileMap(url ,imageResolver)
-
     const extracted = {}
-    extracted.ladders = []    
+    extracted.ladders = []
     extracted.matter = []
     extracted.treasure = []
     extracted['level-entrance'] = []
     extracted['level-exit'] = []
     extracted.tree = new RBush();
-
     //
     // special tiles
     //
@@ -754,7 +666,6 @@ async function loadTerrain( url ){
             extracted['tree'].insert(item);
         })
     })
-    
     //
     // visual tiles, build graphics
     //
@@ -763,7 +674,7 @@ async function loadTerrain( url ){
         layer.tiles.forEach( tile => {
             const position = tile.inLayer.position,
                   imageBitmap = tile.imageBitmap
-            const collisionMaskNames = tile.properties['collision-mask']                       
+            const collisionMaskNames = tile.properties['collision-mask']
             const sprite = PIXI.Sprite.from( imageBitmap )
             sprite.anchor.set(0.5)
             sprite.position.x = position.x
@@ -771,17 +682,12 @@ async function loadTerrain( url ){
             container.addChild( sprite )
             //
             tile.container = sprite
-
         })
     })
     return { extracted, container }
 }
-
 /*
-
 //import { Ticker } from '@pixi/ticker'
-
-
 //import { TickerPlugin } from '@pixi/ticker';
 //import { Application } from '@pixi/app';
 //Application.registerPlugin(TickerPlugin);
@@ -791,13 +697,12 @@ async function loadTerrain( url ){
 function loadBitmapFont( url ){
     return new Promise( (resolve,reject) => {
         const loader = new PIXI.Loader()
-        loader.add( url ).load( l  => {
+        loader.add( url ).load( l => {
             const fontName = l.resources[ url ].bitmapFont.font
             resolve(fontName)
         })
     })
 }
-
 function ScoreBoard( fontName ){
     const scoreboardContainer = new PIXI.Container()
     function scoreBoardText( x,y, options ){
@@ -811,7 +716,7 @@ function ScoreBoard( fontName ){
         }
         function set( _text ){
             if ( _text ){
-                const pixiText = createText( _text  )
+                const pixiText = createText( _text )
                 container.addChild( pixiText )
                 text = _text
             }
@@ -822,7 +727,7 @@ function ScoreBoard( fontName ){
                 set( _text )
             }
         }
-        function createText( text,  options ) {
+        function createText( text, options ) {
             const textContainer = new PIXI.BitmapText(text, {
                 font: `8px ${ fontName }`,
                 fill : '0xffffff',
@@ -842,21 +747,16 @@ function ScoreBoard( fontName ){
         treasures : scoreBoardText( 140,0 ),
         levelScore : scoreBoardText( 54,60 )
     }
-
-    
-
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
     scoreboardContainer.addChild( scoreboardZones.levelScore.container )
-    
-    
-    scoreboardZones.updateCountdown =  function(d) {
+    scoreboardZones.updateCountdown = function(d) {
         scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
     }
-    scoreboardZones.updateTreasuresFound =  function(d) {
+    scoreboardZones.updateTreasuresFound = function(d) {
         scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
     }
-    scoreboardZones.updateLevelScore =  function(d) {
+    scoreboardZones.updateLevelScore = function(d) {
         scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
     }
     return { scoreboardZones, scoreboardContainer }
