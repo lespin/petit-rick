@@ -202,8 +202,8 @@ async function go(){
 
     function createStage( width, height) {
         const stage = new PIXI.Container()//{width,height})
-        stage.position.x = 8*4
-        stage.position.y = 8
+        stage.position.x = 0//8*4
+        stage.position.y = 0//8
         //stage.width = width
         
         stage.height = height
@@ -211,6 +211,7 @@ async function go(){
     // console.log(stage.width,stage.height)
         stage.pivot.x = stage.width / 2
         stage.pivot.y = stage.height /2
+        stage.scale.x = 1
         // setInterval( () => {
         // stage.rotation += Math.PI / 30
         //stage.scale.x = 0.5 + 1 * ( Math.cos( Date.now() / 1000 ) + 1 ) / 2
@@ -748,8 +749,8 @@ function ScoreBoard( fontName ){
     }
     const scoreboardZones = {
         countdown : scoreBoardText( 1, 0 ),
-        treasures : scoreBoardText( 140, 0 ),
-        levelScore : scoreBoardText( 54, 60 )
+        treasures : scoreBoardText( 80, 0 ),
+        levelScore : scoreBoardText( 24, 60 )//, { align : 'center' } )
     }
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
