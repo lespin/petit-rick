@@ -285,7 +285,7 @@ async function go(){
             //            console.log('complete')
             const [name,animatedSprite] = p,
                   frame = animatedSprite.currentFrame
-//            console.log('complete',name,frame)
+            //            console.log('complete',name,frame)
             // take from world ?
             const commands = {
                 up : keyboardState.state.get('ArrowUp'),
@@ -296,7 +296,7 @@ async function go(){
             const retrib = retribs[ name ]
             const matchedCommand = Object.keys( retrib ).find( k => commands[ k ] )
             const followedBy = retrib[ matchedCommand || 0 ]
-//            console.log('@',Date.now(),followedBy)
+            //            console.log('@',Date.now(),followedBy)
             animation.play( followedBy.go )
         }
         /*
@@ -314,76 +314,11 @@ async function go(){
         
     })
 
-    const scoreboard = new PIXI.Container()
-    viewport.addChild( scoreboard )
 
-    const loader = new PIXI.Loader()
-
-    let _scoreboardZones
+    const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
     
-    loader.add('HeadingFont', 'assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
-
-        function scoreBoardText( scoreboard,x,y, options ){
-            let text,
-                container = new PIXI.Container()
-            //scoreboard.addChild( container )
-            
-            function clear(){
-                if ( container ){
-                    container.removeChildren()
-                    //scoreboard.removeChild( container )
-                }
-                text = undefined
-            }
-            function set( _text ){
-                if ( _text ){
-                    const pixiText = createText( _text  )
-                    container.addChild( pixiText )
-                    text = _text
-                }
-            }
-            function update( _text ){
-                if ( _text !== text ){
-                    clear()
-                    set( _text )
-                }
-            }
-            function createText( text,  options ) {
-                const textContainer = new PIXI.BitmapText(text, {
-                    font: '8px Nokia Cellphone FC',
-                    fill : '0xffffff',
-                    ...options,
-                })
-                textContainer.position.x = x
-                textContainer.position.y = y
-                return textContainer;
-            }
-            return { update, clear, container }
-        }
-        _scoreboardZones = {
-            countdown : scoreBoardText( scoreboard, 4,0, {
-                align : 'center',
-                width : '200px',
-            }),
-            treasures : scoreBoardText( scoreboard, 140,0 ),
-            levelScore : scoreBoardText( scoreboard,54,60 )
-        }
-
-        scoreboard.addChild( _scoreboardZones.countdown.container )
-        scoreboard.addChild( _scoreboardZones.treasures.container )
-        scoreboard.addChild( _scoreboardZones.levelScore.container )
-
-        
-        _scoreboardZones.updateCountdown =  function(d) {
-            _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
-        }
-        _scoreboardZones.updateTreasuresFound =  function(d) {
-            _scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
-        }
-        _scoreboardZones.updateLevelScore =  function(d) {
-            _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
-        }
-    })
+    const { _scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
+    viewport.addChild( scoreboardContainer )
     
     //items.length = 1
     /*
@@ -615,7 +550,7 @@ async function go(){
         world.step = intStep
         
     }
-   
+    
     let oldTime = Date.now();
     function animate() {
 
@@ -732,7 +667,7 @@ go()
 // //animate();
 
 // import PixiFps from "pixi-fps";
-    import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
+import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 
 function AnimatedItem( animationModels ){
     //
@@ -882,3 +817,84 @@ async function loadTerrain( url ){
 //import { Container } from '@pixi/display';
 //import { Sprite } from '@pixi/sprite';
 */
+function loadBitmapFont( url ){
+    return new Promise( (resolve,reject) => {
+        const loader = new PIXI.Loader()
+        loader.add( url ).load( l  => {
+            const fontName = l.resources[ url ].bitmapFont.font
+            resolve(fontName)
+        })
+    })
+}
+
+function ScoreBoard( fontName ){
+    const scoreboardContainer = new PIXI.Container()
+
+    
+    console.log('fontName',fontName)
+    //loader.add('HeadingFont', 'assets/fonts/bitmapFonts/nokia16.xml').load((aaaa) => {
+
+    function scoreBoardText( x,y, options ){
+        let text,
+            container = new PIXI.Container()
+        //scoreboard.addChild( container )
+        
+        function clear(){
+            if ( container ){
+                container.removeChildren()
+                //scoreboard.removeChild( container )
+            }
+            text = undefined
+        }
+        function set( _text ){
+            if ( _text ){
+                const pixiText = createText( _text  )
+                container.addChild( pixiText )
+                text = _text
+            }
+        }
+        function update( _text ){
+            if ( _text !== text ){
+                clear()
+                set( _text )
+            }
+        }
+        function createText( text,  options ) {
+            const textContainer = new PIXI.BitmapText(text, {
+                font: `8px ${ fontName }`,
+                fill : '0xffffff',
+                ...options,
+            })
+            textContainer.position.x = x
+            textContainer.position.y = y
+            return textContainer;
+        }
+        return { update, clear, container }
+    }
+    const _scoreboardZones = {
+        countdown : scoreBoardText( 4,0, {
+            align : 'center',
+            width : '200px',
+        }),
+        treasures : scoreBoardText( 140,0 ),
+        levelScore : scoreBoardText( 54,60 )
+    }
+
+    
+
+    scoreboardContainer.addChild( _scoreboardZones.countdown.container )
+    scoreboardContainer.addChild( _scoreboardZones.treasures.container )
+    scoreboardContainer.addChild( _scoreboardZones.levelScore.container )
+    
+    
+    _scoreboardZones.updateCountdown =  function(d) {
+        _scoreboardZones.countdown.update( ''+d.toString(10).padStart(4,' ') )
+    }
+    _scoreboardZones.updateTreasuresFound =  function(d) {
+        _scoreboardZones.treasures.update( ''+d.toString(10).padStart(4,' ') )
+    }
+    _scoreboardZones.updateLevelScore =  function(d) {
+        _scoreboardZones.levelScore.update( ''+d.toString(10).padStart(4,' ') )
+    }
+    return { _scoreboardZones, scoreboardContainer }
+}
