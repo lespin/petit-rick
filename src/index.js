@@ -508,7 +508,6 @@ async function go(){
         console.log('BEEP','reach exit')
         if ( world.canExit ){
             sndfx.cheer()
-
             exited(animation)
             const rtree = terrain.extracted['tree']
             rtree.remove( onExit )
@@ -516,6 +515,10 @@ async function go(){
     }
     function allPlayerKilled( ){
         console.log('BEEP','all players killed')
+
+        world.over = world.time
+        computeScore()
+
     }
     function killPlayer( animation ){
         animation.dead = true
@@ -534,8 +537,15 @@ async function go(){
             allPlayerKilled()
         }        
     }
+    function countdownReached( ){
+        world.over = world.time
+        computeScore()
+    }
     function worldFixedStep( ){
         world.countdown = Math.max(0, world.countdown - 1 )
+        if ( world.countdown === 0 ){
+            countdownReached()
+        }
         world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
         items.forEach( item => {           
             const animation = item
@@ -547,6 +557,7 @@ async function go(){
                 position.y = parabola.position.y
                 return
             }
+            // if ( world.over ) return
             const pl = animation.container,
                   {x,y} = pl.position,
                   {width,height} = pl
@@ -615,6 +626,7 @@ async function go(){
         // time is not counted when page is not visible and RAF not called
         oldTime = Date.now();
     })
+        window.world = world
     function animate() {
         stats.begin();
         //console.log('1/60')
@@ -629,7 +641,6 @@ async function go(){
         const commands = getCommands()
         // keyboardDownFront.reset()
         world.commands = commands
-        
         // step world
         if ( ! world.over ){
             worldStep( deltaTime / 1000 )
@@ -649,10 +660,12 @@ async function go(){
         }
         unsobber.update()
         if ( scoreboardZones ){
-            let remain = world.countdown
-            scoreboardZones.updateCountdown( remain )
-            scoreboardZones.updateTreasuresFound( world.nTreasureFound )
-            if ( world.over ){
+            let remain = world.over
+            if ( !world.over ){
+                const remain = world.countdown
+                scoreboardZones.updateCountdown( remain )
+                scoreboardZones.updateTreasuresFound( world.nTreasureFound )
+            } else if ( world.over ){
                 let txt = ''
                 if ( world.overtime === undefined ){
                     world.overtime = Date.now()
