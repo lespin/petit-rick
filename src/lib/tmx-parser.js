@@ -239,7 +239,8 @@ export async function parseTMX( xmlString ){
                 tileheight : parseInt( $.tileheight ),
                 infinite : parseInt( $.infinite ),
                 tilesets : [],
-                layers : []
+                layers : [],
+                properties : {},
             }
             stackElement = map
             parsed = map
