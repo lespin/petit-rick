@@ -483,7 +483,7 @@ async function go(){
         console.log(world)
     }
     function computeScore(){
-        const score = world.countdown * world.nTreasureFound
+        const score = world.countdown * ( world.nTreasureFound *  2 * world.nPlayers )
         world.score = score
         const name = 'you'
         const hs = hiScores.setScore( name, score )
@@ -648,7 +648,11 @@ async function go(){
             scoreboardZones.updateCountdown( remain )
             scoreboardZones.updateTreasuresFound( world.nTreasureFound )
             if ( world.over ){
-                scoreboardZones.updateLevelScore( `place : #${ world.rank + 1 } \n${ remain } * ${ world.nTreasureFound } = ${ world.score }` )
+                scoreboardZones.updateLevelScore( [
+                    `place : #${ world.rank + 1 }`,
+                    `${ remain } * ( ${ world.nTreasureFound } + 2 * ${ world.nPlayers } )`,
+                    `= ${ world.score }`
+                ].join("\n"))
             } else {
                 scoreboardZones.updateLevelScore('')
             }
