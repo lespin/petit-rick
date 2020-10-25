@@ -511,6 +511,7 @@ async function go(){
     }
     function countdownReached( ){
         world.over = world.time
+        // TODO
         sndfx.countdownReached()
         computeScore()
     }
@@ -1032,3 +1033,10 @@ function HiScores( level ){
 //     hash : n => n
 // })
 // console.log(path);
+
+//
+// todo? : use map name for hiscores ?
+// todo : right alignement depending on map size
+// todo : continue playing after timeout
+// todo : map time in tilemap
+//
