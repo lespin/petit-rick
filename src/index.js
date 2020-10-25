@@ -19,9 +19,8 @@ pageVisibility.on.change.push( () => {
 })
 import { LevelScoreVisibleCalculation } from './visibleCalculation.js'
 import { Parabola } from './parabola.js'
-const ac2 = new AudioContext()
 
-const sampler = Sampler( ac2 )
+const sampler = Sampler()
 
 const sndfx = sampler.functions
 
@@ -29,13 +28,14 @@ import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
 import { Sampler } from './lib/sampler.js'
 import { loadSound } from './lib/loadsound.js'
 
+const loaderAc = new AudioContext()
 const soundfiles = [
     ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.wav'],
     ['shout','assets/218417__kokopetiyot__female-shout.wav'],
     ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.wav'],
     ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
 ].forEach( ([name,url]) => {    
-    loadSound(ac2,url, buffer => {
+    loadSound(loaderAc,url, buffer => {
         if ( buffer )
             sampler.set( name, buffer )
     })
@@ -52,23 +52,14 @@ const zzfxData = [
     const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
     sampler.set( name, buffer )
 })
+
+
 /*
 setInterval( () => {
     sndfx.countdownReached()
 },1000)
 */
 import { Music, LiveMusicComposer } from './music.js'
-
-var aStar = require('a-star');
-var path = aStar({
-    start : 'S',
-    isEnd : n => ( n === 'E' ),
-    neighbor : n => (['S','E']),
-    distance : (a,b) => 1,
-    heuristic : (a,b) => 1,
-    hash : n => n
-})
-console.log(path);
 
 
 const retribs = {
@@ -164,14 +155,13 @@ async function startSound(){
     const music = Music( composer )
     const musicSynth = music.start( ac )
     musicSynth.output.connect( safeOutput.input )
-    musicSynth.output.gain.value = 0.5
+    musicSynth.output.gain.value = 0.25
 
     const samplerSynth = sampler.start( ac )
     samplerSynth.output.connect( ac.destination )
     samplerSynth.output.gain.value = 1
 }
 startSound()
-
     
 var rng = seedrandom('fx-1');
 
@@ -609,7 +599,9 @@ async function go(){
         // time is not counted when page is not visible and RAF not called
         oldTime = Date.now();
     })
-        window.world = world
+    window.world = world
+    let preWait = 0.8,
+        started = false
     function animate() {
         stats.begin();
         //console.log('1/60')
@@ -619,13 +611,27 @@ async function go(){
         oldTime = newTime;	
         if (deltaTime < 0) deltaTime = 0;
         if (deltaTime > 1000) deltaTime = 1000;
+        preWait -= deltaTime/1000
         
         // grab commands
         const commands = getCommands()
         // keyboardDownFront.reset()
         world.commands = commands
         // step world
-        if ( ! world.over ){
+        if ( preWait < 0 ){
+            if ( ! started && ( commands.up || commands.left || commands.down || commands.right ) ){
+                sndfx.swallow()
+                started = true
+            }
+            if ( started ) {
+                scoreboardZones.updateReady( "" )
+            } else {
+                scoreboardZones.updateReady( "press any key\nwhen ready" )
+            }
+        } else {
+            scoreboardZones.updateReady( "prepare..." )
+        }
+        if ( started && ( ! world.over )){
             worldStep( deltaTime / 1000 )
         }
         
@@ -670,18 +676,7 @@ async function go(){
                             //'score', ''+world.score,
                         ].join("\n"))
                     }
-                    
-                    //txt = levelScoreVisibleCalulation.at( a )
-                    //console.log('worldOVER',sinceover,a,txt)
                 }
-                //const levelScoreVisibleCalulation =  LevelScoreVisibleCalculation( world )
-
-                // scoreboardZones.updateLevelScore( [
-                //     txt,
-                //     `rank:\n#${ world.rank + 1 }`,
-                //     //`${ remain } * ( ${ world.nTreasureFound } + 2 * ${ world.nPlayers } )`,
-                //     //`= ${ world.score }`
-                // ].join("\n"))
             } else {
                 scoreboardZones.updateLevelScore('')
             }
@@ -703,9 +698,25 @@ async function go(){
         // recurse
         requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+ //   onInteraction( () => {
+//        startSound()
+        requestAnimationFrame(animate)
+   // })
+    //requestAnimationFrame(animate);
+}
+function onInteraction( f ){
+    function once(e){
+        console.log('OK?',e)
+        window.removeEventListener( 'keydown', once )
+        window.removeEventListener( 'click', once )
+        f()
+    }
+    window.addEventListener( 'keydown', once )
+    window.addEventListener( 'click', once )
 }
 go()
+//onInteraction( go )
+//go()
 // //import 'p2/build/p2.min.js'
 // import p2 from 'p2'
 // import * as PIXI from 'pixi.js'
@@ -931,14 +942,19 @@ function ScoreBoard( fontName ){
         }
         return { update, clear, container }
     }
+
     const scoreboardZones = {
         countdown : scoreBoardText( 1, 0, 0,0 ),
         treasures : scoreBoardText( 96, 0, 1,0, {align : 'right'} ),
-        levelScore : scoreBoardText( 50, 30 , 0.5,0,{ width : 60, align : 'center' })
+        levelScore : scoreBoardText( 50, 30 , 0.5,0,{ width : 60, align : 'center' }),
+        ready : scoreBoardText( 50, 64 , 0.5,0,{ width : 60, align : 'center' })
     }
+
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
     scoreboardContainer.addChild( scoreboardZones.levelScore.container )
+    scoreboardContainer.addChild( scoreboardZones.ready.container )
+    
     scoreboardZones.updateCountdown = function(d) {
         scoreboardZones.countdown.update( d.toString(10).padStart(4,'0') )
     }
@@ -946,8 +962,12 @@ function ScoreBoard( fontName ){
         scoreboardZones.treasures.update( d.toString(10).padStart(3,'0') )
     }
     scoreboardZones.updateLevelScore = function(d) {
-        scoreboardZones.levelScore.update( d.toString(10) )
+        scoreboardZones.levelScore.update( d )
     }
+    scoreboardZones.updateReady = function( d ) {
+        scoreboardZones.ready.update( d )
+    }
+    
     return { scoreboardZones, scoreboardContainer }
 }
 
@@ -996,3 +1016,14 @@ function HiScores( level ){
     }
     return { load, setScore, remove }
 }
+
+// var aStar = require('a-star');
+// var path = aStar({
+//     start : 'S',
+//     isEnd : n => ( n === 'E' ),
+//     neighbor : n => (['S','E']),
+//     distance : (a,b) => 1,
+//     heuristic : (a,b) => 1,
+//     hash : n => n
+// })
+// console.log(path);
