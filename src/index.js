@@ -6,7 +6,6 @@ PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 import { GlowFilter } from '@pixi/filter-glow';
-import { zzfxCreateAndPlay } from './lib/zzfx.micro.js'
 var seedrandom = require('seedrandom');
 import * as Stats from 'stats.js'
 var stats = new Stats();
@@ -17,14 +16,28 @@ const pageVisibility = PageVisibility()
 pageVisibility.on.change.push( () => {
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
+import { Parabola } from './parabola.js'
+
+import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
+import { Sampler } from './lib/sampler.js'
+
+const sampler = Sampler( new AudioContext() )
+sampler.output.connect( sampler.ac.destination )
+
 var rng = seedrandom('fx-1');
-const sndfx = {
-    pickup : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    cleared : () => zzfxCreateAndPlay(...[rng,,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]),
-    win : () => zzfxCreateAndPlay(...[rng,,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]),
-}
-// warmup ...
-Object.values( sndfx ).forEach( f => f() )
+
+const sndfx = {}
+const zzfxData = [
+    ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
+    ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
+    ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],    
+].forEach( ([name,seed,zzfxDefinition]) => {
+    const rng = seedrandom( seed )
+    const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
+    sampler.buffers.set( name, buffer )
+    sndfx[ name ] = () => sampler.play( name ) 
+})
+
 import { Music, LiveMusicComposer } from './music.js'
 
 var aStar = require('a-star');
@@ -278,6 +291,9 @@ async function go(){
         exit.container.filters = [ glowFilter ]
     })
     entrances.forEach( entrance => {
+        //
+        // create a player animation on each entrance
+        //
         const entrancePosition = entrance.inLayer.position
         const animation = new AnimatedItem( animationModels )
         animation.container.position.x = entrancePosition.x
@@ -321,9 +337,11 @@ async function go(){
         alcoolLevel : 0,
         nTreasureFound : 0,
         nTreasure : terrain.extracted['treasure'].length,
+        initialNPlayers : terrain.extracted['level-entrance'].length,
         initialCountdown : 48 * 60,
     }
     world.countdown = world.initialCountdown
+    world.nPlayers = world.initialNPlayers
 
     
     function getSurroundings(x,y,width,height){
@@ -473,17 +491,45 @@ async function go(){
             rtree.remove( onExit )
         }
     }
+    function allPlayerKilled( ){
+        console.log('BEEP','all players killed')
+    }
+    function killPlayer( animation ){
+        animation.dead = true
+        
+        const km_h = v => v/3600*1000
+        const position = animation.container.position
+        const side = (rng() > 0.5)?1:-1
+        const parabola = Parabola( position.x, position.y,
+                                   side*km_h(3),km_h(-15),
+                                   30 )
+        animation.parabola = parabola
+        world.nPlayers--
+        console.log('BEEP','player killed',world.nPlayers)
+        if ( world.nPlayers < 1 ){
+            allPlayerKilled()
+        }        
+    }
     function worldFixedStep( ){
         world.countdown = Math.max(0, world.countdown - 1 )
         world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
-        items.forEach( item => {
+        items.forEach( item => {           
             const animation = item
+            if ( animation.dead ) {
+                const parabola = animation.parabola,
+                      position = animation.container.position
+                parabola.step( fixedTimeStep )
+                position.x = parabola.position.x
+                position.y = parabola.position.y
+                return
+            }
             const pl = animation.container,
                   {x,y} = pl.position,
                   {width,height} = pl
             const surroundings = getSurroundings( x, y, width, height )
             if ( surroundings.onMine ){
                 console.log(surroundings.onMine)
+                killPlayer( animation )
             }
             const { onLadder, underMatter } = surroundings
             if ( surroundings.onTreasure ){
