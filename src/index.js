@@ -22,7 +22,7 @@ import { Parabola } from './parabola.js'
 const ac2 = new AudioContext()
 
 const sampler = Sampler( ac2 )
-sampler.output.connect( ac2.destination )
+
 const sndfx = sampler.functions
 
 import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
@@ -190,18 +190,35 @@ function getCommands(){
     }
     return commands
 }
+
 const composer = LiveMusicComposer()
 window.composer = composer
 
-const music = Music( composer )
-const { ac, synth } = music.start() // no await
+import { getAudioContext } from './lib/audio.js'
+import { SafeOutput } from './lib/safeoutput.js'
 
+async function startSound(){
+    const ac = await getAudioContext()
+    const safeOutput = SafeOutput(ac)
+    safeOutput.output.gain.value = 1
+    safeOutput.output.connect( ac.destination )
 
+    const music = Music( composer )
+    const musicSynth = music.start( ac )
+    musicSynth.output.connect( safeOutput.input )
+    musicSynth.output.gain.value = 0.5
 
+    const samplerSynth = sampler.start( ac )
+    samplerSynth.output.connect( ac.destination )
+    samplerSynth.output.gain.value = 1
+}
+startSound()
+
+    
 var rng = seedrandom('fx-1');
 
 async function go(){
-    const mapName = 'map2'
+    const mapName = 'map3'
 
     const hiScores = HiScores( mapName )
     window.hiScores = hiScores

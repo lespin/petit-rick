@@ -1,5 +1,5 @@
-import { getAudioContext } from './lib/audio.js'
-import { SafeOutput } from './lib/safeoutput.js'
+//import { getAudioContext } from './lib/audio.js'
+//import { SafeOutput } from './lib/safeoutput.js'
 import { ktof } from './lib/frequencies.js'
 var seedrandom = require('seedrandom');
 var rng = seedrandom('muz-1')
@@ -392,9 +392,9 @@ export function Music( composer ){
     
 
     function setupSynth(ac){
-        const safeOutput = SafeOutput( ac )
-        safeOutput.output.gain.value = 1
-        safeOutput.output.connect( ac.destination )
+        //const safeOutput = SafeOutput( ac )
+        //safeOutput.output.gain.value = 1
+        //safeOutput.output.connect( ac.destination )
 
         /*
         const sinusMonoSynth = SinusMonoSynth(ac)
@@ -402,7 +402,7 @@ export function Music( composer ){
         return sinusMonoSynth
         */
         const multiChannelSynth = MultiChannelSynth( ac, 4 )
-        multiChannelSynth.output.connect( safeOutput.input )
+        //multiChannelSynth.output.connect( safeOutput.input )
         return multiChannelSynth
     }
     
@@ -482,11 +482,11 @@ export function Music( composer ){
         
     }
 
-    async function start( ){
-        const ac = await getAudioContext()
+    function start( ac  ){
+//        const ac = await getAudioContext()
         const synth = setupSynth(ac)
         run( ac, composer.generateSome, synth )
-        return { ac, synth, composer }
+        return synth
     }
     
     return {

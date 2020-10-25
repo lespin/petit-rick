@@ -1,8 +1,8 @@
-export function Sampler( ac ){
+export function Sampler( ){
     const buffers = new Map()
-    const gain = ac.createGain()
-    gain.gain.value = 1.0
+    let gain, ac
     function play( name ){
+        if ( !ac ) return
         const buffer = buffers.get( name )
         if ( !buffer )
             throw new Error('no sound buffer named: '+name)
@@ -16,5 +16,11 @@ export function Sampler( ac ){
         buffers.set( name, buffer )
         functions[ name ] = () => play( name )
     }
-    return { ac, set, buffers, play, gain, output : gain, functions }
+    function start( _ac ){
+        ac = _ac
+        gain = ac.createGain()
+        gain.gain.value = 1.0
+        return { output : gain }
+    }
+    return { set, start, buffers, play, functions }
 }
