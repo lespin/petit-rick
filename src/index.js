@@ -626,7 +626,10 @@ async function go(){
             if ( started ) {
                 scoreboardZones.updateReady( "" )
             } else {
-                scoreboardZones.updateReady( "press any key\nwhen ready" )
+                scoreboardZones.updateReady( [
+                    terrain.extracted['display-name'],
+                    "press any key\nwhen ready"
+                ].join("\n\n"))
             }
         } else {
             scoreboardZones.updateReady( terrain.extracted['display-name'] )
