@@ -34,17 +34,10 @@ const soundfiles = [
     ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
 ].forEach( ([name,url]) => {    
     loadSound(ac2,url, buffer => {
-        console.log('LOADED',name,url,buffer)
         if ( buffer )
             sampler.set( name, buffer )
     })
 })
-/*
-setInterval( () => {
-    console.log('swallow')
-    sndfx.shout()
-},3000)
-*/
 const zzfxData = [
     ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
     ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
