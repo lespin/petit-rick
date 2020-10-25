@@ -1,4 +1,5 @@
 import { KeyboardState/*, KeyboardDownFront*/ } from './lib/keyboardState.js'
+import { clamp } from './lib/utils.js'
 import RBush from 'rbush';
 import * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
@@ -16,6 +17,7 @@ const pageVisibility = PageVisibility()
 pageVisibility.on.change.push( () => {
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
+import { LevelScoreVisibleCalculation } from './visibleCalculation.js'
 import { Parabola } from './parabola.js'
 const ac2 = new AudioContext()
 
@@ -357,6 +359,8 @@ async function go(){
     world.countdown = world.initialCountdown
     world.nPlayers = world.initialNPlayers
 
+    const levelScoreVisibleCalulation =  LevelScoreVisibleCalculation( world )
+
     
     function getSurroundings(x,y,width,height){
         function getPlayerCollisionBoxes( x, y, width, height ){
@@ -483,6 +487,7 @@ async function go(){
         console.log(world)
     }
     function computeScore(){
+        // TODO
         const score = world.countdown * ( world.nTreasureFound *  2 * world.nPlayers )
         world.score = score
         const name = 'you'
@@ -585,7 +590,7 @@ async function go(){
             }
         })
     }
-
+    
     function worldStep( deltaTime ){
         // do multiple world fixed step (todo : interpolation ?)
         const floatTime = world.time + deltaTime
@@ -648,11 +653,38 @@ async function go(){
             scoreboardZones.updateCountdown( remain )
             scoreboardZones.updateTreasuresFound( world.nTreasureFound )
             if ( world.over ){
-                scoreboardZones.updateLevelScore( [
-                    `place : #${ world.rank + 1 }`,
-                    `${ remain } * ( ${ world.nTreasureFound } + 2 * ${ world.nPlayers } )`,
-                    `= ${ world.score }`
-                ].join("\n"))
+                let txt = ''
+                if ( world.overtime === undefined ){
+                    world.overtime = Date.now()
+                } else {
+                    const sinceover = ( Date.now() - world.overtime ) / 1000
+                    const duration = 1.3
+                    const a = sinceover / duration
+                    const car = clamp( sinceover, 0, duration ) / duration
+                    const txt = levelScoreVisibleCalulation.at( car ) 
+                    if ( a <= 1 ){
+                        scoreboardZones.updateLevelScore( 
+                            txt
+                        )
+                    } else {
+                        scoreboardZones.updateLevelScore( [
+                            txt,
+                            '\nrank',  '#'+world.rank + 1,
+                            //'score', ''+world.score,
+                        ].join("\n"))
+                    }
+                    
+                    //txt = levelScoreVisibleCalulation.at( a )
+                    //console.log('worldOVER',sinceover,a,txt)
+                }
+                //const levelScoreVisibleCalulation =  LevelScoreVisibleCalculation( world )
+
+                // scoreboardZones.updateLevelScore( [
+                //     txt,
+                //     `rank:\n#${ world.rank + 1 }`,
+                //     //`${ remain } * ( ${ world.nTreasureFound } + 2 * ${ world.nPlayers } )`,
+                //     //`= ${ world.score }`
+                // ].join("\n"))
             } else {
                 scoreboardZones.updateLevelScore('')
             }
@@ -867,7 +899,7 @@ function loadBitmapFont( url ){
 }
 function ScoreBoard( fontName ){
     const scoreboardContainer = new PIXI.Container()
-    function scoreBoardText( x,y, options ){
+    function scoreBoardText( x,y, anchorx,anchory, options ){
         let text,
             container = new PIXI.Container()
         function clear(){
@@ -889,7 +921,7 @@ function ScoreBoard( fontName ){
                 set( _text )
             }
         }
-        function createText( text, options ) {
+        function createText( text ) {
             const textContainer = new PIXI.BitmapText(text, {
                 font: `8px ${ fontName }`,
                 fill : '0xffffff',
@@ -897,14 +929,15 @@ function ScoreBoard( fontName ){
             })
             textContainer.position.x = x
             textContainer.position.y = y
+            textContainer.anchor.set(anchorx,anchory)
             return textContainer;
         }
         return { update, clear, container }
     }
     const scoreboardZones = {
-        countdown : scoreBoardText( 1, 0 ),
-        treasures : scoreBoardText( 80, 0 ),
-        levelScore : scoreBoardText( 24, 60 )//, { align : 'center' } )
+        countdown : scoreBoardText( 1, 0, 0,0 ),
+        treasures : scoreBoardText( 80, 0, 0,0 ),
+        levelScore : scoreBoardText( 50, 30 , 0.5,0,{ width : 60, align : 'center' })
     }
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
