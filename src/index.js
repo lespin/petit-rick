@@ -17,16 +17,34 @@ pageVisibility.on.change.push( () => {
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
 import { Parabola } from './parabola.js'
+const ac2 = new AudioContext()
+
+const sampler = Sampler( ac2 )
+sampler.output.connect( ac2.destination )
+const sndfx = sampler.functions
 
 import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
 import { Sampler } from './lib/sampler.js'
+import { loadSound } from './lib/loadsound.js'
 
-const sampler = Sampler( new AudioContext() )
-sampler.output.connect( sampler.ac.destination )
-const sndfx = sampler.functions
-
-var rng = seedrandom('fx-1');
-
+const soundfiles = [
+    ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.wav'],
+    ['shout','assets/218417__kokopetiyot__female-shout.wav'],
+    ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.wav'],
+    ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
+].forEach( ([name,url]) => {    
+    loadSound(ac2,url, buffer => {
+        console.log('LOADED',name,url,buffer)
+        if ( buffer )
+            sampler.set( name, buffer )
+    })
+})
+/*
+setInterval( () => {
+    console.log('swallow')
+    sndfx.shout()
+},3000)
+*/
 const zzfxData = [
     ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
     ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
@@ -175,6 +193,10 @@ window.composer = composer
 
 const music = Music( composer )
 const { ac, synth } = music.start() // no await
+
+
+
+var rng = seedrandom('fx-1');
 
 async function go(){
     const mapName = 'map2'
@@ -449,11 +471,13 @@ async function go(){
     function allTreasureFound(){
         console.log('BEEP','allTreasureFound')
         sndfx.cleared()
+        sndfx.ahhh()
         openExitDoor()
     }
     function reachTreasure(animation, onTreasure){
         console.log('BEEP','treasure')
         sndfx.pickup()
+        sndfx.swallow()
         onTreasure.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onTreasure )
@@ -485,6 +509,8 @@ async function go(){
     function reachExit(animation, onExit){
         console.log('BEEP','reach exit')
         if ( world.canExit ){
+            sndfx.cheer()
+
             exited(animation)
             const rtree = terrain.extracted['tree']
             rtree.remove( onExit )
@@ -495,7 +521,8 @@ async function go(){
     }
     function killPlayer( animation ){
         animation.dead = true
-        
+        sndfx.shout()
+
         const km_h = v => v/3600*1000
         const position = animation.container.position
         const side = (rng() > 0.5)?1:-1
