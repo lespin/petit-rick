@@ -23,10 +23,10 @@ import { Sampler } from './lib/sampler.js'
 
 const sampler = Sampler( new AudioContext() )
 sampler.output.connect( sampler.ac.destination )
+const sndfx = sampler.functions
 
 var rng = seedrandom('fx-1');
 
-const sndfx = {}
 const zzfxData = [
     ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
     ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
@@ -34,8 +34,7 @@ const zzfxData = [
 ].forEach( ([name,seed,zzfxDefinition]) => {
     const rng = seedrandom( seed )
     const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
-    sampler.buffers.set( name, buffer )
-    sndfx[ name ] = () => sampler.play( name ) 
+    sampler.set( name, buffer )
 })
 
 import { Music, LiveMusicComposer } from './music.js'
