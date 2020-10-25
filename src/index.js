@@ -478,7 +478,7 @@ async function go(){
         onTreasure.tile.container.visible = false
         const rtree = terrain.extracted['tree']
         rtree.remove( onTreasure )
-        world.alcoolLevel += 200
+        world.alcoolLevel += 100
         world.nTreasureFound += 1
         composer.transpose( 3 )
         if ( world.nTreasureFound === world.nTreasure ){
@@ -647,13 +647,14 @@ async function go(){
         }
         
         // setup rendering fx and sounds
-        world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,500))
+        const maxAlcool = 200
+        world.alcoolLevel = Math.max(0,Math.min(world.alcoolLevel,maxAlcool))
         if (world.over ) {
             filmFilter.sepia = 1
             unsobber.setLevel(0)
             filmFilter.vignetting = 0.1
         } else {
-            const stoneness = 5 * world.alcoolLevel / 500
+            const stoneness = 3 * world.alcoolLevel / maxAlcool
             const readyness = Math.min(world.alcoolLevel,200) / 200
             filmFilter.vignetting = 0.125 - readyness / 8
             unsobber.setLevel(stoneness)
@@ -949,7 +950,7 @@ function ScoreBoard( fontName ){
     }
     const scoreboardZones = {
         countdown : scoreBoardText( 1, 0, 0,0 ),
-        treasures : scoreBoardText( 80, 0, 0,0 ),
+        treasures : scoreBoardText( 96, 0, 1,0, {align : 'right'} ),
         levelScore : scoreBoardText( 50, 30 , 0.5,0,{ width : 60, align : 'center' })
     }
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
