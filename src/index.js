@@ -43,13 +43,20 @@ const soundfiles = [
 const zzfxData = [
     ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
     ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
-    ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],    
+    ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],
+    ['countdownReached','fx-1',[2.5,,413,,,.15,,1.39,,-40,,,,.9,,.2,,.74,.04]],
+    ['alldead','fx-1',[2.05,,413,,,.14,,1.39,,-2,,,,.3,,.2,,.74,.04]],
+    
 ].forEach( ([name,seed,zzfxDefinition]) => {
     const rng = seedrandom( seed )
     const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
     sampler.set( name, buffer )
 })
-
+/*
+setInterval( () => {
+    sndfx.countdownReached()
+},1000)
+*/
 import { Music, LiveMusicComposer } from './music.js'
 
 var aStar = require('a-star');
@@ -518,7 +525,7 @@ async function go(){
 
         world.over = world.time
         computeScore()
-
+        sndfx.alldead()
     }
     function killPlayer( animation ){
         animation.dead = true
@@ -539,6 +546,7 @@ async function go(){
     }
     function countdownReached( ){
         world.over = world.time
+        sndfx.countdownReached()
         computeScore()
     }
     function worldFixedStep( ){
