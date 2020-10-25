@@ -600,7 +600,7 @@ async function go(){
         oldTime = Date.now();
     })
     window.world = world
-    let preWait = 0.8,
+    let preWait = 2,
         started = false
     function animate() {
         stats.begin();
@@ -629,7 +629,7 @@ async function go(){
                 scoreboardZones.updateReady( "press any key\nwhen ready" )
             }
         } else {
-            scoreboardZones.updateReady( "prepare..." )
+            scoreboardZones.updateReady( terrain.extracted['display-name'] )
         }
         if ( started && ( ! world.over )){
             worldStep( deltaTime / 1000 )
@@ -813,13 +813,15 @@ async function loadTerrain( url ){
     // load tilemap
     //
     const terrain = await loadTerrainTileMap(url ,resolveResourceUrl)
-    const extracted = {}
+    const extracted = {
+    }
     extracted.ladders = []
     extracted.matter = []
     extracted.treasure = []
     extracted['level-entrance'] = []
     extracted['level-exit'] = []
     extracted['substitute-animation'] = []
+    extracted['display-name'] = terrain.properties['display-name'] || 'unnamed map'
     extracted.tree = new RBush();
     extracted.bounds = {
         minX : Number.POSITIVE_INFINITY,
