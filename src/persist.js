@@ -92,3 +92,29 @@ export function History(){
     }
     return { load, setPlayed, setScreenshot, remove }            
 }
+
+export function Options(){
+    const defaultValue = {
+        'no countdown ending' : true,
+        'resize to pixel multiple' : true,
+    }
+    const { get, set, remove } = StorageItem( 'options' )
+    function load(){
+        const ls = get()
+        if ( ls ){
+            return JSON.parse( ls )
+        } else {
+            return defaultValue
+        }
+    }
+    function setOption(name,value){
+        const options = load()
+        if ( options[ name ] === undefined ){
+            throw new Error('no such option '+name)
+        }
+        options[ name ] = value
+        set( JSON.stringify( options ) )
+        return options
+    }
+    return { load, setPlayed, setOption, remove }            
+}

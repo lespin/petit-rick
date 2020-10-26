@@ -25,7 +25,7 @@ document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
 
 const Options = {
     'no countdown ending' : true,
-    'resize to pixel multiple' : false,
+    'resize to pixel multiple' : true,
 }
 const historyStore = History()
 // resolver
