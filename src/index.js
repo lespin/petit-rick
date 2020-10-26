@@ -19,10 +19,11 @@ import { getAudioContext } from './lib/audio.js'
 import { SafeOutput } from './lib/safeoutput.js'
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 //import { Viewport } from 'pixi-viewport'
-import { Menu } from './menu.js'
-
+import { goMenu } from './menu.js'
+import { HiScores, History } from './persist.js'
 document.body.style = 'background-color: #1b1b1b;'
 
+const historyStore = History()
 // resolver
 const resolveResourceUrl = x => `assets/${x}`
 
@@ -160,9 +161,18 @@ function prepareSampler(loaderAc = new AudioContext()){
 }
 
 
-const initialScreen = AnyKeyToStart(()=>{
-    goLevel()
-})
+const initialScreen = AnyKeyToStart(
+    () => {
+        goMenu( mapName => {
+            goLevel(mapName)
+        })
+        //goLevel()
+        /*
+        goMenu( () => {
+            goLevel()
+        })*/
+    }
+)
 
 
 
@@ -207,16 +217,25 @@ async function startSound(){
     }
     return { sndfx, composer }
 }
-
-
+let to = 10
+function screenShot( renderer, stage ){
+    if ( to-- < 0 ) return
+    var renderTexture = PIXI.RenderTexture.create(stage.width, stage.height);
+    renderer.render(stage, renderTexture);
+    var canvas = renderer.extract.canvas(renderTexture);
+    console.log(canvas.toDataURL('image/png'))
+    //window.open(canvas.toDataURL('image/png'));
+    //document.body.appendChild( canvas )
+    return canvas.toDataURL('image/png')
+}
 var rng = seedrandom('fx-1');
 
-async function goLevel(){
+async function goLevel(mapName){
 
     const keyboardState = KeyboardState('key')(window)
     keyboardState.start()
 
-    const mapName = 'map3'
+    //const mapName = 'map3'
     const mapFilename = `${ mapName }.tmx`
     const mapUrl = resolveResourceUrl( mapFilename  )
     const { sndfx, composer } = await startSound()
@@ -228,7 +247,8 @@ async function goLevel(){
         loadAnimations( 'assets/animations.tmx' ),
         loadTerrain( mapUrl )
     ])
-
+    
+    historyStore.setPlayed( mapName, terrain.extracted['display-name'] )
     
     const hiScores = HiScores( mapName )
     window.hiScores = hiScores
@@ -312,10 +332,6 @@ async function goLevel(){
     const stage = createStage()
     console.log('stage',stage)
     viewport.addChild( stage )   
-    stage.filters = [
-        filmFilter,
-        rgbSplitFilter,
-    ];
     stage.addChild(terrain.container);
     console.log('terrain',terrain)
     
@@ -655,6 +671,15 @@ async function goLevel(){
         world.time = floatTime
         world.step = intStep
     }
+    //renderer.render( viewport );
+    const pngDataUrl = screenShot(renderer, viewport )
+    historyStore.setScreenshot( mapName, pngDataUrl )
+
+    
+    stage.filters = [
+        filmFilter,
+        rgbSplitFilter,
+    ];
 
     /*
      * animate
@@ -665,7 +690,8 @@ async function goLevel(){
         oldTime = Date.now();
     })
     window.world = world
-    let preWait = 2,
+    let NOMINAL_PREWAIT = 2
+    let preWait = NOMINAL_PREWAIT,
         started = false
     function animate() {
         stats.begin();
@@ -778,7 +804,7 @@ async function goLevel(){
             //composer.setTempo( 60 + world.nTreasureFound * 40 )
             composer.setUrgency( world.countdown, world.initialCountdown )
         }
-        
+
         // recurse
         requestAnimationFrame(animate);
     }
@@ -1055,52 +1081,6 @@ function ScoreBoard( fontName, rectangle ){
     }
     
     return { scoreboardZones, scoreboardContainer }
-}
-
-/*
- * persistence ( hiscores )
- */
-
-// function JSONStorageItem( key, defaultValue ){
-//     const si = StorageItem( key, defaultValue ),
-//           get = () => JSON.parse( si.get() ),
-//           set = v => si.set( JSON.stringify( v ) )   
-//     function edit( f ){
-//         set( f( get() ) )
-//     }
-//     return { edit }
-// }
-function StorageItem( name, defaultValue ){
-    return {
-        get : () => localStorage.getItem( name ) || defaultValue ,
-        set : v =>  localStorage.setItem( name, v ),
-        remove : () => localStorage.removeItem( name )
-    }
-}
-function HiScores( level ){
-    const defaultValue = {
-        list : [
-            { name : 'Lionel J.', score : 666 },
-            { name : 'Chriac J.', score : 676 },
-        ]
-    }
-    const { get, set, remove } = StorageItem( level )
-    function load(){
-        const ls = get()
-        if ( ls ){
-            return JSON.parse( ls )
-        } else {
-            return defaultValue
-        }
-    }
-    function setScore( name, score ){
-        const hiscores = load()
-        hiscores.list.push( { name, score } )
-        hiscores.list.sort( (a,b) => b.score - a.score )
-        set( JSON.stringify( hiscores ) )
-        return hiscores
-    }
-    return { load, setScore, remove }
 }
 
 // var aStar = require('a-star');

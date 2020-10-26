@@ -6,7 +6,7 @@ export function distinct( a ){
     return Object.keys( keys )
 }
 // daihs ...
-function unique( a ){
+export function unique( a ){
     const b = []
     a.forEach( x => {
         if ( !b.includes( x ) )  b.push( x )
