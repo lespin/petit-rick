@@ -224,6 +224,13 @@ export function LiveMusicComposer( musicSeed = '5' ){
                 [ 0 , 0+12+4 , 0+12+10 ],
                 [ 0-7 , 0+12 , 0+12+8 ]
             ]
+            /*chordSequence = [
+                [0,12+3,12+7],
+                [1,12+4,12+8]
+                //[ 1 , 0+12+5 , 0+12+8 ],
+                //[ 12-7 , 0+12+5 , 0+12+8 ],
+                //[ 0 , 0+12+3 , 0+12+8] ,
+           ]*/
         }
         {
             const boredom = Math.max(0,howMuchBored() - 40 ) % 24 
