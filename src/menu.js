@@ -6,7 +6,9 @@ const Maps = [
     { name : 'map3', displayName : 'unplayed yet' },
     { name : 'map4', displayName : 'unplayed yet' },
     { name : 'map5' },
-    { name : 'map6' }
+    { name : 'map6' },
+    { name : 'map7' }
+    
 ]
 
 function $paragraph(textContent){
