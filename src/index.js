@@ -310,7 +310,8 @@ async function go(){
      * Scoreboard
      */
     const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
-    const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName )
+    console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',renderer.screen)
+    const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName, renderer.screen)
     viewport.addChild( scoreboardContainer )
 
     /*
@@ -911,7 +912,7 @@ function loadBitmapFont( url ){
         })
     })
 }
-function ScoreBoard( fontName ){
+function ScoreBoard( fontName, rectangle ){
     const scoreboardContainer = new PIXI.Container()
     function scoreBoardText( x,y, anchorx,anchory, options ){
         let text,
@@ -951,9 +952,9 @@ function ScoreBoard( fontName ){
 
     const scoreboardZones = {
         countdown : scoreBoardText( 1, 0, 0,0 ),
-        treasures : scoreBoardText( 96, 0, 1,0, {align : 'right'} ),
-        levelScore : scoreBoardText( 50, 30 , 0.5,0,{ width : 60, align : 'center' }),
-        ready : scoreBoardText( 50, 64 , 0.5,0,{ width : 60, align : 'center' })
+        treasures : scoreBoardText( rectangle.width, 0, 1,0, {align : 'right'} ),
+        levelScore : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
+        ready : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' })
     }
 
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
