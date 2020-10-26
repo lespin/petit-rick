@@ -64,7 +64,7 @@ function $bigDiv(){
     $d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
     return $d
 }
-function optionsMenu( f ){
+function optionsMenu(  ){
     const $optionsDiv = document.createElement('div')
     $optionsDiv.appendChild($h2('Options'))
     const optionsStore = Options()
@@ -114,7 +114,6 @@ export function goMenu( f ){
     $div.style = 'margin:4em;'
     
     $div.appendChild($h1('Petit Rick'))
-    $div.appendChild(    optionsMenu( f ) )
 
     $div.appendChild($h2('click a map to play'))
 
@@ -192,6 +191,7 @@ export function goMenu( f ){
 
         
     })
+        $div.appendChild(    optionsMenu(  ) )
     
     
     
