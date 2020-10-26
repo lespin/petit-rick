@@ -240,7 +240,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
                 const changes = [-1,0,1]
                 const whichChange = Math.floor( rng() * changes.length ),
                       change = changes[ whichChange ]
-                console.log(boredom,whichChange)
+//                console.log(boredom,whichChange)
                 for ( let i = 0 ; i < boredom ; i++ ){
                     const whichChord = Math.floor( rng2() * chordSequence.length ),
                           chord = chordSequence[ whichChord ],
