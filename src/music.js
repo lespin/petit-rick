@@ -226,7 +226,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
             ]
         }
         {
-            const boredom = Math.max(0,howMuchBored() - 30 ) % 24 
+            const boredom = Math.max(0,howMuchBored() - 40 ) % 24 
             if (boredom){
                 const rng = seedrandom( ''+ fragIdx%24 + musicSeed )
                 const rng2 = seedrandom( musicSeed )
