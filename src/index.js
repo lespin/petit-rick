@@ -19,6 +19,9 @@ import { getAudioContext } from './lib/audio.js'
 import { SafeOutput } from './lib/safeoutput.js'
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 //import { Viewport } from 'pixi-viewport'
+import { Menu } from './menu.js'
+
+document.body.style = 'background-color: #1b1b1b;'
 
 // resolver
 const resolveResourceUrl = x => `assets/${x}`
@@ -32,6 +35,18 @@ pageVisibility.on.change.push( () => {
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
 
+function AnyKeyToStart( f ){
+    const $div = document.createElement('div')
+    const $p = document.createElement('p')
+    $p.style = 'color:#ffffff;font-family:monospace;'
+    $p.textContent = 'any key to start...'
+    document.body.appendChild( $div )
+    $div.appendChild( $p ) 
+    onInteraction( () => {
+        $div.remove()
+        f()
+    })
+}
 
 
 /*
@@ -101,7 +116,6 @@ function SetupRendererPage(){
     })
     renderer.view.style = 'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
     console.log('BOBY',document.body)
-    document.body.style = 'background-color: #1b1b1b;'
 
     window.pixirenderer = renderer
     document.body.appendChild(renderer.view)
@@ -145,9 +159,13 @@ function prepareSampler(loaderAc = new AudioContext()){
     return sampler
 }
 
-const renderer = SetupRendererPage()
-const keyboardState = KeyboardState('key')(window)
-keyboardState.start()
+
+const initialScreen = AnyKeyToStart(()=>{
+    goLevel()
+})
+
+
+
 //const keyboardDownFront = KeyboardDownFront('key')(window)
 //keyboardDownFront.start()
 
@@ -193,12 +211,16 @@ async function startSound(){
 
 var rng = seedrandom('fx-1');
 
-async function go(){
-    
+async function goLevel(){
+
+    const keyboardState = KeyboardState('key')(window)
+    keyboardState.start()
+
     const mapName = 'map3'
     const mapFilename = `${ mapName }.tmx`
     const mapUrl = resolveResourceUrl( mapFilename  )
     const { sndfx, composer } = await startSound()
+
     const [
         animationModels,
         terrain
@@ -267,7 +289,8 @@ async function go(){
     // const mapFilename = `${ mapName }.tmx`
     // const mapUrl = resolveResourceUrl( mapFilename  )
     // const terrain = await loadTerrain( mapUrl )
-    
+    const renderer = SetupRendererPage()
+
     renderer.resize( terrain.extracted.bounds.maxX + 1,
                      terrain.extracted.bounds.maxY + 1 )
 
@@ -775,7 +798,7 @@ function onInteraction( f ){
     window.addEventListener( 'keydown', once )
     window.addEventListener( 'click', once )
 }
-go()
+
 //onInteraction( go )
 //go()
 // //import 'p2/build/p2.min.js'
