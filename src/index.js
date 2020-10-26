@@ -40,7 +40,7 @@ function AnyKeyToStart( f ){
     const $div = document.createElement('div')
     const $p = document.createElement('p')
     $p.style = 'color:#ffffff;font-family:monospace;'
-    $p.textContent = 'any key to start...'
+    $p.textContent = 'any key or click to start...'
     document.body.appendChild( $div )
     $div.appendChild( $p ) 
     onInteraction( () => {
@@ -391,6 +391,7 @@ async function goLevel(mapName){
      */
     const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
     const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName, renderer.screen)
+    renderer.clear()
     viewport.addChild( scoreboardContainer )
 
     /*
