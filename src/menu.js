@@ -64,8 +64,10 @@ export function goMenu( f ){
     document.body.appendChild( $div )
     
     $div.appendChild($h1('Petit Rick'))
+
     $div.appendChild($h2('click a map to play'))
 
+    
     const $levelsDiv = document.createElement('div')
     $levelsDiv.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
     $div.appendChild($levelsDiv)

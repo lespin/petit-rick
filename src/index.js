@@ -160,19 +160,12 @@ function prepareSampler(loaderAc = new AudioContext()){
     return sampler
 }
 
-
-const initialScreen = AnyKeyToStart(
-    () => {
-        goMenu( mapName => {
-            goLevel(mapName)
-        })
-        //goLevel()
-        /*
-        goMenu( () => {
-            goLevel()
-        })*/
-    }
-)
+function fromStart(){
+    goMenu( mapName => {
+        goLevel(mapName, fromStart)
+    }) 
+}
+const initialScreen = AnyKeyToStart( fromStart )
 
 
 
@@ -230,7 +223,7 @@ function screenShot( renderer, stage ){
 }
 var rng = seedrandom('fx-1');
 
-async function goLevel(mapName){
+async function goLevel(mapName, afterLevel){
 
     const keyboardState = KeyboardState('key')(window)
     keyboardState.start()
@@ -693,8 +686,18 @@ async function goLevel(mapName){
     window.world = world
     let NOMINAL_PREWAIT = 2
     let preWait = NOMINAL_PREWAIT,
-        started = false
+        started = false,
+        canGetOut = false,
+        getout = undefined
+    
     function animate() {
+        if ( getout ) {
+            viewport.removeChildren()
+            viewport.destroy(true)
+            renderer.clear()
+            renderer.destroy( true )
+            return afterLevel()
+        }
         stats.begin();
         //console.log('1/60')
         // get time
@@ -777,16 +780,33 @@ async function goLevel(mapName){
                     const car = clamp( sinceover, 0, duration ) / duration
                     const txt = levelScoreVisibleCalulation.at( car ) 
                     if ( a <= 1 ){
-                        scoreboardZones.updateLevelScore( 
-                            txt
+                        scoreboardZones.updateLevelScore(
+                            [
+                                terrain.extracted['display-name'],
+                                "\n",
+                                txt
+                            ].join("\n")
                         )
                     } else {
                         scoreboardZones.updateLevelScore( [
+                            terrain.extracted['display-name'],
+                            "\n",
                             txt,
                             '\nrank',  '#'+world.rank + 1,
+                            (canGetOut?"\n[continue]":undefined)
                             //'score', ''+world.score,
-                        ].join("\n"))
+                        ].filter( x => x ).join("\n"))
                     }
+                    if ( a > 3 ){
+                        if (!canGetOut){
+                            canGetOut = true
+                            onInteraction( () => {
+                                getout = true
+                            })
+                        }
+                    }
+                    ///////////
+                    
                 }
             } else {
                 scoreboardZones.updateLevelScore('')
