@@ -25,8 +25,8 @@ function SinusMonoSynth(ac){
         lastNoteOn = time
         //osc.frequency.linearRampToValueAtTime( frequency, time )
         osc.frequency.setValueAtTime( frequency, time )
-  //      gain.gain.cancelScheduledValues( time )
-//        gain.gain.setValueAtTime( 0, time )
+        //      gain.gain.cancelScheduledValues( time )
+        //        gain.gain.setValueAtTime( 0, time )
         gain.gain.linearRampToValueAtTime( 0, time )
         gain.gain.linearRampToValueAtTime( velocity, time + attack )
     }
@@ -95,7 +95,18 @@ function RythmPattern( divisions, seed ){
 
 export function LiveMusicComposer( musicSeed = '5' ){
 
+    let bored = 0
+    function getBored(){
+        bored++
+    }
+    function notBored(){
+        bored = 0
+    }
+    function howMuchBored(){
+        return bored
+    }
     function setSeed( seed  ){
+        notBored()
         musicSeed = seed
     }
     let fragIdx = 0
@@ -135,6 +146,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
     let tempo = 60
     let tempoTarget = tempo
     function setUrgency( remain, total ){
+
         const lowTempo = 60,
               highTempo = 120
         const r = clamp( remain / total, 0, 1 )
@@ -161,16 +173,23 @@ export function LiveMusicComposer( musicSeed = '5' ){
         }
     }
     function generateSome( partitionTime, needed ){
-
+        
+        
         const { measureNum, beatNum } = measureInfo()
         lerpTempo()
 
         if ( wantsConclusion ){
             if ( beatNum === 0 ){
+                if ( !concludes ){
+                    notBored()
+                }
                 concludes = true
             } 
         } else {
             if ( beatNum === 0 ){
+                if ( concludes ){
+                    notBored()
+                }
                 concludes = false
             } 
         }
@@ -179,6 +198,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
         } else {
             if ( keyTargets.length && ( beatNum === 0 ) ){
                 k = keyTargets.shift()
+                notBored()
             }
         }
         //console.log('needed',needed)
@@ -205,14 +225,39 @@ export function LiveMusicComposer( musicSeed = '5' ){
                 [ 0-7 , 0+12 , 0+12+8 ]
             ]
         }
+        {
+            const boredom = Math.max(0,howMuchBored() - 30 ) % 24 
+            if (boredom){
+                const rng = seedrandom( ''+ fragIdx%24 + musicSeed )
+                const rng2 = seedrandom( musicSeed )
+                const changes = [-1,0,1]
+                const whichChange = Math.floor( rng() * changes.length ),
+                      change = changes[ whichChange ]
+                console.log(boredom,whichChange)
+                for ( let i = 0 ; i < boredom ; i++ ){
+                    const whichChord = Math.floor( rng2() * chordSequence.length ),
+                          chord = chordSequence[ whichChord ],
+                          whichKey = Math.floor( rng2() * chord.length )
+                    let newKey = chord[ whichKey ] + change
+                    while ( newKey < 40 ){
+                        newKey += 12
+                    }
+                    while ( newKey > 80 ){
+                        newKey -= 12
+                    }
+                    chord[ whichKey ] += change
+                }
+            }
+
+        }
         
         
         const chordSequenceIdx = fragIdx%chordSequence.length
         const chord = chordSequence[ chordSequenceIdx ]       
         const [f1,f2,f3] = chord.map( ck => ktof( k + ck ) )
         /*for ( let i = 0 ; i < 10 ; i++ ){
-            console.log( i,...RythmPattern([1,0.5,1,0.5]),i)
-        }
+          console.log( i,...RythmPattern([1,0.5,1,0.5]),i)
+          }
         */
         const pat1 = RythmPattern([1.0,1,1.0],musicSeed+'21'+beatNum)
         const pat2 = RythmPattern([1,0.5,0.3],musicSeed+'22'+beatNum)
@@ -234,42 +279,44 @@ export function LiveMusicComposer( musicSeed = '5' ){
             })
             return one
         })
+        getBored()
+        
         return oneToZero( ones )
         /*
-        
-        return oneToZero([
-            [            
-                { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-                { dt : played },
-                { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1, velocity, release } ,
-                { dt : pause },
-                { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-                { dt : played },
-                { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1, velocity, release } ,
-                { dt : pause },
+          
+          return oneToZero([
+          [            
+          { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+          { dt : played },
+          { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1, velocity, release } ,
+          { dt : pause },
+          { dt : 0, channel : 1, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+          { dt : played },
+          { dt : 0, channel : 1, eventType : 'noteOff', frequency : f1, velocity, release } ,
+          { dt : pause },
 
-            ],
-            [            
-                { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
-                { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
-                { dt : pause },
-                { dt : 0, channel : 0, eventType : 'noteOn', frequency : f2, velocity, attack } ,
-                { dt : played, channel : 0, eventType : 'noteOff', frequency : f2, velocity, release } ,
-                { dt : pause },
-                { dt : 0, channel : 0, eventType : 'noteOn', frequency : f3, velocity, attack } ,
-                { dt : played, channel : 0, eventType : 'noteOff', frequency : f3, velocity, release } ,
-                { dt : pause },
-            ],
-        ])
+          ],
+          [            
+          { dt : 0, channel : 0, eventType : 'noteOn', frequency : f1, velocity, attack } ,
+          { dt : played, channel : 0, eventType : 'noteOff', frequency : f1, velocity, release } ,
+          { dt : pause },
+          { dt : 0, channel : 0, eventType : 'noteOn', frequency : f2, velocity, attack } ,
+          { dt : played, channel : 0, eventType : 'noteOff', frequency : f2, velocity, release } ,
+          { dt : pause },
+          { dt : 0, channel : 0, eventType : 'noteOn', frequency : f3, velocity, attack } ,
+          { dt : played, channel : 0, eventType : 'noteOff', frequency : f3, velocity, release } ,
+          { dt : pause },
+          ],
+          ])
         */
         /*const mkFrags = k => ([
-             [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
-             [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
-             ])        */
-                                      
+          [ktof( k ),ktof( k+12+4 ),ktof( k+12+10 )],
+          [ktof( k-7 ),ktof( k+12 ),ktof( k+12+8 )],
+          ])        */
+        
         
         // // if ( conclude ){
-            
+        
         // // }
         
         // // if ( keyTargets.length === 0 ){
@@ -312,7 +359,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
         //         { dt : played/2, channel : 2, eventType : 'noteOff', frequency : f3, velocity, release } ,
         //         { dt : pause },
         //     ],
-            
+        
         // ])
     }    
     return { generateSome, transpose, setSeed, setTempo, conclusion, setUrgency }
@@ -368,7 +415,7 @@ function oneToZero( ones ){
 //         ])
 //         const frags = mkFrags( k )
 //         const [f1,f2,f3] = frags[ fragIdx%frags.length ]
-        
+
 //         let duration =  60/tempo,
 //             pause = duration * 0.90,
 //             played = duration - pause
@@ -400,9 +447,9 @@ export function Music( composer ){
         //safeOutput.output.connect( ac.destination )
 
         /*
-        const sinusMonoSynth = SinusMonoSynth(ac)
-        sinusMonoSynth.output.connect( safeOutput.input )
-        return sinusMonoSynth
+          const sinusMonoSynth = SinusMonoSynth(ac)
+          sinusMonoSynth.output.connect( safeOutput.input )
+          return sinusMonoSynth
         */
         const multiChannelSynth = MultiChannelSynth( ac, 4 )
         //multiChannelSynth.output.connect( safeOutput.input )
@@ -486,7 +533,7 @@ export function Music( composer ){
     }
 
     function start( ac  ){
-//        const ac = await getAudioContext()
+        //        const ac = await getAudioContext()
         const synth = setupSynth(ac)
         run( ac, composer.generateSome, synth )
         return synth
@@ -496,6 +543,6 @@ export function Music( composer ){
         start
     }
 }
-   
 
-        
+
+
