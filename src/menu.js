@@ -1,5 +1,11 @@
 import { HiScores, History } from './persist.js'
 
+const Maps = [
+    { name : 'map1', displayName : 'unplayed yet' },
+    { name : 'map2', displayName : 'unplayed yet' },
+    { name : 'map3', displayName : 'unplayed yet' },
+]
+
 function $paragraph(textContent){
     const $p = document.createElement('p')
     $p.style = 'color:#ffffff;font-family:monospace;'
@@ -48,11 +54,6 @@ function $mmapDiv(){
     $d.style = 'text-align:center;margin-left:1em;margin-right:1em'
     return $d
 }
-const Maps = [
-    { name : 'map1', displayName : 'unplayed yet' },
-    { name : 'map2', displayName : 'unplayed yet' },
-    { name : 'map3', displayName : 'unplayed yet' },
-]
 export function goMenu( f ){
 
     const historyStore = History()
