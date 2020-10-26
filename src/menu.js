@@ -21,7 +21,13 @@ function $hiscoreParagraph(textContent){
 }
 function $levelNameParagraph(textContent){
     const $p = document.createElement('h3')
-    $p.style = 'color:#ffff00;font-family:monospace;'
+    $p.style = 'color:#adadad;font-family:monospace;'
+    $p.textContent = textContent
+    return $p
+}
+function $levelDisplayNameParagraph(textContent){
+    const $p = document.createElement('h3')
+    $p.style = 'color:#ffffff;font-family:monospace;font-style:italic;'
     $p.textContent = textContent
     return $p
 }
@@ -39,7 +45,7 @@ function $h2(textContent){
 }
 function $mmapDiv(){
     const $d = document.createElement('div')
-    $d.style = 'text-align:center;'
+    $d.style = 'text-align:center;margin-left:1em;margin-right:1em'
     return $d
 }
 const Maps = [
@@ -62,8 +68,21 @@ export function goMenu( f ){
     const $levelsDiv = document.createElement('div')
     $levelsDiv.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
     $div.appendChild($levelsDiv)
+
+    const recentHistory = history.recent
+    const doneMaps = recentHistory.map( name => ({name,displayName:undefined}) )
+
+    const sortedMaps = [...doneMaps]
+    Maps.forEach( presetMap => {
+        const exists = sortedMaps.find( m => m.name === presetMap.name )
+        if ( !exists ){
+            sortedMaps.push( presetMap )
+        }
+    })
     
-    Maps.forEach( map => {
+    //;[ ...doneMaps, ...Maps ].forEach( ({name,displayName}) )
+
+    sortedMaps.forEach( map => {
         const { name, displayName } = map
 
         function playThis(){
@@ -83,7 +102,8 @@ export function goMenu( f ){
         }
         
         const $p = $levelNameParagraph(`${ name } - ${ realDisplayName }`)
-        $mapDiv.appendChild( $p )
+        $mapDiv.appendChild( $levelNameParagraph(`${ name }`) )
+        $mapDiv.appendChild( $levelDisplayNameParagraph(`${ realDisplayName }`) )
 
         const screenshot = history.screenshots[ name ]
         if ( screenshot ){
