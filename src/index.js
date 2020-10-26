@@ -760,7 +760,7 @@ async function goLevel(mapName, afterLevel){
             const stoneness = 3 * world.alcoolLevel / maxAlcool
             const readyness = Math.min(world.alcoolLevel,200) / 200
             filmFilter.vignetting = 0.125 - readyness / 8
-            unsobber.setLevel(stoneness)
+            unsobber.setLevel(stoneness/2)
         }
         unsobber.update()
         if ( scoreboardZones ){
@@ -1130,7 +1130,7 @@ function ScoreBoard( fontName, rectangle ){
 // console.log(path);
 
 //
-// todo? : use map name for hiscores ?
-// todo : continue playing after timeout
-// todo : map time in tilemap
 //
+//
+// toto OPTIONS : timeout ?
+// 
