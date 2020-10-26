@@ -27,6 +27,10 @@ const sndfx = sampler.functions
 import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
 import { Sampler } from './lib/sampler.js'
 import { loadSound } from './lib/loadsound.js'
+import { Music, LiveMusicComposer } from './music.js'
+import { getAudioContext } from './lib/audio.js'
+import { SafeOutput } from './lib/safeoutput.js'
+import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 
 const loaderAc = new AudioContext()
 const soundfiles = [
@@ -59,7 +63,6 @@ setInterval( () => {
     sndfx.countdownReached()
 },1000)
 */
-import { Music, LiveMusicComposer } from './music.js'
 
 
 const retribs = {
@@ -143,8 +146,6 @@ function getCommands(){
 const composer = LiveMusicComposer()
 window.composer = composer
 
-import { getAudioContext } from './lib/audio.js'
-import { SafeOutput } from './lib/safeoutput.js'
 
 async function startSound(){
     const ac = await getAudioContext()
@@ -327,7 +328,7 @@ async function go(){
         nTreasureFound : 0,
         nTreasure : terrain.extracted['treasure'].length,
         initialNPlayers : terrain.extracted['level-entrance'].length,
-        initialCountdown : 48 * 60,
+        initialCountdown : terrain.extracted['initial-countdown'],
     }
     world.countdown = world.initialCountdown
     world.nPlayers = world.initialNPlayers
@@ -655,12 +656,22 @@ async function go(){
         }
         unsobber.update()
         if ( scoreboardZones ){
-            let remain = world.over
-            if ( !world.over ){
-                const remain = world.countdown
+            // todo : ?
+            if ( world.over ){
+                let remain = world.countdown
+                //if ( !world.over ){
+                //const remain = world.countdown
                 scoreboardZones.updateCountdown( remain )
                 scoreboardZones.updateTreasuresFound( world.nTreasureFound )
-            } else if ( world.over ){
+            } else {
+                let remain = world.countdown
+                //if ( !world.over ){
+                //const remain = world.countdown
+                scoreboardZones.updateCountdown( remain )
+                scoreboardZones.updateTreasuresFound( world.nTreasureFound )
+            }
+        //}
+            if ( world.over ){
                 let txt = ''
                 if ( world.overtime === undefined ){
                     world.overtime = Date.now()
@@ -745,7 +756,6 @@ go()
 // init();
 // //animate();
 // import PixiFps from "pixi-fps";
-import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 function AnimatedItem( animationModels ){
     //
     // instanciate animation model (multiple animations in a container)
@@ -827,6 +837,7 @@ async function loadTerrain( url ){
     extracted['level-exit'] = []
     extracted['substitute-animation'] = []
     extracted['display-name'] = terrain.properties['display-name'] || 'unnamed map'
+    extracted['initial-countdown'] = 48 * ( terrain.properties['initial-countdown'] || 60 )
     extracted.tree = new RBush();
     extracted.bounds = {
         minX : Number.POSITIVE_INFINITY,
@@ -1037,7 +1048,6 @@ function HiScores( level ){
 
 //
 // todo? : use map name for hiscores ?
-// todo : right alignement depending on map size
 // todo : continue playing after timeout
 // todo : map time in tilemap
 //
