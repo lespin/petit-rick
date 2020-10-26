@@ -21,10 +21,11 @@ import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 //import { Viewport } from 'pixi-viewport'
 import { goMenu } from './menu.js'
 import { HiScores, History } from './persist.js'
-document.body.style = 'background-color: #1b1b1b;'
+document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
 
 const Options = {
-    'no countdown ending' : true
+    'no countdown ending' : true,
+    'resize to pixel multiple' : false,
 }
 const historyStore = History()
 // resolver
@@ -42,7 +43,7 @@ pageVisibility.on.change.push( () => {
 function AnyKeyToStart( f ){
     const $div = document.createElement('div')
     const $p = document.createElement('p')
-    $p.style = 'color:#ffffff;font-family:monospace;'
+    $p.style = 'color:#ffffff;font-family:monospace;padding:1em'
     $p.textContent = 'any key or click to start...'
     document.body.appendChild( $div )
     $div.appendChild( $p ) 
@@ -118,9 +119,21 @@ function SetupRendererPage(){
         resolution: 4 * ( window.devicePixelRatio || 1 ),
         antialias:true
     })
-    renderer.view.style = 'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
+    const style = `
+     padding: 0;
+    margin: auto;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+`
+    renderer.view.style = style//'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
     console.log('BOBY',document.body)
 
+    
+    
     window.pixirenderer = renderer
     document.body.appendChild(renderer.view)
     return renderer
@@ -313,17 +326,31 @@ async function goLevel(mapName, afterLevel){
     // const terrain = await loadTerrain( mapUrl )
     const renderer = SetupRendererPage()
 
-    renderer.resize( terrain.extracted.bounds.maxX + 1,
-                     terrain.extracted.bounds.maxY + 1 )
+    renderer.resize( terrain.extracted.bounds.maxX ,
+                     terrain.extracted.bounds.maxY  )
     const ratio = terrain.extracted.bounds.maxX / terrain.extracted.bounds.maxY
     function resize() {
-        const margin = 50
+        const tw = terrain.extracted.bounds.maxX + 1,
+              th = terrain.extracted.bounds.maxY + 1
+        const margin = 0
         if (window.innerWidth / window.innerHeight >= ratio) {
             var h = window.innerHeight - margin;
             var w = h * ratio
         } else {
             var w = window.innerWidth - margin ;
             var h = w / ratio;
+        }
+        if ( Options['resize to pixel multiple'] ){
+            if ( w > tw ){
+                const multiple = Math.floor( w / tw ),
+                      integerWidth = tw * multiple,
+                      integerHeight = th * multiple
+                
+                //console.log(multiple,integerWidth,integerHeight)
+                w = integerWidth
+                h = integerHeight
+            }
+            //console.log(tw,th,w,h)
         }
         renderer.view.style.width = w + 'px';
         renderer.view.style.height = h + 'px';
