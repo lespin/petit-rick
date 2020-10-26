@@ -98,6 +98,32 @@ export function Options(){
         'no countdown ending' : true,
         'resize to pixel multiple' : true,
     }
+    const possibleValues = {
+        'no countdown ending' : [
+            { value : true, display : 'no countdown ending' },
+            { value : false, display : 'must finish before countdown end' },
+        ],
+        'resize to pixel multiple' : [
+            { value : true, display : 'fit to nearest integer scaling' },
+            { value : false, display : 'scale to maximum' },
+        ]
+    }
+    const displayNames = {
+        'no countdown ending' : 'countdown',
+        'resize to pixel multiple' : 'resizing'
+    }
+    function getDisplayName( name ){
+        if ( displayNames[ name ] === undefined ){
+            throw new Error('no such option '+name)
+        }
+        return displayNames[ name ]
+    }
+    function getPossibleValues( name ){
+        if ( possibleValues[ name ] === undefined ){
+            throw new Error('no such option '+name)
+        }
+        return possibleValues[ name ]
+    }
     const { get, set, remove } = StorageItem( 'options' )
     function load(){
         const ls = get()
@@ -116,5 +142,6 @@ export function Options(){
         set( JSON.stringify( options ) )
         return options
     }
-    return { load, setPlayed, setOption, remove }            
+    return { load, setOption, remove,
+             getPossibleValues, getDisplayName }            
 }

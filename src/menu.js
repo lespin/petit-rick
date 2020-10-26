@@ -1,4 +1,4 @@
-import { HiScores, History } from './persist.js'
+import { HiScores, History, Options } from './persist.js'
 
 const Maps = [
     { name : 'map1', displayName : 'unplayed yet' },
@@ -59,16 +59,62 @@ function $mmapDiv(){
     $d.style = 'text-align:center;margin-left:1em;margin-right:1em'
     return $d
 }
+function $bigDiv(){
+    const $d = document.createElement('div')
+    $d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
+    return $d
+}
+function optionsMenu( f ){
+    const $optionsDiv = document.createElement('div')
+    $optionsDiv.appendChild($h2('Options'))
+    const optionsStore = Options()
+    const options = optionsStore.load()    
+    Object.entries( options ).forEach( ([name,value]) => {
+
+        const $optionDiv = document.createElement('div')
+        $optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;'
+        $optionsDiv.appendChild( $optionDiv )
+
+        const displayName = optionsStore.getDisplayName( name )
+        const $pn = $levelNameParagraph( displayName)
+        $optionDiv.appendChild( $pn )
+
+        const possibleValues  = optionsStore.getPossibleValues( name )
+        const valueIdx = possibleValues.findIndex( pv => pv.value === value )
+        const valueDisplay = possibleValues[ valueIdx ].display
+        const $pdv = $paragraph( valueDisplay )
+        $optionDiv.appendChild( $pdv )
+        $optionDiv.onclick = change
+        
+
+        function change(){
+            console.log('clicked')
+            const possibleValues  = optionsStore.getPossibleValues( name )
+            const valueIdx = possibleValues.findIndex( pv => pv.value === value )
+            const nextValueIdx = ( valueIdx + 1 )%possibleValues.length
+            const nextValue = possibleValues[ nextValueIdx ]
+            const nextValueDisplay =  nextValue.display
+            value = nextValue.value
+            optionsStore.setOption( name, value )
+            $pdv.textContent = nextValueDisplay
+        }
+    })
+//    const $pre = $paragraph(JSON.stringify( options, null, 2 ))
+//    $optionsDiv.appendChild($pre)
+    return $optionsDiv
+}
 export function goMenu( f ){
 
     const historyStore = History()
     const history = historyStore.load()
-    
+
+
     const $div = document.createElement('div')
-    $div.style = 'margin:4em;'
     document.body.appendChild( $div )
+    $div.style = 'margin:4em;'
     
     $div.appendChild($h1('Petit Rick'))
+    $div.appendChild(    optionsMenu( f ) )
 
     $div.appendChild($h2('click a map to play'))
 
