@@ -168,7 +168,14 @@ function fromStart(){
         goLevel(mapName, fromStart)
     }) 
 }
-const initialScreen = AnyKeyToStart( fromStart )
+let sndfx, composer
+const initialScreen = AnyKeyToStart( async () => {
+    const ss = await startSound()
+    sndfx = ss.sndfx,
+    composer = ss.composer
+//    const { sndfx, composer } = await startSound()
+    fromStart()
+})
 
 
 
@@ -234,7 +241,6 @@ async function goLevel(mapName, afterLevel){
     //const mapName = 'map3'
     const mapFilename = `${ mapName }.tmx`
     const mapUrl = resolveResourceUrl( mapFilename  )
-    const { sndfx, composer } = await startSound()
 
     const [
         animationModels,
@@ -409,6 +415,7 @@ async function goLevel(mapName, afterLevel){
     world.nPlayers = world.initialNPlayers
 
     const levelScoreVisibleCalulation =  LevelScoreVisibleCalculation( world )
+    composer.setSeed( mapName )
 
     
     function getSurroundings(x,y,width,height){
@@ -828,6 +835,7 @@ async function goLevel(mapName, afterLevel){
             //composer.setTempo( 40 )
             composer.setUrgency( world.initialCountdown, world.initialCountdown )
         } else {
+            composer.conclusion(false)
             //composer.setTempo( 60 + world.nTreasureFound * 40 )
             composer.setUrgency( world.countdown, world.initialCountdown )
         }

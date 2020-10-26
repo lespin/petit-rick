@@ -95,6 +95,9 @@ function RythmPattern( divisions, seed ){
 
 export function LiveMusicComposer( musicSeed = '5' ){
 
+    function setSeed( seed  ){
+        musicSeed = seed
+    }
     let fragIdx = 0
 
     const k0 = 48
@@ -312,7 +315,7 @@ export function LiveMusicComposer( musicSeed = '5' ){
             
         // ])
     }    
-    return { generateSome, transpose, setTempo, conclusion, setUrgency }
+    return { generateSome, transpose, setSeed, setTempo, conclusion, setUrgency }
 }
 function oneToZero( ones ){
 
