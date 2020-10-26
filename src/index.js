@@ -23,6 +23,9 @@ import { goMenu } from './menu.js'
 import { HiScores, History } from './persist.js'
 document.body.style = 'background-color: #1b1b1b;'
 
+const Options = {
+    'no countdown ending' : true
+}
 const historyStore = History()
 // resolver
 const resolveResourceUrl = x => `assets/${x}`
@@ -584,10 +587,13 @@ async function goLevel(mapName, afterLevel){
         }        
     }
     function countdownReached( ){
-        world.over = world.time
-        // TODO
-        sndfx.countdownReached()
-        computeScore()
+        if ( Options['no countdown ending'] ){
+        } else {
+            world.over = world.time
+            // TODO
+            sndfx.countdownReached()
+            computeScore()
+        }
     }
     function worldFixedStep( ){
         world.countdown = Math.max(0, world.countdown - 1 )
