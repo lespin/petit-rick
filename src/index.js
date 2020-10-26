@@ -138,10 +138,10 @@ function getCommands(keyboardState){
 function prepareSampler(loaderAc = new AudioContext()){
     const sampler = Sampler()
     const soundfiles = [
-        ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.wav'],
-        ['shout','assets/218417__kokopetiyot__female-shout.wav'],
-        ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.wav'],
-        ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
+        ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.ogg'],
+        ['shout','assets/218417__kokopetiyot__female-shout.ogg'],
+        ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.ogg'],
+        ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.ogg']
     ].forEach( ([name,url]) => {    
         loadSound(loaderAc,url, buffer => {
             if ( buffer )
