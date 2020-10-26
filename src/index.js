@@ -315,7 +315,23 @@ async function goLevel(mapName, afterLevel){
 
     renderer.resize( terrain.extracted.bounds.maxX + 1,
                      terrain.extracted.bounds.maxY + 1 )
-
+    const ratio = terrain.extracted.bounds.maxX / terrain.extracted.bounds.maxY
+    function resize() {
+        const margin = 50
+        if (window.innerWidth / window.innerHeight >= ratio) {
+            var h = window.innerHeight - margin;
+            var w = h * ratio
+        } else {
+            var w = window.innerWidth - margin ;
+            var h = w / ratio;
+        }
+        renderer.view.style.width = w + 'px';
+        renderer.view.style.height = h + 'px';
+    }
+    resize()
+    window.onresize = resize;
+    
+    window.pixirenderer = renderer
     /*
      * stage
      */
