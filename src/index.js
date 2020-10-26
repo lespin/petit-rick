@@ -3,27 +3,14 @@ import { clamp } from './lib/utils.js'
 import RBush from 'rbush';
 import * as PIXI from 'pixi.js'
 PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST
-//import { Viewport } from 'pixi-viewport'
 import { OldFilmFilter } from '@pixi/filter-old-film'
 import { RGBSplitFilter } from '@pixi/filter-rgb-split'
 import { GlowFilter } from '@pixi/filter-glow';
 var seedrandom = require('seedrandom');
 import * as Stats from 'stats.js'
-var stats = new Stats();
-stats.showPanel( 0 );
-//document.body.appendChild( stats.dom );
 import { PageVisibility } from './lib/domVisibility.js'
-const pageVisibility = PageVisibility()
-pageVisibility.on.change.push( () => {
-    console.log('visible?',pageVisibility.isVisible(),'at',new Date())
-})
 import { LevelScoreVisibleCalculation } from './visibleCalculation.js'
 import { Parabola } from './parabola.js'
-
-const sampler = Sampler()
-
-const sndfx = sampler.functions
-
 import { zzfxCreateAndPlay, zzfxCreateBuffer } from './lib/zzfx.micro.js'
 import { Sampler } from './lib/sampler.js'
 import { loadSound } from './lib/loadsound.js'
@@ -31,37 +18,26 @@ import { Music, LiveMusicComposer } from './music.js'
 import { getAudioContext } from './lib/audio.js'
 import { SafeOutput } from './lib/safeoutput.js'
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
+//import { Viewport } from 'pixi-viewport'
 
-const loaderAc = new AudioContext()
-const soundfiles = [
-    ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.wav'],
-    ['shout','assets/218417__kokopetiyot__female-shout.wav'],
-    ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.wav'],
-    ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
-].forEach( ([name,url]) => {    
-    loadSound(loaderAc,url, buffer => {
-        if ( buffer )
-            sampler.set( name, buffer )
-    })
+// resolver
+const resolveResourceUrl = x => `assets/${x}`
+
+var stats = new Stats();
+stats.showPanel( 0 );
+//document.body.appendChild( stats.dom );
+
+const pageVisibility = PageVisibility()
+pageVisibility.on.change.push( () => {
+    console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
-const zzfxData = [
-    ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
-    ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
-    ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],
-    ['countdownReached','fx-1',[2.5,,413,,,.15,,1.39,,-40,,,,.9,,.2,,.74,.04]],
-    ['alldead','fx-1',[2.05,,413,,,.14,,1.39,,-2,,,,.3,,.2,,.74,.04]],
-    
-].forEach( ([name,seed,zzfxDefinition]) => {
-    const rng = seedrandom( seed )
-    const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
-    sampler.set( name, buffer )
-})
+
 
 
 /*
-setInterval( () => {
-    sndfx.countdownReached()
-},1000)
+  setInterval( () => {
+  sndfx.countdownReached()
+  },1000)
 */
 
 
@@ -114,26 +90,24 @@ const retribs = {
         0 : { go : 'iddle-right' }
     },
 }
-const resolveResourceUrl = x => `assets/${x}`
 
-// setup renderer
-const renderer = new PIXI.Renderer({
-    width: 160,
-    height: 160,
-    resolution: 4 * ( window.devicePixelRatio || 1 ),
-    antialias:true
-})
-renderer.view.style = 'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
-console.log('BOBY',document.body)
-document.body.style = 'background-color: #1b1b1b;'
+function SetupRendererPage(){
+    // setup renderer
+    const renderer = new PIXI.Renderer({
+        width: 160,
+        height: 160,
+        resolution: 4 * ( window.devicePixelRatio || 1 ),
+        antialias:true
+    })
+    renderer.view.style = 'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
+    console.log('BOBY',document.body)
+    document.body.style = 'background-color: #1b1b1b;'
 
-window.pixirenderer = renderer
-document.body.appendChild(renderer.view)
-const keyboardState = KeyboardState('key')(window)
-keyboardState.start()
-//const keyboardDownFront = KeyboardDownFront('key')(window)
-//keyboardDownFront.start()
-function getCommands(){
+    window.pixirenderer = renderer
+    document.body.appendChild(renderer.view)
+    return renderer
+}
+function getCommands(keyboardState){
     const commands = {
         up : keyboardState.state.get('ArrowUp'),
         left : keyboardState.state.get('ArrowLeft'),
@@ -143,32 +117,97 @@ function getCommands(){
     return commands
 }
 
-const composer = LiveMusicComposer()
-window.composer = composer
+function prepareSampler(loaderAc = new AudioContext()){
+    const sampler = Sampler()
+    const soundfiles = [
+        ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.wav'],
+        ['shout','assets/218417__kokopetiyot__female-shout.wav'],
+        ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.wav'],
+        ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.wav']
+    ].forEach( ([name,url]) => {    
+        loadSound(loaderAc,url, buffer => {
+            if ( buffer )
+                sampler.set( name, buffer )
+        })
+    })
+    const zzfxData = [
+        ['pickup', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
+        ['cleared', 'fx-1',[,,1178,,.04,.28,,.48,,,41,.1,,.1,,,,.93,.03,.19]],
+        ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],
+        ['countdownReached','fx-1',[2.5,,413,,,.15,,1.39,,-40,,,,.9,,.2,,.74,.04]],
+        ['alldead','fx-1',[2.05,,413,,,.14,,1.39,,-2,,,,.3,,.2,,.74,.04]],
+        
+    ].forEach( ([name,seed,zzfxDefinition]) => {
+        const rng = seedrandom( seed )
+        const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
+        sampler.set( name, buffer )
+    })
+    return sampler
+}
 
+const renderer = SetupRendererPage()
+const keyboardState = KeyboardState('key')(window)
+keyboardState.start()
+//const keyboardDownFront = KeyboardDownFront('key')(window)
+//keyboardDownFront.start()
+
+
+/*
+window.composer = composer
+*/
 
 async function startSound(){
+
+    const sampler = prepareSampler( )
+    const sndfx = sampler.functions
+
+    const composer = LiveMusicComposer()
+    const music = Music( composer )
+
     const ac = await getAudioContext()
     const safeOutput = SafeOutput(ac)
     safeOutput.output.gain.value = 1
     safeOutput.output.connect( ac.destination )
-
-    const music = Music( composer )
+    setGlobalVolume( 1 )
+    
     const musicSynth = music.start( ac )
     musicSynth.output.connect( safeOutput.input )
-    musicSynth.output.gain.value = 0.25
+    setMusicVolume( 0.25 )
 
     const samplerSynth = sampler.start( ac )
-    samplerSynth.output.connect( ac.destination )
-    samplerSynth.output.gain.value = 1
+    samplerSynth.output.connect( safeOutput.input )
+    setSndFxVolume( 1 )
+
+    function setMusicVolume( g ){
+        musicSynth.output.gain.value = g
+    }
+    function setSndFxVolume( g ){
+        samplerSynth.output.gain.value = g
+    }
+    function setGlobalVolume( g ){
+        safeOutput.output.gain.value = g
+    }
+    return { sndfx, composer }
 }
-startSound()
-    
+
+
 var rng = seedrandom('fx-1');
 
 async function go(){
+    
     const mapName = 'map3'
+    const mapFilename = `${ mapName }.tmx`
+    const mapUrl = resolveResourceUrl( mapFilename  )
+    const { sndfx, composer } = await startSound()
+    const [
+        animationModels,
+        terrain
+    ] = await Promise.all([
+        loadAnimations( 'assets/animations.tmx' ),
+        loadTerrain( mapUrl )
+    ])
 
+    
     const hiScores = HiScores( mapName )
     window.hiScores = hiScores
 
@@ -225,9 +264,10 @@ async function go(){
     /*
      * terrain
      */
-    const mapFilename = `${ mapName }.tmx`
-    const mapUrl = resolveResourceUrl( mapFilename  )
-    const terrain = await loadTerrain( mapUrl )
+    // const mapFilename = `${ mapName }.tmx`
+    // const mapUrl = resolveResourceUrl( mapFilename  )
+    // const terrain = await loadTerrain( mapUrl )
+    
     renderer.resize( terrain.extracted.bounds.maxX + 1,
                      terrain.extracted.bounds.maxY + 1 )
 
@@ -259,7 +299,7 @@ async function go(){
     /*
      * Animations
      */
-    const animationModels = await loadAnimations( 'assets/animations.tmx' )
+//    const animationModels = await loadAnimations( 'assets/animations.tmx' )
     console.log('animationModels',animationModels)
 
     // substitute animation
@@ -311,7 +351,6 @@ async function go(){
      * Scoreboard
      */
     const fontName = await loadBitmapFont( 'assets/fonts/bitmapFonts/nokia16.xml' )
-    console.log('PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP',renderer.screen)
     const { scoreboardZones, scoreboardContainer } = ScoreBoard( fontName, renderer.screen)
     viewport.addChild( scoreboardContainer )
 
@@ -617,10 +656,11 @@ async function go(){
         preWait -= deltaTime/1000
         
         // grab commands
-        const commands = getCommands()
+        const commands = getCommands(keyboardState)
         // keyboardDownFront.reset()
         world.commands = commands
-        // step world
+
+        // pre-start 
         if ( preWait < 0 ){
             if ( ! started && ( commands.up || commands.left || commands.down || commands.right ) ){
                 sndfx.swallow()
@@ -637,6 +677,8 @@ async function go(){
         } else {
             scoreboardZones.updateReady( terrain.extracted['display-name'] )
         }
+
+        // step world
         if ( started && ( ! world.over )){
             worldStep( deltaTime / 1000 )
         }
@@ -670,8 +712,11 @@ async function go(){
                 scoreboardZones.updateCountdown( remain )
                 scoreboardZones.updateTreasuresFound( world.nTreasureFound )
             }
-        //}
+            //}
             if ( world.over ){
+                //
+                // visible score computation 
+                //
                 let txt = ''
                 if ( world.overtime === undefined ){
                     world.overtime = Date.now()
@@ -714,10 +759,10 @@ async function go(){
         // recurse
         requestAnimationFrame(animate);
     }
- //   onInteraction( () => {
-//        startSound()
-        requestAnimationFrame(animate)
-   // })
+    //   onInteraction( () => {
+    //        startSound()
+    requestAnimationFrame(animate)
+    // })
     //requestAnimationFrame(animate);
 }
 function onInteraction( f ){
