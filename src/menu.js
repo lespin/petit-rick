@@ -27,7 +27,7 @@ function $levelNameParagraph(textContent){
 }
 function $h1(textContent){
     const $p = document.createElement('h1')
-    $p.style = 'color:#ffffff;font-family:monospace;'
+    $p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
     $p.textContent = textContent
     return $p
 }
@@ -53,10 +53,11 @@ export function goMenu( f ){
     const history = historyStore.load()
     
     const $div = document.createElement('div')
+    $div.style = 'margin:4em;'
     document.body.appendChild( $div )
     
     $div.appendChild($h1('Petit Rick'))
-    $div.appendChild($h2('Select level'))
+//    $div.appendChild($h2('Select level'))
 
     const $levelsDiv = document.createElement('div')
     $levelsDiv.style = 'display:flex;'
