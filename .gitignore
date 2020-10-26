@@ -3,3 +3,4 @@ dist/
 out/
 sound/
 yarn.lock
+unused/
