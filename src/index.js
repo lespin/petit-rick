@@ -22,6 +22,9 @@ import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 import { goMenu } from './menu.js'
 import { HiScores, History, Options} from './persist.js'
 document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
+
+const optionsStore = Options()
+
 /*
 const Options = {
     'no countdown ending' : true,
@@ -187,7 +190,13 @@ const initialScreen = AnyKeyToStart( async () => {
     const ss = await startSound()
     sndfx = ss.sndfx,
     composer = ss.composer
-//    const { sndfx, composer } = await startSound()
+
+    optionsStore.listeners().add( options => {
+        console.log('CHANGED',options                   )
+        ss.setMusicVolume( options['music volume'] )
+        ss.setSndFxVolume( options['sfx volume'] )
+        ss.setGlobalVolume( options['global volume'] )
+    })
     fromStart()
 })
 
@@ -232,7 +241,7 @@ async function startSound(){
     function setGlobalVolume( g ){
         safeOutput.output.gain.value = g
     }
-    return { sndfx, composer }
+    return { sndfx, composer, setMusicVolume, setSndFxVolume, setGlobalVolume }
 }
 let to = 10
 function screenShot( renderer, stage ){
@@ -249,7 +258,6 @@ var rng = seedrandom('fx-1');
 
 async function goLevel(mapName, afterLevel){
 
-    const optionsStore = Options()
     const options = optionsStore.load()
     
     const keyboardState = KeyboardState('key')(window)

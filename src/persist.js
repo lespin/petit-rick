@@ -93,11 +93,40 @@ export function History(){
     return { load, setPlayed, setScreenshot, remove }            
 }
 
+const OptionsListeners = new Set()
+
 export function Options(){
+    function listeners(){
+        return OptionsListeners
+    }
     const defaultValue = {
         'no countdown ending' : true,
         'resize to pixel multiple' : true,
+        'global volume' : 1.0,
+        'music volume' : 1.0,
+        'sfx volume' : 1.0,
     }
+    const volumes = [
+        { value : 0, display : 'muted' },
+        { value : 0.1, display : '10%' },
+        { value : 0.2, display : '20%' },
+        { value : 0.3, display : '30%' },
+        { value : 0.4, display : '40%' },
+        { value : 0.5, display : '50%' },
+        { value : 0.6, display : '60%' },
+        { value : 0.7, display : '70%' },
+        { value : 0.8, display : '80%' },
+        { value : 0.9, display : '90%' },
+        { value : 1.0, display : 'max' },
+        { value : 0.901, display : '90%' },
+        { value : 0.801, display : '80%' },
+        { value : 0.701, display : '70%' },
+        { value : 0.601, display : '60%' },
+        { value : 0.501, display : '50%' },
+        { value : 0.301, display : '30%' },
+        { value : 0.201, display : '20%' },
+        { value : 0.101, display : '10%' },
+   ]
     const possibleValues = {
         'no countdown ending' : [
             { value : true, display : 'no countdown ending' },
@@ -106,11 +135,17 @@ export function Options(){
         'resize to pixel multiple' : [
             { value : true, display : 'fit to nearest integer scaling' },
             { value : false, display : 'scale to maximum' },
-        ]
+        ],
+        'music volume' : volumes,
+        'sfx volume' : volumes,
+        'global volume' : volumes
     }
     const displayNames = {
         'no countdown ending' : 'countdown',
-        'resize to pixel multiple' : 'resizing'
+        'resize to pixel multiple' : 'resizing',
+        'music volume' : 'music',
+        'sfx volume' : 'sound effects',
+        'global volume' : 'volume',
     }
     function getDisplayName( name ){
         if ( displayNames[ name ] === undefined ){
@@ -140,8 +175,12 @@ export function Options(){
         }
         options[ name ] = value
         set( JSON.stringify( options ) )
+        for ( let listener of OptionsListeners ){
+            listener( options )
+        }
         return options
     }
     return { load, setOption, remove,
-             getPossibleValues, getDisplayName }            
+             getPossibleValues, getDisplayName,
+             listeners }            
 }

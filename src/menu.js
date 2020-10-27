@@ -68,7 +68,8 @@ function optionsMenu(  ){
     const $optionsDiv = document.createElement('div')
     $optionsDiv.appendChild($h2('Options'))
     const optionsStore = Options()
-    const options = optionsStore.load()    
+    const options = optionsStore.load()
+    console.log( 'options',options)
     Object.entries( options ).forEach( ([name,value]) => {
 
         const $optionDiv = document.createElement('div')
