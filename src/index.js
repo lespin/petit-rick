@@ -244,7 +244,7 @@ async function startSound(){
     const options = optionsStore.load()
     setVolumesFromOptions( options )
     optionsStore.listeners().add( options => {
-        console.log('CHANGED',options   )
+//        console.log('CHANGED',options   )
         setVolumesFromOptions( options )
     })
 
