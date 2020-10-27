@@ -190,13 +190,7 @@ const initialScreen = AnyKeyToStart( async () => {
     const ss = await startSound()
     sndfx = ss.sndfx,
     composer = ss.composer
-
-    optionsStore.listeners().add( options => {
-        console.log('CHANGED',options                   )
-        ss.setMusicVolume( options['music volume'] )
-        ss.setSndFxVolume( options['sfx volume'] )
-        ss.setGlobalVolume( options['global volume'] )
-    })
+    
     fromStart()
 })
 
@@ -241,6 +235,20 @@ async function startSound(){
     function setGlobalVolume( g ){
         safeOutput.output.gain.value = g
     }
+
+    function setVolumesFromOptions( options ){
+        setMusicVolume( options['music volume'] )
+        setSndFxVolume( options['sfx volume'] )
+        setGlobalVolume( options['global volume'] )
+    }
+    const options = optionsStore.load()
+    setVolumesFromOptions( options )
+    optionsStore.listeners().add( options => {
+        console.log('CHANGED',options   )
+        setVolumesFromOptions( options )
+    })
+
+    
     return { sndfx, composer, setMusicVolume, setSndFxVolume, setGlobalVolume }
 }
 let to = 10
