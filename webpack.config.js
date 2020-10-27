@@ -19,21 +19,22 @@ module.exports = {
             title: `petit-rick`
         })
     ],
+     optimization: {
+         minimize: true,
+         minimizer: [new TerserPlugin()],
+         namedModules: false,
+         moduleIds : 'size'
+     },
+    watchOptions: {
+        ignored: /\.#|node_modules|~$/,
+    },
+    
     // optimization: {
     //     minimize: true,
     //     minimizer: [new TerserPlugin()],
     //     namedModules: false,
     //     moduleIds : 'size'
     // },
-    watchOptions: {
-        ignored: /\.#|node_modules|~$/,
-    },
-    optimization: {
-        minimize: true,
-        minimizer: [new TerserPlugin()],
-        namedModules: false,
-        moduleIds : 'size'
-    },
     module: {
         rules: [
             {
