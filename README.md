@@ -6,7 +6,7 @@ A browser game that let you live the full exciting life of an person and its clo
 
 # Controls
 
-Use "Up" and "Down" arrow keys to control the person and its clones.
+Use "Up" and "Down" and "Left" and "Right" arrow keys to control the person and its clones.
 
 # Misc
 
