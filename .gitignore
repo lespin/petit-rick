@@ -4,3 +4,4 @@ out/
 sound/
 yarn.lock
 unused/
+changeagitauthor.bash
