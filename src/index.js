@@ -20,13 +20,14 @@ import { SafeOutput } from './lib/safeoutput.js'
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 //import { Viewport } from 'pixi-viewport'
 import { goMenu } from './menu.js'
-import { HiScores, History } from './persist.js'
+import { HiScores, History, Options} from './persist.js'
 document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
-
+/*
 const Options = {
     'no countdown ending' : true,
     'resize to pixel multiple' : true,
 }
+*/
 const historyStore = History()
 // resolver
 const resolveResourceUrl = x => `assets/${x}`
@@ -248,6 +249,9 @@ var rng = seedrandom('fx-1');
 
 async function goLevel(mapName, afterLevel){
 
+    const optionsStore = Options()
+    const options = optionsStore.load()
+    
     const keyboardState = KeyboardState('key')(window)
     keyboardState.start()
 
@@ -340,7 +344,7 @@ async function goLevel(mapName, afterLevel){
             var w = window.innerWidth - margin ;
             var h = w / ratio;
         }
-        if ( Options['resize to pixel multiple'] ){
+        if ( options['resize to pixel multiple'] ){
             if ( w > tw ){
                 const multiple = Math.floor( w / tw ),
                       integerWidth = tw * multiple,
@@ -637,7 +641,7 @@ async function goLevel(mapName, afterLevel){
         }        
     }
     function countdownReached( ){
-        if ( Options['no countdown ending'] ){
+        if ( options['no countdown ending'] ){
         } else {
             world.over = world.time
             // TODO
