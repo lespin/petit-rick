@@ -591,6 +591,10 @@ async function goLevel(mapName, afterLevel){
         function treeCellIsMine( { tile } ){
             return  tile && ( tile.layer.name === 'mine' ) || ( tile.properties['mine'] )
         }
+        function treeCellIsActiveCrusher( {tile} ){
+            console.log('IS IT?',tile)
+            return tile && (tile.crusherdown)
+        }
         const boxes = getPlayerCollisionBoxes( x,y,width,height ),
               f1 = rtree.search( boxes.leftBox ),
               f2 = rtree.search( boxes.rightBox ),
@@ -607,7 +611,10 @@ async function goLevel(mapName, afterLevel){
             aboveLadder : f5.find( treeCellIsLadder ),
             onTreasure : f6.find( treeCellIsTreasure ),
             onExit : f6.find( treeCellIsExitDoor ),
-            onMine : f6.find( treeCellIsMine )
+            onMine : f6.find( treeCellIsMine ),
+            onDownCrushingThing: f6.find( treeCellIsActiveCrusher ),
+            
+
         }
         // if ( false ){
         //     // show selected
@@ -750,6 +757,9 @@ async function goLevel(mapName, afterLevel){
                   {width,height} = pl
             const surroundings = getSurroundings( x, y, width, height )
             if ( surroundings.onMine ){
+                killPlayer( animation )
+            }
+            if ( surroundings.onDownCrushingThing ){
                 killPlayer( animation )
             }
             const { onLadder, underMatter } = surroundings

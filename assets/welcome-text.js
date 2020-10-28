@@ -3,7 +3,7 @@ export function WelcomeText(){
     const paragraphs = [
         'Collect all the bottles, fast !',
         'Then Move to the exit door',
-        'Keep your clones away from the deadly fires',
+        'Keep your clones away from the deadly fires and crushers',
         'Only Perfect map completion unlocks new levels',
         'Use Up, Left, Down and Right Arrows keys to move',
     ]
