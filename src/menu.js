@@ -1,14 +1,15 @@
 import { HiScores, History, Options } from './persist.js'
 
 const Maps = [
-    { name : 'map1', displayName : 'unplayed yet' },
-    { name : 'map2', displayName : 'unplayed yet' },
-    { name : 'map3', displayName : 'unplayed yet' },
-    { name : 'map4', displayName : 'unplayed yet' },
-    { name : 'map5' },
-    { name : 'map6' },
-    { name : 'map7' }
     
+    //{ name : 'map1', displayName : 'unplayed yet' },
+    /*{ name : 'map2', displayName : 'unplayed yet' },
+      { name : 'map3', displayName : 'unplayed yet' },
+      { name : 'map4', displayName : 'unplayed yet' },
+      { name : 'map5' },
+      { name : 'map6' },
+      { name : 'map7' }*/
+        
 ]
 
 function $paragraph(textContent){
@@ -44,13 +45,19 @@ function $levelDisplayNameParagraph(textContent){
 }
 function $h1(textContent){
     const $p = document.createElement('h1')
-    $p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
+    $p.style = 'color:#ffffff;font-family:monospace;text-align:center;margin-bottom:2em;'
     $p.textContent = textContent
     return $p
 }
 function $h2(textContent){
     const $p = document.createElement('h2')
     $p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
+    $p.textContent = textContent
+    return $p
+}
+function $h3(textContent){
+    const $p = document.createElement('h3')
+    $p.style = 'color:#f0f0f0;font-family:monospace;text-align:center;margin-top:5em;'
     $p.textContent = textContent
     return $p
 }
@@ -100,8 +107,8 @@ function optionsMenu(  {sndfx}  ){
             $pdv.textContent = nextValueDisplay
         }
     })
-//    const $pre = $paragraph(JSON.stringify( options, null, 2 ))
-//    $optionsDiv.appendChild($pre)
+    //    const $pre = $paragraph(JSON.stringify( options, null, 2 ))
+    //    $optionsDiv.appendChild($pre)
     return $optionsDiv
 }
 export function goMenu( f, {sndfx} ){
@@ -116,28 +123,81 @@ export function goMenu( f, {sndfx} ){
     
     $div.appendChild($h1('Petit Rick'))
 
-    $div.appendChild($h2('click a map to play'))
 
+
+    const recentHistory = history.recent,
+          unlockedHistory = history.unlocked
+
+    // rencently played
+    const doneMaps = recentHistory.map(
+        name => ({name,displayName:undefined})
+    )
     
-    const $levelsDiv = document.createElement('div')
-    $levelsDiv.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
-    $div.appendChild($levelsDiv)
+    
+    // unlocked 
+    const recentlyUnlocked = []    
+    const otherMaps = []    
+    Object.entries(unlockedHistory).forEach( ([name,unlockedDate]) => {
 
-    const recentHistory = history.recent
-    const doneMaps = recentHistory.map( name => ({name,displayName:undefined}) )
+        // exists in recently played
+        const exists = doneMaps.find( m => m.name === name )
+        
+        // locked
+        const locked = unlockedDate === undefined
+        
 
-    const sortedMaps = [...doneMaps]
-    Maps.forEach( presetMap => {
-        const exists = sortedMaps.find( m => m.name === presetMap.name )
-        if ( !exists ){
-            sortedMaps.push( presetMap )
+        if ( !exists && !locked){
+            const unlockedSinceMin = ( Date.now() - unlockedDate ) / 1000 / 60
+            if ( unlockedSinceMin < 5 ){
+                recentlyUnlocked.push( { name } )
+            } else {
+                otherMaps.push( { name } )
+            }
         }
     })
+    if ( ! (recentlyUnlocked.length || doneMaps.length || otherMaps.length ) ){
+        // oh oh oh !
+        const $levelsDiv = document.createElement('div')
+        //$levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
+        
+        $div.appendChild($levelsDiv)
+        $levelsDiv.appendChild( $Map( {name : 'map1', displayName : 'click to start', noHiscores : true } ) )
+    } else {
+        $div.appendChild($h2('click a map to play'))
+    }
+    
+    ;[
+        ['Recently unlocked', recentlyUnlocked],
+        ['Recently played', doneMaps],
+        ['All levels',otherMaps]
+    ].forEach( ([hcaption,maps]) => {
+        console.log('hcaption',hcaption,maps)
+        if ( !maps || ( maps.length === 0 ) )
+            return 
+        $div.appendChild( $h3( hcaption ) )
+        
+        const $levelsDiv = document.createElement('div')
+        $levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
+        $div.appendChild($levelsDiv)
+
+        maps.forEach( map => {
+            const $mapDiv = $Map( map )
+            $levelsDiv.appendChild( $mapDiv )
+        })
+    })
+
+    /*
     
     //;[ ...doneMaps, ...Maps ].forEach( ({name,displayName}) )
-
+    
+    
     sortedMaps.forEach( map => {
-        const { name, displayName } = map
+        const $mapDiv = $Map( map )
+        $levelsDiv.appendChild( $mapDiv )
+        
+    })*/
+    function $Map( map ){
+        const { name, displayName, noHiscores = false } = map
 
         function playThis(){
             sndfx.cloc()
@@ -146,7 +206,6 @@ export function goMenu( f, {sndfx} ){
         }
 
         const $mapDiv = $mmapDiv()
-        $levelsDiv.appendChild( $mapDiv )
 
         const levelHistory = history.levels[ name ]
         let realDisplayName 
@@ -170,11 +229,11 @@ export function goMenu( f, {sndfx} ){
             const $playItDiv = document.createElement('div')
             $mapDiv.appendChild( $playItDiv )
             {
-            const $playButton = $button('play', playThis )
+                const $playButton = $button('play', playThis )
                 $playItDiv.appendChild( $playButton )
             }
         }
-        
+        if ( ! noHiscores ){
         const hiScoresStore = HiScores( name )
         const hiScores = hiScoresStore.load()
         
@@ -189,11 +248,13 @@ export function goMenu( f, {sndfx} ){
                 $hiScoresDiv.appendChild( $p )
             })
         }
+        }
+        return  $mapDiv
+    }
+    
 
 
-        
-    })
-        $div.appendChild(    optionsMenu(  {sndfx}  ) )
+    $div.appendChild(    optionsMenu(  {sndfx}  ) )
     
     
     

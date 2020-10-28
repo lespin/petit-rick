@@ -22,7 +22,8 @@ import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 import { goMenu } from './menu.js'
 import { HiScores, History, Options} from './persist.js'
 document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
-
+import { Unlocker } from './unlocks.js'
+const unlockMaps = Unlocker()
 const optionsStore = Options()
 
 /*
@@ -134,10 +135,6 @@ function SetupRendererPage(){
     right: 0;
 `
     renderer.view.style = style//'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
-    console.log('BOBY',document.body)
-
-    
-    
     window.pixirenderer = renderer
     document.body.appendChild(renderer.view)
     return renderer
@@ -246,7 +243,6 @@ async function startSound(){
     const options = optionsStore.load()
     setVolumesFromOptions( options )
     optionsStore.listeners().add( options => {
-//        console.log('CHANGED',options   )
         setVolumesFromOptions( options )
     })
 
@@ -259,9 +255,6 @@ function screenShot( renderer, stage ){
     var renderTexture = PIXI.RenderTexture.create(stage.width, stage.height);
     renderer.render(stage, renderTexture);
     var canvas = renderer.extract.canvas(renderTexture);
-    console.log(canvas.toDataURL('image/png'))
-    //window.open(canvas.toDataURL('image/png'));
-    //document.body.appendChild( canvas )
     return canvas.toDataURL('image/png')
 }
 var rng = seedrandom('fx-1');
@@ -368,11 +361,9 @@ async function goLevel(mapName, afterLevel){
                       integerWidth = tw * multiple,
                       integerHeight = th * multiple
                 
-                //console.log(multiple,integerWidth,integerHeight)
                 w = integerWidth
                 h = integerHeight
             }
-            //console.log(tw,th,w,h)
         }
         renderer.view.style.width = w + 'px';
         renderer.view.style.height = h + 'px';
@@ -414,7 +405,6 @@ async function goLevel(mapName, afterLevel){
         const animation = new AnimatedItem( animationModels )
         animation.container.position.x = position.x
         animation.container.position.y = position.y
-        console.log('substriute',tile,tile.properties['substitute-animation'] )
         animation.play( tile.properties['substitute-animation'] )
         stage.addChild(animation.container);
     })
@@ -588,13 +578,11 @@ async function goLevel(mapName, afterLevel){
         world.canExit = true
     }
     function allTreasureFound(){
-        console.log('BEEP','allTreasureFound')
         sndfx.cleared()
         sndfx.ahhh()
         openExitDoor()
     }
     function reachTreasure(animation, onTreasure){
-        console.log('BEEP','treasure')
         sndfx.pickup()
         sndfx.swallow()
         onTreasure.tile.container.visible = false
@@ -606,14 +594,17 @@ async function goLevel(mapName, afterLevel){
         if ( world.nTreasureFound === world.nTreasure ){
             allTreasureFound()
         }
-        console.log(world)
     }
     
     function donePerfect(){
         world.perfect = true
-        sndfx.perfect()
+
+        unlockMaps( mapName )
         
-        console.log('PERFECT',world)
+        setTimeout( () => {
+            sndfx.perfect()
+        },600)
+        
     }
     function computeScore(){
         const perfect = ( world.countdown > 0 )
@@ -633,14 +624,11 @@ async function goLevel(mapName, afterLevel){
         world.rank = rank
     }
     function exited(animation){
-        console.log('BEEP','exited')
         world.over = world.time
         computeScore()
-        console.log('over at',world.over)
         sndfx.win()
     }
     function reachExit(animation, onExit){
-        console.log('BEEP','reach exit')
         if ( world.canExit ){
             sndfx.cheer()
             exited(animation)
@@ -649,8 +637,6 @@ async function goLevel(mapName, afterLevel){
         }
     }
     function allPlayerKilled( ){
-        console.log('BEEP','all players killed')
-
         world.over = world.time
         computeScore()
         sndfx.alldead()
@@ -667,7 +653,6 @@ async function goLevel(mapName, afterLevel){
                                    30 )
         animation.parabola = parabola
         world.nPlayers--
-        console.log('BEEP','player killed',world.nPlayers)
         if ( world.nPlayers < 1 ){
             allPlayerKilled()
         }        
@@ -703,7 +688,6 @@ async function goLevel(mapName, afterLevel){
                   {width,height} = pl
             const surroundings = getSurroundings( x, y, width, height )
             if ( surroundings.onMine ){
-                console.log(surroundings.onMine)
                 killPlayer( animation )
             }
             const { onLadder, underMatter } = surroundings
@@ -1032,7 +1016,6 @@ async function goLevel(mapName, afterLevel){
 }
 function onInteraction( f ){
     function once(e){
-        console.log('OK?',e)
         window.removeEventListener( 'keydown', once )
         window.removeEventListener( 'click', once )
         f(e)
