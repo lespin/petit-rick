@@ -158,7 +158,8 @@ function prepareSampler(loaderAc = new AudioContext()){
         ['swallow','assets/259640__stevious42__drinking-sip-swallow-gasp.ogg'],
         ['shout','assets/218417__kokopetiyot__female-shout.ogg'],
         ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.ogg'],
-        ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.ogg']
+        ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.ogg'],
+        ['perfect','assets/perfect.ogg']
     ].forEach( ([name,url]) => {    
         loadSound(loaderAc,url, buffer => {
             if ( buffer )
@@ -189,6 +190,7 @@ let sndfx, composer
 const initialScreen = AnyKeyToStart( async () => {
     const ss = await startSound()
     sndfx = ss.sndfx,
+    window.sndfx = sndfx
     composer = ss.composer
     
     fromStart()
@@ -473,6 +475,7 @@ async function goLevel(mapName, afterLevel){
         nTreasure : terrain.extracted['treasure'].length,
         initialNPlayers : terrain.extracted['level-entrance'].length,
         initialCountdown : terrain.extracted['initial-countdown'],
+        perfect : false
     }
     world.countdown = world.initialCountdown
     world.nPlayers = world.initialNPlayers
@@ -605,8 +608,21 @@ async function goLevel(mapName, afterLevel){
         }
         console.log(world)
     }
+    
+    function donePerfect(){
+        world.perfect = true
+        sndfx.perfect()
+        
+        console.log('PERFECT',world)
+    }
     function computeScore(){
-        // TODO
+        const perfect = ( world.countdown > 0 )
+              && ( world.nTreasureFound === world.nTreasure )
+              && ( world.nPlayers === world.initialNPlayers )
+
+        if ( perfect ){
+            donePerfect()
+        }
         const score = world.countdown * ( world.nTreasureFound *  2 * world.nPlayers )
         world.score = score
         const name = 'you'
@@ -938,11 +954,19 @@ async function goLevel(mapName, afterLevel){
                     world.overtime = Date.now()
                 } else {
                     const sinceover = ( Date.now() - world.overtime ) / 1000
-                    const duration = 1.3
-                    const a = sinceover / duration
-                    const car = clamp( sinceover, 0, duration ) / duration
-                    const txt = levelScoreVisibleCalulation.at( car ) 
-                    if ( a <= 1 ){
+                    const perfectTime = ((world.perfect)?3:0)
+                    const duration = 1.3 
+                    const a = ( sinceover - perfectTime ) / duration
+                    const car = clamp( sinceover - perfectTime, 0, duration ) / duration
+                    const txt = levelScoreVisibleCalulation.at( car )
+                    if ( a <= 0 ){
+                        if ( world.perfect && (Math.floor(sinceover*2)%2)){
+                            scoreboardZones.updatePerfect( 'perfect' )
+                        } else {
+                            scoreboardZones.updatePerfect( false )
+                        }
+                    } else if  ( a <= 1 ){
+                        scoreboardZones.updatePerfect( false )
                         scoreboardZones.updateLevelScore(
                             [
                                 terrain.extracted['display-name'],
@@ -960,7 +984,7 @@ async function goLevel(mapName, afterLevel){
                             //'score', ''+world.score,
                         ].filter( x => x ).join("\n"))
                     }
-                    if ( a > 2 ){
+                    if ( a > 2.25 ){
                         if (!canGetOut){
                             canGetOut = true
                             onInteraction( () => {
@@ -1246,6 +1270,7 @@ function ScoreBoard( fontName, rectangle ){
         levelScore : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
         ready : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
         paused : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
+        perfect : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{  width : 60, align : 'center' }),
     }
 
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
@@ -1253,6 +1278,7 @@ function ScoreBoard( fontName, rectangle ){
     scoreboardContainer.addChild( scoreboardZones.levelScore.container )
     scoreboardContainer.addChild( scoreboardZones.ready.container )
     scoreboardContainer.addChild( scoreboardZones.paused.container )
+    scoreboardContainer.addChild( scoreboardZones.perfect.container )
     
     scoreboardZones.updateCountdown = function(d) {
         scoreboardZones.countdown.update( d.toString(10).padStart(4,'0') )
@@ -1268,6 +1294,13 @@ function ScoreBoard( fontName, rectangle ){
     }
     scoreboardZones.updatePaused = function( d ) {
         scoreboardZones.paused.update( d )
+    }
+    scoreboardZones.updatePerfect = function( b ) {
+        if ( b ){
+            scoreboardZones.perfect.update( 'Perfect!' )
+        } else {
+            scoreboardZones.perfect.update( '' )
+        }
     }
     
     return { scoreboardZones, scoreboardContainer }
