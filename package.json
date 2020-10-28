@@ -37,11 +37,12 @@
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0",
+    "webpack-merge": "^5.2.0",
     "worklet-loader": "^1.0.0"
   },
   "scripts": {
-    "dev": "webpack --mode development --watch",
-    "prod": "webpack --mode production --watch",
-    "start:dev": "webpack-dev-server"
+    "dev": "webpack --mode development --config webpack.dev.js --watch",
+    "prod": "webpack --mode production --config webpack.prod.js  --watch",
+    "start:dev": "webpack-dev-server --config webpack.dev.js "
   }
 }
