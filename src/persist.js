@@ -150,7 +150,7 @@ export function Options(){
     const possibleValues = {
         'no countdown ending' : [
             { value : true, display : 'no countdown ending' },
-            { value : false, display : 'must finish before countdown end' },
+            { value : false, display : 'must finish before countdown ends' },
         ],
         'resize to pixel multiple' : [
             { value : true, display : 'fit to nearest integer scaling' },
