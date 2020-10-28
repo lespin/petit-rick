@@ -66,6 +66,7 @@ function $bigDiv(){
 }
 function optionsMenu(  ){
     const $optionsDiv = document.createElement('div')
+    $optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;user-select:none;'
     $optionsDiv.appendChild($h2('Options'))
     const optionsStore = Options()
     const options = optionsStore.load()
@@ -73,7 +74,6 @@ function optionsMenu(  ){
     Object.entries( options ).forEach( ([name,value]) => {
 
         const $optionDiv = document.createElement('div')
-        $optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;'
         $optionsDiv.appendChild( $optionDiv )
 
         const displayName = optionsStore.getDisplayName( name )
