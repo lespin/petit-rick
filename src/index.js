@@ -158,7 +158,8 @@ function prepareSampler(loaderAc = new AudioContext()){
         ['shout','assets/218417__kokopetiyot__female-shout.ogg'],
         ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.ogg'],
         ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.ogg'],
-        ['perfect','assets/perfect.ogg']
+        ['perfect','assets/perfect.ogg'],
+        ['crush','assets/crush.ogg'],
     ].forEach( ([name,url]) => {    
         loadSound(loaderAc,url, buffer => {
             if ( buffer )
@@ -410,7 +411,64 @@ async function goLevel(mapName, afterLevel){
         animation.play( tile.properties['substitute-animation'] )
         stage.addChild(animation.container);
     })
-    
+
+    function CrushingThings(){
+
+        const delays =  terrain.extracted.crushingThings.delays
+        const changeSteps = []
+        for ( let i = 0 ; i < delays.length ; i++ ){
+            const nSteps = Math.ceil( delays[ i ] * 48 ) // FIXED TIME STEP...
+            changeSteps.push( nSteps )
+        }
+        console.log('changeSteps',changeSteps)
+
+        const crushers = []
+
+        ;['up','down'].forEach( dir => {
+            terrain.extracted.crushingThings[dir].forEach( tile => {
+                const position = tile.inLayer.position
+                const animation = new AnimatedItem( animationModels )
+                animation.container.position.x = position.x
+                animation.container.position.y = position.y
+                if ( dir === 'down' ){
+                    animation.play( 'crushing-thing' )
+                    tile.crusherdown = true
+                    crushers.push( { tile, animation } )
+                } else {
+                    animation.play( 'uncrushing-thing' )
+                    tile.crusherfalse = true
+                    crushers.push( { tile, animation } )
+                }
+                stage.addChild(animation.container);
+            })
+        })
+        let updown = 1,
+            changeStepIdx = 0,
+            remainingSteps = changeSteps[ 0 ]
+        function switchUpDown(){
+            sndfx.crush()
+            crushers.forEach( ({tile,animation}) => {
+                tile.crusherdown = !tile.crusherdown
+                if ( tile.crusherdown ){
+                    animation.play( 'crushing-thing' )
+                } else {
+                    animation.play( 'uncrushing-thing' )
+                }
+            })
+        }
+        function step( world ){
+            if ( remainingSteps === 0 ){
+                changeStepIdx = ( changeStepIdx + 1 )%changeSteps.length
+                remainingSteps = changeSteps[ changeStepIdx ]
+                console.log(changeStepIdx,remainingSteps)
+                switchUpDown()
+            } else {
+                remainingSteps--
+            }
+        }
+        return { step }
+    }
+    const crushingThings = CrushingThings()
     const entrances = terrain.extracted['level-entrance']
     const exits = terrain.extracted['level-exit']
     const items = []
@@ -674,6 +732,7 @@ async function goLevel(mapName, afterLevel){
         if ( world.countdown === 0 ){
             countdownReached()
         }
+        crushingThings.step( world )
         world.alcoolLevel = Math.max(0, world.alcoolLevel - 1 )
         items.forEach( item => {           
             const animation = item
@@ -1141,11 +1200,32 @@ async function loadTerrain( url ){
         minY : Number.POSITIVE_INFINITY,
         maxY : Number.NEGATIVE_INFINITY
     }
+    function csint( ints ){
+        if ( !ints ) return []
+        const delays = ints.split(',').map( pi => {
+            const i = parseFloat( pi )
+            if ( isNaN( i ) ) throw new Error('bad crushing-things-delays format at'+url)
+            return i
+        })
+        return delays
+    }
+    
+    extracted.crushingThings = {
+        up : [],
+        down : [],
+        delays : csint( terrain.properties['crushing-things-delays'] )
+    }
     //
     // special tiles
     //
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
+            if ( tile.properties['crushing-thing-down'] ){
+                extracted.crushingThings.down.push( tile )
+            }
+            if ( tile.properties['crushing-thing-up'] ){
+                extracted.crushingThings.up.push( tile )
+            }
             if ( tile.properties['level-entrance'] ){
                 extracted['level-entrance'].push( tile )
             }
@@ -1186,8 +1266,10 @@ async function loadTerrain( url ){
     const container = new PIXI.Container();
     terrain.layers.forEach( ( layer, layerIdx ) => {
         layer.tiles.forEach( tile => {
-            if ( tile.properties['substitute-animation'] )
+            if ( ( tile.properties['substitute-animation'] ) 
+                 || ( tile.properties['crushing-thing-up'] ) || ( tile.properties['crushing-thing-down'] ))
                 return
+
             const position = tile.inLayer.position,
                   imageBitmap = tile.imageBitmap
             // const collisionMaskNames = tile.properties['collision-mask']
