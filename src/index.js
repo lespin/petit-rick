@@ -780,6 +780,7 @@ async function goLevel(mapName, afterLevel){
     let preWait = NOMINAL_PREWAIT,
         started = false,
         canGetOut = false,
+        canGetOutStart = undefined,
         getout = undefined
 
     function PauseManager(){
@@ -960,7 +961,7 @@ async function goLevel(mapName, afterLevel){
                     const car = clamp( sinceover - perfectTime, 0, duration ) / duration
                     const txt = levelScoreVisibleCalulation.at( car )
                     if ( a <= 0 ){
-                        if ( world.perfect && (Math.floor(sinceover*2)%2)){
+                        if ( world.perfect && (Math.floor((sinceover-perfectTime)*2)%2)){
                             scoreboardZones.updatePerfect( 'perfect' )
                         } else {
                             scoreboardZones.updatePerfect( false )
@@ -971,7 +972,9 @@ async function goLevel(mapName, afterLevel){
                             [
                                 terrain.extracted['display-name'],
                                 "\n",
-                                txt
+                                txt,
+                                '\n',
+                                '\n'
                             ].join("\n")
                         )
                     } else {
@@ -980,13 +983,17 @@ async function goLevel(mapName, afterLevel){
                             "\n",
                             txt,
                             '\nrank',  '#'+world.rank + 1,
-                            (canGetOut?"\n[continue]":undefined)
+                            ((canGetOut
+                             &&(
+                                 Math.floor( (Date.now()-canGetOutStart)/1000 )%2
+                             ))?"\ncontinue":"\n")
                             //'score', ''+world.score,
                         ].filter( x => x ).join("\n"))
                     }
                     if ( a > 2.25 ){
                         if (!canGetOut){
                             canGetOut = true
+                            canGetOutStart = Date.now()
                             onInteraction( () => {
                                 getout = true
                             })
