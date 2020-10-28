@@ -77,7 +77,9 @@ export function History(){
         if ( !names ) return 
         const history = load()
         names.forEach( name => {
-            history.unlocked[ name ] = Date.now()
+            if ( history.unlocked[ name ] === undefined ){
+                history.unlocked[ name ] = Date.now()
+            }
         })
         set( JSON.stringify( history ) )
         return history
