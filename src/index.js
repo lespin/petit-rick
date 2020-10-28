@@ -45,12 +45,13 @@ const pageVisibility = PageVisibility()
 pageVisibility.on.change.push( () => {
     console.log('visible?',pageVisibility.isVisible(),'at',new Date())
 })
-
+import { WelcomeText } from '../assets/welcome-text.js' 
 function AnyKeyToStart( f ){
     const $div = document.createElement('div')
+    $div.appendChild( WelcomeText() )
     const $p = document.createElement('p')
-    $p.style = 'color:#ffffff;font-family:monospace;padding:1em'
-    $p.textContent = 'any key or click to start...'
+    $p.style = 'color:#ffffff;font-family:monospace;padding:1em;padding-top:2em:'
+    $p.textContent = 'Any key or click to start...'
     document.body.appendChild( $div )
     $div.appendChild( $p ) 
     onInteraction( () => {
