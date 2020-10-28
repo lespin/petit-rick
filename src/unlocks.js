@@ -8,13 +8,13 @@ const byMaps = {
     'map3' : [ 'map4','map5','map6' ],
     'map4' : [ 'map5','map6','map7' ],
 }
-
+function getUnlockedBy( fromMap ){
+    return byMaps[ fromMap ] || []
+}
 export function Unlocker(){
-    function getUnlocked( fromMap ){
-        return byMaps[ fromMap ] || []
-    }
+ 
     function unlock( fromMap ){
-        historyStore.unlock( getUnlocked( fromMap ) )
+        historyStore.unlock( getUnlockedBy( fromMap ) )
     }
     return unlock
 }

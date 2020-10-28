@@ -56,7 +56,8 @@ export function History(){
         levels : {},
         recent:  [],
         screenshots : {},
-        unlocked : {}
+        unlocked : {},
+        perfected : {}
     }
     const { get, set, remove } = StorageItem( 'history' )
     function load(){
@@ -84,6 +85,12 @@ export function History(){
         set( JSON.stringify( history ) )
         return history
     }
+    function setPerfected( name ){
+        const history = load()
+        history.perfected[ name ] = Date.now()
+        set( JSON.stringify( history ) )
+        return history
+    }
     function setPlayed( name, displayName ){
         const history = load()
         history.levels[ name ] = { displayName }
@@ -102,7 +109,7 @@ export function History(){
         set( JSON.stringify( history ) )
         return history
     }
-    return { load, setPlayed, setScreenshot, unlock, remove }            
+    return { load, setPlayed, setScreenshot, unlock, setPerfected,remove }            
 }
 
 const OptionsListeners = new Set()

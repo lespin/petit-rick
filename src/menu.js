@@ -204,9 +204,9 @@ export function goMenu( f, {sndfx} ){
             $div.remove()
             f( name )
         }
-
         const $mapDiv = $mmapDiv()
-
+        const perfected = history.perfected[ name ]
+        
         const levelHistory = history.levels[ name ]
         let realDisplayName 
         if ( levelHistory ){
@@ -218,6 +218,9 @@ export function goMenu( f, {sndfx} ){
         const $p = $levelNameParagraph(`${ name } - ${ realDisplayName }`)
         $mapDiv.appendChild( $levelNameParagraph(`${ name }`) )
         $mapDiv.appendChild( $levelDisplayNameParagraph(`${ realDisplayName }`) )
+        if ( perfected ){
+            $mapDiv.appendChild( $levelDisplayNameParagraph('👌️ perfect!') )
+        }
 
         const screenshot = history.screenshots[ name ]
         if ( screenshot ){

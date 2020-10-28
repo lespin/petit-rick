@@ -598,6 +598,7 @@ async function goLevel(mapName, afterLevel){
     
     function donePerfect(){
         world.perfect = true
+        historyStore.setPerfected(mapName)
 
         unlockMaps( mapName )
         
@@ -974,7 +975,7 @@ async function goLevel(mapName, afterLevel){
                             //'score', ''+world.score,
                         ].filter( x => x ).join("\n"))
                     }
-                    if ( a > 2.25 ){
+                    if ( a > 1.5 ){
                         if (!canGetOut){
                             canGetOut = true
                             canGetOutStart = Date.now()
