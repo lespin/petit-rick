@@ -102,6 +102,7 @@ export function Options(){
     const defaultValue = {
         'no countdown ending' : true,
         'resize to pixel multiple' : true,
+        'postprocessing' : 1,
         'global volume' : 1.0,
         'music volume' : 1.0,
         'sfx volume' : 1.0,
@@ -136,13 +137,20 @@ export function Options(){
             { value : true, display : 'fit to nearest integer scaling' },
             { value : false, display : 'scale to maximum' },
         ],
+        'postprocessing' : [
+            { value : 0, display : 'quiet' }, 
+            { value : 1, display : 'normal' },
+            { value : 2, display : 'more!' },
+       ],
         'music volume' : volumes,
         'sfx volume' : volumes,
         'global volume' : volumes
+        
     }
     const displayNames = {
         'no countdown ending' : 'countdown',
         'resize to pixel multiple' : 'resizing',
+        'postprocessing' : 'postprocessing',
         'music volume' : 'music',
         'sfx volume' : 'sound effects',
         'global volume' : 'volume',

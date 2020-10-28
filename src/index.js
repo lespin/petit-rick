@@ -823,7 +823,12 @@ async function goLevel(mapName, afterLevel){
             const stoneness = 3 * world.alcoolLevel / maxAlcool
             const readyness = Math.min(world.alcoolLevel,200) / 200
             filmFilter.vignetting = 0.125 - readyness / 8
-            unsobber.setLevel(stoneness/2)
+            const postprocessingOption = clamp( options['postprocessing'],0,2)
+            if ( postprocessingOption ){
+                unsobber.setLevel(Math.pow(2,postprocessingOption) * stoneness/2)
+            } else {
+                unsobber.setLevel(0)
+            }
         }
         unsobber.update()
         if ( scoreboardZones ){
