@@ -1,4 +1,5 @@
 import { HiScores, History, Options } from './persist.js'
+import { InitialMap } from '../assets/map-progression.js'
 
 const Maps = [
     
@@ -161,7 +162,7 @@ export function goMenu( f, {sndfx} ){
         //$levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
         
         $div.appendChild($levelsDiv)
-        $levelsDiv.appendChild( $Map( {name : 'map1', displayName : 'click to start', noHiscores : true } ) )
+        $levelsDiv.appendChild( $Map( {name : InitialMap, displayName : 'click to start', noHiscores : true } ) )
     } else {
         $div.appendChild($h2('click a map to play'))
     }
