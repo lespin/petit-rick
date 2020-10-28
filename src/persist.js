@@ -123,7 +123,7 @@ export function Options(){
         'resize to pixel multiple' : true,
         'postprocessing' : 1,
         'global volume' : 1.0,
-        'music volume' : 1.0,
+        'music volume' : 0.6,
         'sfx volume' : 1.0,
     }
     const volumes = [
