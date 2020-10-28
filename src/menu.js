@@ -177,7 +177,7 @@ export function goMenu( f, {sndfx} ){
         $div.appendChild( $h3( hcaption ) )
         
         const $levelsDiv = document.createElement('div')
-        $levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
+        $levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;place-content: center;'
         $div.appendChild($levelsDiv)
 
         maps.forEach( map => {
