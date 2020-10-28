@@ -4,4 +4,5 @@ export const MapProgression = {
     'map2' : [ 'map4' ],
     'map3' : [ 'map4','map5','map6' ],
     'map4' : [ 'map5','map6','map7' ],
+    'map5' : [ 'map4','map6','map7' ],
 }

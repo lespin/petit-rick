@@ -19,11 +19,12 @@ import { getAudioContext } from './lib/audio.js'
 import { SafeOutput } from './lib/safeoutput.js'
 import { parseTMX, loadTerrainTileMap } from './lib/tmx-parser.js'
 //import { Viewport } from 'pixi-viewport'
+import { Unlocker } from './unlocks.js'
+const unlocker = Unlocker()
+// unlocker.unlockAll()
 import { goMenu } from './menu.js'
 import { HiScores, History, Options} from './persist.js'
 document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
-import { Unlocker } from './unlocks.js'
-const unlockMaps = Unlocker()
 const optionsStore = Options()
 
 /*
@@ -600,7 +601,7 @@ async function goLevel(mapName, afterLevel){
         world.perfect = true
         historyStore.setPerfected(mapName)
 
-        unlockMaps( mapName )
+        unlocker.unlockFrom( mapName )
         
         setTimeout( () => {
             sndfx.perfect()

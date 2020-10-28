@@ -1,23 +1,20 @@
 import { History} from './persist.js'
 import { MapProgression } from '../assets/map-progression.js'
-
 const historyStore = History()
-
-
 const byMaps = MapProgression
-/*const byMaps ={
-    'map1' : [ 'map2', 'map3' ],
-    'map2' : [ 'map4' ],
-    'map3' : [ 'map4','map5','map6' ],
-    'map4' : [ 'map5','map6','map7' ],
-}*/
 function getUnlockedBy( fromMap ){
     return byMaps[ fromMap ] || []
 }
 export function Unlocker(){
- 
-    function unlock( fromMap ){
+    function unlockAll(){
+        Object.entries( MapProgression ).forEach( ([map,maps]) => {
+            console.log('unlock',map,maps)
+            historyStore.unlock( [ map, ...maps ] )
+        })
+    }
+    function unlockFrom( fromMap ){
         historyStore.unlock( getUnlockedBy( fromMap ) )
     }
-    return unlock
+    window.unlockAll = unlockAll
+    return { unlockFrom, unlockAll }
 }
