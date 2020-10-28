@@ -112,19 +112,21 @@ function optionsMenu(  {sndfx}  ){
     //    $optionsDiv.appendChild($pre)
     return $optionsDiv
 }
+export function $Title(){
+    const $div = document.createElement('div')
+    $div.style = 'margin:4em;'   
+    $div.appendChild($h1('Petit Rick'))
+    return $div
+}
 export function goMenu( f, {sndfx} ){
 
     const historyStore = History()
     const history = historyStore.load()
 
 
-    const $div = document.createElement('div')
+
+    const $div = $Title()
     document.body.appendChild( $div )
-    $div.style = 'margin:4em;'
-    
-    $div.appendChild($h1('Petit Rick'))
-
-
 
     const recentHistory = history.recent,
           unlockedHistory = history.unlocked

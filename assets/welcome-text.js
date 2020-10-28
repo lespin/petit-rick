@@ -1,5 +1,6 @@
+import { $Title } from '../src/menu.js'
 export function WelcomeText(){
-    const $div = document.createElement('div')
+    const $div =  $Title()
     const paragraphs = [
         'Collect all the bottles, fast !',
         'Then Move to the exit door',
@@ -10,10 +11,13 @@ export function WelcomeText(){
     paragraphs.forEach( (text,i) => {
         const $p = document.createElement('p')
         setTimeout( () => {
-            $p.style = 'color:#a0f0f0;font-family:monospace;padding:0.5em;padding-left:1em;'
+            $p.style = 'color:#a0f0f0;font-family:monospace;padding:0.5em;padding-left:1em;text-align:center;'
             $p.innerHTML = text
-            $div.appendChild( $p )
-        }, i * 16*4 )
+            console.log('div',$div.parentNode.parentNode)
+            if ( $div ){
+                $div.appendChild( $p )
+            }
+        }, i * 1000 ) //16*4 )
     })
     return $div
 }

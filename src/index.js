@@ -50,7 +50,7 @@ function AnyKeyToStart( f ){
     const $div = document.createElement('div')
     $div.appendChild( WelcomeText() )
     const $p = document.createElement('p')
-    $p.style = 'color:#ffffff;font-family:monospace;padding:1em;padding-top:2em:'
+    $p.style = 'color:#ffffff;font-family:monospace;padding:1em;padding-top:2em;text-align:center;'
     $p.textContent = 'Any key or click to start...'
     document.body.appendChild( $div )
     $div.appendChild( $p ) 
