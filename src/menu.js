@@ -64,7 +64,7 @@ function $bigDiv(){
     $d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
     return $d
 }
-function optionsMenu(  ){
+function optionsMenu(  {sndfx}  ){
     const $optionsDiv = document.createElement('div')
     $optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;user-select:none;'
     $optionsDiv.appendChild($h2('Options'))
@@ -89,7 +89,7 @@ function optionsMenu(  ){
         
 
         function change(){
-            console.log('clicked')
+            sndfx.cloc()
             const possibleValues  = optionsStore.getPossibleValues( name )
             const valueIdx = possibleValues.findIndex( pv => pv.value === value )
             const nextValueIdx = ( valueIdx + 1 )%possibleValues.length
@@ -104,7 +104,7 @@ function optionsMenu(  ){
 //    $optionsDiv.appendChild($pre)
     return $optionsDiv
 }
-export function goMenu( f ){
+export function goMenu( f, {sndfx} ){
 
     const historyStore = History()
     const history = historyStore.load()
@@ -140,6 +140,7 @@ export function goMenu( f ){
         const { name, displayName } = map
 
         function playThis(){
+            sndfx.cloc()
             $div.remove()
             f( name )
         }
@@ -192,7 +193,7 @@ export function goMenu( f ){
 
         
     })
-        $div.appendChild(    optionsMenu(  ) )
+        $div.appendChild(    optionsMenu(  {sndfx}  ) )
     
     
     

@@ -171,7 +171,7 @@ function prepareSampler(loaderAc = new AudioContext()){
         ['win', 'fx-1',[,,177,.48,.17,.56,1,.17,-0.7,,36,.03,.01,,,,,.58,.08]],
         ['countdownReached','fx-1',[2.5,,413,,,.15,,1.39,,-40,,,,.9,,.2,,.74,.04]],
         ['alldead','fx-1',[2.05,,413,,,.14,,1.39,,-2,,,,.3,,.2,,.74,.04]],
-        
+        ['cloc','fx-1',[1.62,,1545,,,.01,,.75,,6.5,,,,,,,,,,.14]],
     ].forEach( ([name,seed,zzfxDefinition]) => {
         const rng = seedrandom( seed )
         const buffer = zzfxCreateBuffer( rng, ...zzfxDefinition )
@@ -183,7 +183,7 @@ function prepareSampler(loaderAc = new AudioContext()){
 function fromStart(){
     goMenu( mapName => {
         goLevel(mapName, fromStart)
-    }) 
+    },{sndfx}) 
 }
 let sndfx, composer
 const initialScreen = AnyKeyToStart( async () => {

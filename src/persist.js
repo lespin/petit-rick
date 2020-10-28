@@ -150,7 +150,7 @@ export function Options(){
     const displayNames = {
         'no countdown ending' : 'countdown',
         'resize to pixel multiple' : 'resizing',
-        'postprocessing' : 'postprocessing',
+        'postprocessing' : 'image postprocessing',
         'music volume' : 'music',
         'sfx volume' : 'sound effects',
         'global volume' : 'volume',
