@@ -765,8 +765,89 @@ async function goLevel(mapName, afterLevel){
         started = false,
         canGetOut = false,
         getout = undefined
-    
+
+    function PauseManager(){
+        
+        let state
+        unpause()
+        // 'unpaused',
+        // 'paused',
+        // 'confirm exit',
+        let canPause
+        setCanPause( false )
+        
+        function setCanPause( _canPause ){
+            canPause = _canPause
+        }
+        function isPaused(){
+            return state !== 'unpaused'
+        }
+        function pause(){
+            if ( canPause ){
+            state = 'paused'
+            scoreboardZones.updatePaused([
+                'paused',
+                '',
+                'Escape to quit',
+                'Any key to resume',
+            ].join("\n"))
+            }
+        }
+        function unpause(){
+            state = 'unpaused'
+            scoreboardZones.updatePaused('')
+        }
+        function confirmExit(){
+            state = 'confirm exit'
+            scoreboardZones.updatePaused([
+                'Are you sure?',
+                '',
+                'Escape to quit',
+                'Any key to resume',
+            ].join("\n"))
+        }
+        function quit(){
+            getout = true
+        }
+        
+        function step(){
+            if ( isPaused() ){
+                oldTime = Date.now();
+            }            
+        }
+        function escapePressed(){
+            if ( state === 'unpaused' ){
+                pause()
+            } else if ( state === 'paused' ){
+                confirmExit()
+            } else if ( state === 'confirm exit'){
+                quit()
+            }
+        }
+        function anyKeyPressed(){
+            if ( isPaused() ){
+                unpause()
+            }
+        }
+        window.addEventListener('keydown',e=> {
+            if ( e.repeat === false ){
+                if ( e.key === 'Escape' ){
+                    escapePressed()
+                } else {
+                    anyKeyPressed()
+                }
+            }
+        })
+        return { step, isPaused, setCanPause }
+    }
+    const pauseManager = PauseManager()
     function animate() {
+
+        pauseManager.step()
+        
+        if ( pauseManager.isPaused() ){
+            //return
+        }
         if ( getout ) {
             viewport.removeChildren()
             viewport.destroy(true)
@@ -807,8 +888,9 @@ async function goLevel(mapName, afterLevel){
             scoreboardZones.updateReady( terrain.extracted['display-name'] )
         }
 
+        pauseManager.setCanPause( started && (!world.over) )
         // step world
-        if ( started && ( ! world.over )){
+        if ( started && ( ! world.over ) && ( !pauseManager.isPaused() ) ){
             worldStep( deltaTime / 1000 )
         }
         
@@ -878,7 +960,7 @@ async function goLevel(mapName, afterLevel){
                             //'score', ''+world.score,
                         ].filter( x => x ).join("\n"))
                     }
-                    if ( a > 3 ){
+                    if ( a > 2 ){
                         if (!canGetOut){
                             canGetOut = true
                             onInteraction( () => {
@@ -922,7 +1004,7 @@ function onInteraction( f ){
         console.log('OK?',e)
         window.removeEventListener( 'keydown', once )
         window.removeEventListener( 'click', once )
-        f()
+        f(e)
     }
     window.addEventListener( 'keydown', once )
     window.addEventListener( 'click', once )
@@ -1162,13 +1244,15 @@ function ScoreBoard( fontName, rectangle ){
         countdown : scoreBoardText( 1, 0, 0,0 ),
         treasures : scoreBoardText( rectangle.width, 0, 1,0, {align : 'right'} ),
         levelScore : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
-        ready : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' })
+        ready : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
+        paused : scoreBoardText( rectangle.width/2, rectangle.height/2 , 0.5,0.5,{ width : 60, align : 'center' }),
     }
 
     scoreboardContainer.addChild( scoreboardZones.countdown.container )
     scoreboardContainer.addChild( scoreboardZones.treasures.container )
     scoreboardContainer.addChild( scoreboardZones.levelScore.container )
     scoreboardContainer.addChild( scoreboardZones.ready.container )
+    scoreboardContainer.addChild( scoreboardZones.paused.container )
     
     scoreboardZones.updateCountdown = function(d) {
         scoreboardZones.countdown.update( d.toString(10).padStart(4,'0') )
@@ -1181,6 +1265,9 @@ function ScoreBoard( fontName, rectangle ){
     }
     scoreboardZones.updateReady = function( d ) {
         scoreboardZones.ready.update( d )
+    }
+    scoreboardZones.updatePaused = function( d ) {
+        scoreboardZones.paused.update( d )
     }
     
     return { scoreboardZones, scoreboardContainer }
