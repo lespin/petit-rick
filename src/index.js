@@ -464,7 +464,6 @@ async function goLevel(mapName, afterLevel){
             if ( remainingSteps === 0 ){
                 changeStepIdx = ( changeStepIdx + 1 )%changeSteps.length
                 remainingSteps = changeSteps[ changeStepIdx ]
-                console.log(changeStepIdx,remainingSteps)
                 switchUpDown()
             } else {
                 remainingSteps--
