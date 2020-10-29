@@ -41,8 +41,10 @@
     "worklet-loader": "^1.0.0"
   },
   "scripts": {
-    "dev": "webpack --mode development --config webpack.dev.js --watch",
-    "prod": "webpack --mode production --config webpack.prod.js  --watch",
-    "start:dev": "webpack-dev-server --config webpack.dev.js "
+      "watch:dev": "webpack --mode development --config webpack.dev.js --watch",
+      "watch:prod": "webpack --mode production --config webpack.prod.js  --watch",
+      "start:dev": "webpack-dev-server --config webpack.dev.js ",
+      "archive" : "mkdir -p ./release && git archive --format=tar.gz  master > release/latest.tgz",
+      "prod": "webpack --mode production --config webpack.prod.js"
   }
 }

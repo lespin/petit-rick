@@ -5,3 +5,4 @@ sound/
 yarn.lock
 unused/
 changeagitauthor.bash
+release/latest.tgz
