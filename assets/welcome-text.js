@@ -7,6 +7,7 @@ export function WelcomeText(){
         'Keep your clones away from the deadly fires and crushers',
         'Only Perfect map completion unlocks new levels',
         'Use Up, Left, Down and Right Arrows keys to move',
+        'Escape pauses the game',
     ]
     paragraphs.forEach( (text,i) => {
         const $p = document.createElement('p')
