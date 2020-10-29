@@ -424,8 +424,11 @@ async function goLevel(mapName, afterLevel){
 
         const crushers = []
 
+        let hasCrushers = false
+        
         ;['up','down'].forEach( dir => {
             terrain.extracted.crushingThings[dir].forEach( tile => {
+                hasCrushers = true
                 const position = tile.inLayer.position
                 const animation = new AnimatedItem( animationModels )
                 animation.container.position.x = position.x
@@ -457,6 +460,7 @@ async function goLevel(mapName, afterLevel){
             })
         }
         function step( world ){
+            if ( !hasCrushers) return
             if ( remainingSteps === 0 ){
                 changeStepIdx = ( changeStepIdx + 1 )%changeSteps.length
                 remainingSteps = changeSteps[ changeStepIdx ]
