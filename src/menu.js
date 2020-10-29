@@ -235,9 +235,10 @@ export function goMenu( f, {sndfx} ){
             $mapDiv.appendChild( $levelAchievmentParagraph('👌️ perfect!') )
         } else {
             const unlocks = getUnlockedBy( name )
-            const s = `unlocks ${ unlocks.join(', ') }`
-            $mapDiv.appendChild(  $levelAchievmentParagraph( s ) )
-            
+            if ( unlocks && unlocks.length ){
+                const s = `unlocks ${ unlocks.join(', ') }`
+                $mapDiv.appendChild(  $levelAchievmentParagraph( s ) )
+            }
         }
         
         const screenshot = history.screenshots[ name ]
