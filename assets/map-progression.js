@@ -1,4 +1,4 @@
-export const InitialMap =  'map8'
+export const InitialMap =  'map10'
 export const MapProgression = {
     'map1' : [ 'map2' ],
     'map2' : [ 'map3', 'map4' ],
