@@ -8,6 +8,7 @@ export function WelcomeText(){
         'Only Perfect map completion unlocks new levels',
         'Use Up, Left, Down and Right Arrows keys to move',
         'Escape pauses the game',
+        '<a href="./release/">Source code and licenses</a>'
     ]
     paragraphs.forEach( (text,i) => {
         const $p = document.createElement('p')

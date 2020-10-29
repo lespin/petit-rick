@@ -45,6 +45,6 @@
       "watch:prod": "webpack --mode production --config webpack.prod.js  --watch",
       "start:dev": "webpack-dev-server --config webpack.dev.js ",
       "archive" : "mkdir -p ./release && git archive --format=tar.gz  master > release/latest.tgz",
-      "prod": "webpack --mode production --config webpack.prod.js"
+      "release": "rm -rf dist/ && yarn run archive &&  webpack --mode production --config webpack.prod.js"
   }
 }
