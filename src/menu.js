@@ -1,6 +1,6 @@
 import { HiScores, History, Options } from './persist.js'
 import { InitialMap } from '../assets/map-progression.js'
-
+import { getUnlockedBy } from './unlocks.js'
 const Maps = [
     
     //{ name : 'map1', displayName : 'unplayed yet' },
@@ -35,6 +35,12 @@ function $hiscoreParagraph(textContent){
 function $levelNameParagraph(textContent){
     const $p = document.createElement('h3')
     $p.style = 'color:#adadad;font-family:monospace;'
+    $p.textContent = textContent
+    return $p
+}
+function $levelAchievmentParagraph(textContent){
+    const $p = document.createElement('h3')
+    $p.style = 'color:#babada;font-family:monospace;'
     $p.textContent = textContent
     return $p
 }
@@ -213,18 +219,27 @@ export function goMenu( f, {sndfx} ){
         const levelHistory = history.levels[ name ]
         let realDisplayName 
         if ( levelHistory ){
-            realDisplayName = levelHistory.displayName
+            realDisplayName = '« '+levelHistory.displayName+' »'
         } else {
-            realDisplayName = displayName || 'unplayed yet'
+            if ( displayName ){
+                realDisplayName = '« '+displayName  +' »'
+            } else {
+                realDisplayName = 'unplayed yet'
+            }
         }
         
-        const $p = $levelNameParagraph(`${ name } - ${ realDisplayName }`)
+        //const $p = $levelNameParagraph(`${ name } - ${ realDisplayName }`)
         $mapDiv.appendChild( $levelNameParagraph(`${ name }`) )
-        $mapDiv.appendChild( $levelDisplayNameParagraph(`${ realDisplayName }`) )
+        $mapDiv.appendChild( $levelDisplayNameParagraph(realDisplayName) )
         if ( perfected ){
-            $mapDiv.appendChild( $levelDisplayNameParagraph('👌️ perfect!') )
+            $mapDiv.appendChild( $levelAchievmentParagraph('👌️ perfect!') )
+        } else {
+            const unlocks = getUnlockedBy( name )
+            const s = `unlocks ${ unlocks.join(', ') }`
+            $mapDiv.appendChild(  $levelAchievmentParagraph( s ) )
+            
         }
-
+        
         const screenshot = history.screenshots[ name ]
         if ( screenshot ){
             const $image = document.createElement('img')

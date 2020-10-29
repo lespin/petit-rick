@@ -2,7 +2,7 @@ import { History} from './persist.js'
 import { MapProgression } from '../assets/map-progression.js'
 const historyStore = History()
 const byMaps = MapProgression
-function getUnlockedBy( fromMap ){
+export function getUnlockedBy( fromMap ){
     return byMaps[ fromMap ] || []
 }
 export function Unlocker(){
