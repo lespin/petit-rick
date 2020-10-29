@@ -592,7 +592,6 @@ async function goLevel(mapName, afterLevel){
             return  tile && ( tile.layer.name === 'mine' ) || ( tile.properties['mine'] )
         }
         function treeCellIsActiveCrusher( {tile} ){
-            console.log('IS IT?',tile)
             return tile && (tile.crusherdown)
         }
         const boxes = getPlayerCollisionBoxes( x,y,width,height ),
