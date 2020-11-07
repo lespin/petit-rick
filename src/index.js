@@ -844,7 +844,8 @@ async function goLevel(mapName, afterLevel){
         started = false,
         canGetOut = false,
         canGetOutStart = undefined,
-        getout = undefined
+        getout = undefined,
+        replayWhenGetout = false
 
     function PauseManager(){
         
@@ -933,7 +934,12 @@ async function goLevel(mapName, afterLevel){
             viewport.destroy(true)
             renderer.clear()
             renderer.destroy( true )
-            return afterLevel()
+            if ( replayWhenGetout ){
+            //return afterLevel()
+                return goLevel( mapName, afterLevel )
+            } else {
+                return afterLevel()
+            }
         }
         stats.begin();
         //console.log('1/60')
