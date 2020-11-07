@@ -158,7 +158,7 @@ function prepareSampler(loaderAc = new AudioContext()){
         ['shout','assets/218417__kokopetiyot__female-shout.ogg'],
         ['ahhh','assets/264499__noah0189__crowd-ooohs-and-ahhhs-in-excitement.ogg'],
         ['cheer','assets/511788__kinoton__crowd-cheering-yahoo.ogg'],
-        ['perfect','assets/perfect2.ogg'],
+        ['perfect','assets/perfect2-djidjo.ogg'],
         ['crush','assets/crush.ogg'],
     ].forEach( ([name,url]) => {    
         loadSound(loaderAc,url, buffer => {
