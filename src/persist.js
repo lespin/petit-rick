@@ -1,3 +1,5 @@
+const CURRENT_VERSION = 2
+removePersistedIfOlderThanCurrentVersion()
 
 /*
  * persistence ( hiscores )
@@ -218,4 +220,13 @@ export function Options(){
     return { load, setOption, remove,
              getPossibleValues, getDisplayName,
              listeners }            
+}
+
+export function removePersistedIfOlderThanCurrentVersion(){
+    const version = StorageItem( 'version',  0 )
+    if ( version.get() < CURRENT_VERSION ){
+        localStorage.clear()
+        version.set( CURRENT_VERSION )
+
+    }
 }
