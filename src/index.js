@@ -528,6 +528,7 @@ async function goLevel(mapName, afterLevel){
         nTreasure : terrain.extracted['treasure'].length,
         initialNPlayers : terrain.extracted['level-entrance'].length,
         initialCountdown : terrain.extracted['initial-countdown'] * options['countdown mode'],
+        scoreDivider : options['countdown mode'],
         perfect : false
     }
     world.countdown = world.initialCountdown
@@ -684,7 +685,11 @@ async function goLevel(mapName, afterLevel){
         if ( perfect ){
             donePerfect()
         }
-        const score = world.countdown * ( world.nTreasureFound *  2 * world.nPlayers )
+        const score = Math.floor(
+            world.countdown
+                * ( world.nTreasureFound *  2 * world.nPlayers )
+                / world.scoreDivider
+        )
         world.score = score
         const name = 'you'
         const hs = hiScores.setScore( name, score )

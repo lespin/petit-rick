@@ -1,4 +1,4 @@
-const CURRENT_VERSION = 2
+const CURRENT_VERSION = 0
 removePersistedIfOlderThanCurrentVersion()
 
 /*
@@ -152,14 +152,15 @@ export function Options(){
    ]
     const possibleValues = {
         'no countdown ending' : [
-            { value : true, display : 'game continues after countdown ends' },
+            { value : true, display : 'game continues after countdown ends (but no level is unlocked)' },
             { value : false, display : 'game stops when countdown ends' },
         ],
         'countdown mode' : [
             { value : 1, display : 'hard' },
             { value : 2, display : 'normal (2x more time to finish)' },
-            { value : 4, display : 'easy (4x more time to finish)' },
-            { value : 8, display : 'extra-easy (8x more time to finish)' },
+            { value : 4, display : 'relaxed (4x more time to finish)' },
+            { value : 8, display : 'extra relaxed (8x more time to finish)' },
+            { value : 16, display : 'extra extra relaxed (16x more time to finish)' },
         ],
         'resize to pixel multiple' : [
             { value : true, display : 'fit to nearest integer scaling' },

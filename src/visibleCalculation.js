@@ -36,18 +36,27 @@ export function LevelScoreVisibleCalculation( world ){
     const operations = {
         movingValue : a => Math.floor( lerp(0,world.countdown,a) ),
         totalOperation : {
-            compute : (i) => i * 2 * world.nPlayers + i * world.nTreasureFound,
+            compute : (i) => Math.floor(
+                ( i * 2 * world.nPlayers + i * world.nTreasureFound )
+                    / world.scoreDivider
+            ),
             display : (result) => `\nscore\n${ result }`
         },
         subOperations : [{
-            compute : (i) => i * 2 * world.nPlayers,
+            compute : (i) => Math.floor(
+                ( i * 2 * world.nPlayers )
+                    / world.scoreDivider
+            ) ,
             display : (i,result) => {
                 const remain = pads.remain( world.countdown - i ),
                       nPlayers = pads.nplayer( world.nPlayers )
                     return `${ world.nPlayers } alive (x2)\n${ result }`
             }
         },{
-            compute : (i) => i * world.nTreasureFound ,
+            compute : (i) => Math.floor(
+                ( i * world.nTreasureFound )
+                    / world.scoreDivider
+            ),
             display : (i,result) => {
                 const remain = pads.remain( world.countdown - i ),
                       nTreasureFound = pads.ntreasure(world.nTreasureFound)
@@ -59,14 +68,14 @@ export function LevelScoreVisibleCalculation( world ){
     const vc = VisibleCalculation(operations)
     return vc 
 }
-const world = {
-    initialCountdown : 5000,
-    initialNPlayers : 3,
-    nTreasure : 4,
-    countdown : 34,
-    nPlayers : 4,
-    nTreasureFound : 2,
-}
+// const world = {
+//     initialCountdown : 5000,
+//     initialNPlayers : 3,
+//     nTreasure : 4,
+//     countdown : 34,
+//     nPlayers : 4,
+//     nTreasureFound : 2,
+// }
 
 // const vc = LevelScoreVisibleCalculation( world )
 // const nSteps = 48
