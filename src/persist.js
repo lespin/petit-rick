@@ -83,7 +83,7 @@ export function History(){
             if ( history.unlocked[ name ] === undefined ){
                 history.unlocked[ name ] = Date.now()
             }
-        })
+        })        
         set( JSON.stringify( history ) )
         return history
     }
@@ -99,15 +99,6 @@ export function History(){
         history.recent.unshift( name )
         history.recent = unique( history.recent )
         history.recent = history.recent.slice(0,4)
-        /*
-        const rank = hs.list.findIndex( r => {
-            return ( r.name === name ) && ( r.score === score )
-        })
-        if ( rank === -1 ){
-            hiscores.list.push( { name, score } )
-            hiscores.list.sort( (a,b) => b.score - a.score )
-        }
-        */
         set( JSON.stringify( history ) )
         return history
     }

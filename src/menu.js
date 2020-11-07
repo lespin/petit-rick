@@ -138,7 +138,7 @@ export function goMenu( f, {sndfx} ){
           unlockedHistory = history.unlocked
 
     // rencently played
-    const doneMaps = recentHistory.map(
+    const doneMaps = recentHistory.slice(0,1).map(
         name => ({name,displayName:undefined})
     )
     
@@ -155,35 +155,42 @@ export function goMenu( f, {sndfx} ){
         const locked = unlockedDate === undefined
         
 
-        if ( !exists && !locked){
-            const unlockedSinceMin = ( Date.now() - unlockedDate ) / 1000 / 60
-            if ( unlockedSinceMin < 5 ){
-                recentlyUnlocked.push( { name } )
-            } else {
-                otherMaps.push( { name } )
-            }
+//        if ( !exists && !locked){
+        if ( !locked ){
+            // const unlockedSinceMin = ( Date.now() - unlockedDate ) / 1000 / 60
+            // if ( unlockedSinceMin < 5 ){
+            recentlyUnlocked.push( { name, unlockedDate } )
+            // } else {
+            //     otherMaps.push( { name } )
+            // }
         }
     })
+    console.log(recentlyUnlocked)
+    recentlyUnlocked.sort( (a,b) => b.unlockedDate - a.unlockedDate )
     if ( ! (recentlyUnlocked.length || doneMaps.length || otherMaps.length ) ){
         // oh oh oh !
         const $levelsDiv = document.createElement('div')
         //$levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
         
         $div.appendChild($levelsDiv)
-        $levelsDiv.appendChild( $Map( {name : InitialMap, displayName : 'click to start', noHiscores : true } ) )
+        $levelsDiv.appendChild( $Map( {name : InitialMap,
+                                       displayName : 'click to start',
+                                       noHiscores : true } ) )
     } else {
         $div.appendChild($h2('click a map to play'))
     }
+
+    
     
     ;[
         ['Recently unlocked', recentlyUnlocked],
-        ['Recently played', doneMaps],
-        ['All levels',otherMaps]
+        //['Recently played', doneMaps],
+        //['All levels',otherMaps]
     ].forEach( ([hcaption,maps]) => {
         console.log('hcaption',hcaption,maps)
         if ( !maps || ( maps.length === 0 ) )
             return 
-        $div.appendChild( $h3( hcaption ) )
+        //$div.appendChild( $h3( hcaption ) )
         
         const $levelsDiv = document.createElement('div')
         $levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;place-content: center;'
@@ -273,11 +280,5 @@ export function goMenu( f, {sndfx} ){
         }
         return  $mapDiv
     }
-    
-
-
     $div.appendChild(    optionsMenu(  {sndfx}  ) )
-    
-    
-    
 }
