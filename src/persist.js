@@ -1,4 +1,4 @@
-const CURRENT_VERSION = 0
+const CURRENT_VERSION = 1
 removePersistedIfOlderThanCurrentVersion()
 
 /*
