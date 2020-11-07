@@ -527,7 +527,7 @@ async function goLevel(mapName, afterLevel){
         nTreasureFound : 0,
         nTreasure : terrain.extracted['treasure'].length,
         initialNPlayers : terrain.extracted['level-entrance'].length,
-        initialCountdown : terrain.extracted['initial-countdown'],
+        initialCountdown : terrain.extracted['initial-countdown'] * options['countdown mode'],
         perfect : false
     }
     world.countdown = world.initialCountdown

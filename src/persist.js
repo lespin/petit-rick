@@ -120,6 +120,7 @@ export function Options(){
     }
     const defaultValue = {
         'no countdown ending' : true,
+        'countdown mode' : 1,
         'resize to pixel multiple' : true,
         'postprocessing' : 1,
         'global volume' : 1.0,
@@ -149,8 +150,14 @@ export function Options(){
    ]
     const possibleValues = {
         'no countdown ending' : [
-            { value : true, display : 'no countdown ending' },
-            { value : false, display : 'must finish before countdown ends' },
+            { value : true, display : 'game continues after countdown ends' },
+            { value : false, display : 'game stops when countdown ends' },
+        ],
+        'countdown mode' : [
+            { value : 1, display : 'hard' },
+            { value : 2, display : 'normal (2x more time to finish)' },
+            { value : 4, display : 'easy (4x more time to finish)' },
+            { value : 8, display : 'extra-easy (8x more time to finish)' },
         ],
         'resize to pixel multiple' : [
             { value : true, display : 'fit to nearest integer scaling' },
@@ -168,6 +175,7 @@ export function Options(){
     }
     const displayNames = {
         'no countdown ending' : 'countdown',
+        'countdown mode' : 'countdown speed',
         'resize to pixel multiple' : 'resizing',
         'postprocessing' : 'image postprocessing',
         'music volume' : 'music',
