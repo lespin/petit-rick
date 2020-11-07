@@ -252,9 +252,9 @@ async function startSound(){
     
     return { sndfx, composer, setMusicVolume, setSndFxVolume, setGlobalVolume }
 }
-let to = 10
+//let to = 10
 function screenShot( renderer, stage ){
-    if ( to-- < 0 ) return
+  //  if ( to-- < 0 ) return
     var renderTexture = PIXI.RenderTexture.create(stage.width, stage.height);
     renderer.render(stage, renderTexture);
     var canvas = renderer.extract.canvas(renderTexture);
