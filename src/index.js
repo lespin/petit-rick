@@ -24,7 +24,11 @@ const unlocker = Unlocker()
 // unlocker.unlockAll()
 import { goMenu } from './menu.js'
 import { HiScores, History, Options} from './persist.js'
-document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
+
+//document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
+
+import './style.css';
+
 const optionsStore = Options()
 
 /*
@@ -50,7 +54,8 @@ function AnyKeyToStart( f ){
     const $div = document.createElement('div')
     $div.appendChild( WelcomeText() )
     const $p = document.createElement('p')
-    $p.style = 'color:#ffffff;font-family:monospace;padding:1em;padding-top:2em;text-align:center;'
+    $p.classList.add('welcome-text2')
+    //$p.style = 'color:#ffffff;font-family:monospace;padding:1em;padding-top:2em;text-align:center;'
     $p.textContent = 'Any key or click to start...'
     document.body.appendChild( $div )
     $div.appendChild( $p ) 

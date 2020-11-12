@@ -1,86 +1,96 @@
 import { HiScores, History, Options } from './persist.js'
 import { InitialMap } from '../assets/map-progression.js'
 import { getUnlockedBy } from './unlocks.js'
-const Maps = [
+// const Maps = [
     
-    //{ name : 'map1', displayName : 'unplayed yet' },
-    /*{ name : 'map2', displayName : 'unplayed yet' },
-      { name : 'map3', displayName : 'unplayed yet' },
-      { name : 'map4', displayName : 'unplayed yet' },
-      { name : 'map5' },
-      { name : 'map6' },
-      { name : 'map7' }*/
+//     //{ name : 'map1', displayName : 'unplayed yet' },
+//     /*{ name : 'map2', displayName : 'unplayed yet' },
+//       { name : 'map3', displayName : 'unplayed yet' },
+//       { name : 'map4', displayName : 'unplayed yet' },
+//       { name : 'map5' },
+//       { name : 'map6' },
+//       { name : 'map7' }*/
         
-]
+// ]
 
 function $paragraph(textContent){
     const $p = document.createElement('p')
-    $p.style = 'color:#ffffff;font-family:monospace;'
+    
+    //p.style = 'color:#ffffff;font-family:monospace;'
+    $p.classList.add('paragraph')
     $p.textContent = textContent
     return $p
 }
 function $button( textContent, f ){
     const $b= document.createElement('button')
     $b.textContent = textContent
-    $b.style = 'color:#000000;font-family:monospace;'
+    $b.classList.add('button')
+    //$b.style = 'color:#000000;font-family:monospace;'
     $b.onclick = f
     return $b
 }
 function $hiscoreParagraph(textContent){
     const $p = document.createElement('p')
-    $p.style = 'color:#00ff00;font-family:monospace;'
+    // $p.style = 'color:#00ff00;font-family:monospace;'
+    $p.classList.add('hiscoreParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelNameParagraph(textContent){
     const $p = document.createElement('h3')
-    $p.style = 'color:#adadad;font-family:monospace;'
+    //$p.style = 'color:#adadad;font-family:monospace;'
+    $p.classList.add('levelNameParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelAchievmentParagraph(textContent){
     const $p = document.createElement('h3')
-    $p.style = 'color:#babada;font-family:monospace;'
+    //$p.style = 'color:#babada;font-family:monospace;'
+    $p.classList.add('levelAchievmentParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelDisplayNameParagraph(textContent){
     const $p = document.createElement('h3')
-    $p.style = 'color:#ffffff;font-family:monospace;font-style:italic;'
+    //$p.style = 'color:#ffffff;font-family:monospace;font-style:italic;'
+    $p.classList.add('levelDisplayNameParagraph')
     $p.textContent = textContent
     return $p
 }
 function $h1(textContent){
     const $p = document.createElement('h1')
-    $p.style = 'color:#ffffff;font-family:monospace;text-align:center;margin-bottom:2em;'
+    //$p.style = 'color:#ffffff;font-family:monospace;text-align:center;margin-bottom:2em;'
     $p.textContent = textContent
     return $p
 }
 function $h2(textContent){
     const $p = document.createElement('h2')
-    $p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
+    //$p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
     $p.textContent = textContent
     return $p
 }
 function $h3(textContent){
     const $p = document.createElement('h3')
-    $p.style = 'color:#f0f0f0;font-family:monospace;text-align:center;margin-top:5em;'
+    //$p.style = 'color:#f0f0f0;font-family:monospace;text-align:center;margin-top:5em;'
     $p.textContent = textContent
     return $p
 }
 function $mmapDiv(){
     const $d = document.createElement('div')
-    $d.style = 'text-align:center;margin-left:1em;margin-right:1em'
+    //$d.style = 'text-align:center;margin-left:1em;margin-right:1em'
+    $d.classList.add('mmapDiv')
     return $d
 }
 function $bigDiv(){
     const $d = document.createElement('div')
-    $d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
+    //$d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
+    $d.classList.add('bigDiv')
     return $d
 }
 function optionsMenu(  {sndfx}  ){
     const $optionsDiv = document.createElement('div')
-    $optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;user-select:none;'
+    //$optionsDiv.style = 'margin-top:3em;margin-bottom:3em;text-align:center;user-select:none;'
+    $optionsDiv.classList.add('optionsMenu')
     $optionsDiv.appendChild($h2('Options'))
     const optionsStore = Options()
     const options = optionsStore.load()
@@ -120,7 +130,8 @@ function optionsMenu(  {sndfx}  ){
 }
 export function $Title(){
     const $div = document.createElement('div')
-    $div.style = 'margin:4em;'   
+    $div.classList.add('Viewport')
+    //$div.style = 'margin:4em;'   
     $div.appendChild($h1('Petit Rick'))
     return $div
 }
@@ -171,7 +182,7 @@ export function goMenu( f, {sndfx} ){
         // oh oh oh !
         const $levelsDiv = document.createElement('div')
         //$levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;'
-        
+        $levelsDiv.classList.add('levelsDiv')
         $div.appendChild($levelsDiv)
         $levelsDiv.appendChild( $Map( {name : InitialMap,
                                        displayName : 'click to start',
@@ -193,7 +204,8 @@ export function goMenu( f, {sndfx} ){
         //$div.appendChild( $h3( hcaption ) )
         
         const $levelsDiv = document.createElement('div')
-        $levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;place-content: center;'
+        //$levelsDiv.style = 'display:flex;flex-wrap:wrap;*/margin-top:4em;*/justify-content: center;place-content: center;'
+        $levelsDiv.classList.add('levelsDiv')
         $div.appendChild($levelsDiv)
 
         maps.forEach( map => {

@@ -13,7 +13,9 @@ export function WelcomeText(){
     paragraphs.forEach( (text,i) => {
         const $p = document.createElement('p')
         setTimeout( () => {
-            $p.style = 'color:#a0f0f0;font-family:monospace;padding:0.5em;padding-left:1em;text-align:center;'
+            $p.classList.add('welcome-text')
+            
+            //$p.style = 'color:#a0f0f0;font-family:monospace;padding:0.5em;padding-left:1em;text-align:center;'
             $p.innerHTML = text
             console.log('div',$div.parentNode.parentNode)
             if ( $div ){

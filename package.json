@@ -32,6 +32,7 @@
     "css-loader": "^4.3.0",
     "esm": "^3.2.25",
     "html-webpack-plugin": "^4.5.0",
+    "mini-css-extract-plugin": "^1.3.0",
     "spritesheet-js": "^1.2.6",
     "terser-webpack-plugin": "^4.2.3",
     "webpack": "^4.44.2",
@@ -41,10 +42,10 @@
     "worklet-loader": "^1.0.0"
   },
   "scripts": {
-      "watch:dev": "webpack --mode development --config webpack.dev.js --watch",
-      "watch:prod": "webpack --mode production --config webpack.prod.js  --watch",
-      "start:dev": "webpack-dev-server --config webpack.dev.js ",
-      "archive" : "mkdir -p ./release && git archive --format=tar.gz  master > release/latest.tgz",
-      "release": "rm -rf dist/ && yarn run archive &&  webpack --mode production --config webpack.prod.js"
+    "watch:dev": "webpack --mode development --config webpack.dev.js --watch",
+    "watch:prod": "webpack --mode production --config webpack.prod.js  --watch",
+    "start:dev": "webpack-dev-server --config webpack.dev.js ",
+    "archive": "mkdir -p ./release && git archive --format=tar.gz  master > release/latest.tgz",
+    "release": "rm -rf dist/ && yarn run archive &&  webpack --mode production --config webpack.prod.js"
   }
 }
