@@ -1,52 +1,58 @@
 body {
-  user-select:none;
-}
-body {
-    background-color: #1b1b1b;    border:0px;    margin:0px;
-}
-p.paragraph {
-    color:#ffffff;font-family:monospace;
-}
-button.button {
-    color:#000000;font-family:monospace;
-}
-.hiscoreParagraph {
-    color:#00ff00;font-family:monospace;
-}
-.levelNameParagraph{
-    color:#adadad;font-family:monospace;
-}
-.levelAchievmentParagraph{
-    color:#babada;font-family:monospace;
-}
-.levelDisplayNameParagraph{
-    color:#ffffff;font-family:monospace;
-    font-style:italic;
+    user-select:none;
+    font-family:monospace;
+    text-align:center;
+    color:#ffffff;
+    background-color: #1b1b1b;
+    border:0px;
+    margin:0px;
+    padding:0px;
 }
 .levelsDiv {
     display:flex;flex-wrap:wrap;
     justify-content: center;
     place-content: center;
 }
-
-h1{
-    color:#ffffff;font-family:monospace;
-    text-align:center;
+button {
+    font-family:monospace;   
+}
+p.paragraph {
+    color:#ffffff;
+}
+button.button {
+    color:#000000;
+}
+.hiscoreParagraph {
+    color:#00ff00;
+}
+.levelNameParagraph{
+    color:#adadad;
+}
+.levelAchievmentPerfectParagraph{
+    color:#ffffff;
+    font-weight : bold;
+}
+.levelAchievmentUnlocksParagraph {
+    color:#afafaf;
+    font-style:italic;
+}
+.levelDisplayNameParagraph{
+    color:#ffffff;
+    font-style:italic;
+        font-weight : bold;
+}
+h1 {
+    color:#ffffff;
     margin-bottom:2em;
 }
-h2{
+h2 {
     color:#ffffff;
-    font-family:monospace;
-    text-align:center;
 }
-h3{
+h3 {
     color:#f0f0f0;
-    font-family:monospace;
-    text-align:center;
     margin-top:5em;
 }
 .mmapDiv{
-    text-align:center;
     margin-left:1em;
     margin-right:1em
 }
@@ -59,17 +65,26 @@ h3{
 .Viewport {
     margin:4em;
 }
-
 .optionsMenu {
-    margin-top:3em;margin-bottom:3em;text-align:center;user-select:none;
+    margin-top:3em;
+    margin-bottom:3em;
 }
-
 .welcome-text {
-    color:#a0f0f0;font-family:monospace;padding:0.5em;padding-left:1em;text-align:center;
+    color:#a0f0f0;
+    padding:0.5em;
+    padding-left:1em;
 }
 .welcome-text2 {
-    color:#ffffff;font-family:monospace;padding:1em;padding-top:2em;text-align:center;
+    color:#ffffff;
+    padding:1em;
+    padding-top:2em;
 }
-canvas.renderer {
-    padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;
-}
+
+/* not really styling, stays in js */
+/* canvas.renderer { */
+/*     padding-left: 0; */
+/*     padding-right: 0; */
+/*     margin-left: auto; */
+/*     margin-right: auto; */
+/*     display: block; */
+/* } */

@@ -142,6 +142,7 @@ function SetupRendererPage(){
     right: 0;
 `
     renderer.view.style = style//'padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto; display: block;'
+    //renderer.view.classList.add( 'renderer' )
     window.pixirenderer = renderer
     document.body.appendChild(renderer.view)
     return renderer

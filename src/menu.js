@@ -37,21 +37,29 @@ function $hiscoreParagraph(textContent){
     return $p
 }
 function $levelNameParagraph(textContent){
-    const $p = document.createElement('h3')
+    const $p = document.createElement('p')
     //$p.style = 'color:#adadad;font-family:monospace;'
     $p.classList.add('levelNameParagraph')
     $p.textContent = textContent
     return $p
+
 }
-function $levelAchievmentParagraph(textContent){
-    const $p = document.createElement('h3')
+function $levelAchievmentUnlocksParagraph(textContent){
+    const $p = document.createElement('p')
     //$p.style = 'color:#babada;font-family:monospace;'
-    $p.classList.add('levelAchievmentParagraph')
+    $p.classList.add('levelAchievmentUnlocksParagraph')
+    $p.textContent = textContent
+    return $p
+}
+function $levelAchievmentPerfectParagraph(textContent){
+    const $p = document.createElement('p')
+    //$p.style = 'color:#babada;font-family:monospace;'
+    $p.classList.add('levelAchievmentPerfectParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelDisplayNameParagraph(textContent){
-    const $p = document.createElement('h3')
+    const $p = document.createElement('p')
     //$p.style = 'color:#ffffff;font-family:monospace;font-style:italic;'
     $p.classList.add('levelDisplayNameParagraph')
     $p.textContent = textContent
@@ -251,12 +259,12 @@ export function goMenu( f, {sndfx} ){
         $mapDiv.appendChild( $levelNameParagraph(`${ name }`) )
         $mapDiv.appendChild( $levelDisplayNameParagraph(realDisplayName) )
         if ( perfected ){
-            $mapDiv.appendChild( $levelAchievmentParagraph('👌️ perfect!') )
+            $mapDiv.appendChild( $levelAchievmentPerfectParagraph('👌️ perfect!') )
         } else {
             const unlocks = getUnlockedBy( name )
             if ( unlocks && unlocks.length ){
                 const s = `unlocks ${ unlocks.join(', ') }`
-                $mapDiv.appendChild(  $levelAchievmentParagraph( s ) )
+                $mapDiv.appendChild(  $levelAchievmentUnlocksParagraph( s ) )
             }
         }
         
