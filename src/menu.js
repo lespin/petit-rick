@@ -107,6 +107,7 @@ function optionsMenu(  {sndfx}  ){
 
         const $optionDiv = document.createElement('div')
         $optionsDiv.appendChild( $optionDiv )
+        $optionDiv.classList.add('option')
 
         const displayName = optionsStore.getDisplayName( name )
         const $pn = $levelNameParagraph( displayName)
