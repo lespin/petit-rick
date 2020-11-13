@@ -693,7 +693,7 @@ async function goLevel(mapName, afterLevel){
         }
         const score = Math.floor(
             world.countdown
-                * ( world.nTreasureFound *  2 * world.nPlayers )
+                * ( world.nTreasureFound +  2 * world.nPlayers )
                 / world.scoreDivider
         )
         world.score = score
