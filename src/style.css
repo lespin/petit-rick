@@ -95,3 +95,6 @@ h3 {
 a {
     color : white;
 }
+img.screenshot {
+    height : 192px;
+}

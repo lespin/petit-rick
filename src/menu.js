@@ -15,8 +15,6 @@ import { getUnlockedBy } from './unlocks.js'
 
 function $paragraph(textContent){
     const $p = document.createElement('p')
-    
-    //p.style = 'color:#ffffff;font-family:monospace;'
     $p.classList.add('paragraph')
     $p.textContent = textContent
     return $p
@@ -25,20 +23,17 @@ function $button( textContent, f ){
     const $b= document.createElement('button')
     $b.textContent = textContent
     $b.classList.add('button')
-    //$b.style = 'color:#000000;font-family:monospace;'
     $b.onclick = f
     return $b
 }
 function $hiscoreParagraph(textContent){
     const $p = document.createElement('p')
-    // $p.style = 'color:#00ff00;font-family:monospace;'
     $p.classList.add('hiscoreParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelNameParagraph(textContent){
     const $p = document.createElement('p')
-    //$p.style = 'color:#adadad;font-family:monospace;'
     $p.classList.add('levelNameParagraph')
     $p.textContent = textContent
     return $p
@@ -46,52 +41,44 @@ function $levelNameParagraph(textContent){
 }
 function $levelAchievmentUnlocksParagraph(textContent){
     const $p = document.createElement('p')
-    //$p.style = 'color:#babada;font-family:monospace;'
     $p.classList.add('levelAchievmentUnlocksParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelAchievmentPerfectParagraph(textContent){
     const $p = document.createElement('p')
-    //$p.style = 'color:#babada;font-family:monospace;'
     $p.classList.add('levelAchievmentPerfectParagraph')
     $p.textContent = textContent
     return $p
 }
 function $levelDisplayNameParagraph(textContent){
     const $p = document.createElement('p')
-    //$p.style = 'color:#ffffff;font-family:monospace;font-style:italic;'
     $p.classList.add('levelDisplayNameParagraph')
     $p.textContent = textContent
     return $p
 }
 function $h1(textContent){
     const $p = document.createElement('h1')
-    //$p.style = 'color:#ffffff;font-family:monospace;text-align:center;margin-bottom:2em;'
     $p.textContent = textContent
     return $p
 }
 function $h2(textContent){
     const $p = document.createElement('h2')
-    //$p.style = 'color:#ffffff;font-family:monospace;text-align:center;'
     $p.textContent = textContent
     return $p
 }
 function $h3(textContent){
     const $p = document.createElement('h3')
-    //$p.style = 'color:#f0f0f0;font-family:monospace;text-align:center;margin-top:5em;'
     $p.textContent = textContent
     return $p
 }
 function $mmapDiv(){
     const $d = document.createElement('div')
-    //$d.style = 'text-align:center;margin-left:1em;margin-right:1em'
     $d.classList.add('mmapDiv')
     return $d
 }
 function $bigDiv(){
     const $d = document.createElement('div')
-    //$d.style = 'display:flex;flex-wrap:wrap;margin-top:4em;justify-content: center;'
     $d.classList.add('bigDiv')
     return $d
 }
@@ -272,6 +259,7 @@ export function goMenu( f, {sndfx} ){
         const screenshot = history.screenshots[ name ]
         if ( screenshot ){
             const $image = document.createElement('img')
+            $image.classList.add( 'screenshot' )
             $image.src = screenshot
             $mapDiv.appendChild( $image )
             $image.onclick = playThis
