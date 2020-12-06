@@ -114,6 +114,7 @@ export function Options(){
     const defaultValue = {
         'no countdown ending' : true,
         'countdown mode' : 1,
+        'slow down':1,
         'resize to pixel multiple' : true,
         'postprocessing' : 1,
         'global volume' : 1.0,
@@ -153,6 +154,11 @@ export function Options(){
             { value : 8, display : 'extra relaxed (8x more time to finish)' },
             { value : 16, display : 'extra extra relaxed (16x more time to finish)' },
         ],
+        'slow down' : [
+            { value : 1, display : 'none' },
+            { value : 2, display : 'a little' },
+            { value : 4, display : 'a lot' },
+        ],
         'resize to pixel multiple' : [
             { value : true, display : 'fit to nearest integer scaling' },
             { value : false, display : 'scale to maximum' },
@@ -175,6 +181,7 @@ export function Options(){
         'music volume' : 'music',
         'sfx volume' : 'sound effects',
         'global volume' : 'volume',
+        'slow down' : 'slow down'
     }
     function getDisplayName( name ){
         if ( displayNames[ name ] === undefined ){

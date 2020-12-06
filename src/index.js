@@ -25,6 +25,9 @@ const unlocker = Unlocker()
 import { goMenu } from './menu.js'
 import { HiScores, History, Options} from './persist.js'
 
+
+const NOMINAL_FPS = 48
+
 //document.body.style = 'background-color: #1b1b1b;border:0px;margin:0px;'
 
 import './style.css';
@@ -271,6 +274,9 @@ var rng = seedrandom('fx-1');
 async function goLevel(mapName, afterLevel){
 
     const options = optionsStore.load()
+
+    //const invFixedTimeStep = Math.ceil( 48 * options['slow down'] )
+
     
     const keyboardState = KeyboardState('key')(window)
     keyboardState.start()
@@ -423,7 +429,7 @@ async function goLevel(mapName, afterLevel){
         const delays =  terrain.extracted.crushingThings.delays
         const changeSteps = []
         for ( let i = 0 ; i < delays.length ; i++ ){
-            const nSteps = Math.ceil( delays[ i ] * 48 ) // FIXED TIME STEP...
+            const nSteps = Math.ceil( delays[ i ] * NOMINAL_FPS ) // FIXED TIME STEP...
             changeSteps.push( nSteps )
         }
         console.log('changeSteps',changeSteps)
@@ -523,7 +529,8 @@ async function goLevel(mapName, afterLevel){
     /*
      * World
      */
-    const fixedTimeStep = 1/48
+    const fixedTimeStep = 1 / NOMINAL_FPS * options['slow down']
+    console.log('fixedTimeStep',fixedTimeStep)
     const world = {
         time : 0,
         step : 0,
@@ -533,7 +540,7 @@ async function goLevel(mapName, afterLevel){
         nTreasureFound : 0,
         nTreasure : terrain.extracted['treasure'].length,
         initialNPlayers : terrain.extracted['level-entrance'].length,
-        initialCountdown : terrain.extracted['initial-countdown'] * options['countdown mode'],
+        initialCountdown : NOMINAL_FPS * terrain.extracted['initial-countdown'] * options['countdown mode'],
         scoreDivider : options['countdown mode'],
         perfect : false
     }
@@ -1221,7 +1228,7 @@ async function loadTerrain( url ){
     extracted['level-exit'] = []
     extracted['substitute-animation'] = []
     extracted['display-name'] = terrain.properties['display-name'] || 'unnamed map'
-    extracted['initial-countdown'] = 48 * ( terrain.properties['initial-countdown'] || 60 )
+    extracted['initial-countdown'] = terrain.properties['initial-countdown'] || 60
     extracted.tree = new RBush();
     extracted.bounds = {
         minX : Number.POSITIVE_INFINITY,
