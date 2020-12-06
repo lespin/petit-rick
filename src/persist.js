@@ -156,7 +156,10 @@ export function Options(){
         ],
         'slow down' : [
             { value : 1, display : 'none' },
-            { value : 2, display : 'a little' },
+            { value : 1.25, display : 'a little' },
+            { value : 1.75, display : 'a little more' },
+            { value : 2, display : 'two times' },
+            { value : 3, display : 'three times' },
             { value : 4, display : 'a lot' },
         ],
         'resize to pixel multiple' : [
